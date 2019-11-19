@@ -1,6 +1,10 @@
 // Copyright (c) 2018-2019 urain39 <urain39[AT]qq[DOT]com>
 
-const enum TokenType {
+export type Token = any[];
+//export type Token = Array<any>;
+//export class Token extends Array {};
+
+export const enum TokenType {
 	IF = 0, // '?'
 	NOT,	// '!'
 	ELSE,	// '*'
@@ -10,28 +14,25 @@ const enum TokenType {
 	FORMAT_ESCAPE
 }
 
-const enum TokenMember {
+export const enum TokenMember {
 	TYPE = 0,
 	VALUE,
 	BLOCK,
 	ELSE_BLOCK
 }
 
-let TokenTypeMap = {
+export let TokenTypeMap = {
 	'?': TokenType.IF,
 	'!': TokenType.NOT,
 	'*': TokenType.ELSE,
 	'/': TokenType.END,
 	'#': TokenType.FORMAT
-}
+};
 
-type Token = Array<any>;
-//class Token extends Array {};
-
-function tokenize(source: string, prefix: string, suffix: string): Array<Token> {
+export function tokenize(source: string, prefix: string, suffix: string): Token[] {
 	let type_: string,
 		value: string,
-		tokens: Array<Token> = [];
+		tokens: Token[] = [];
 
 	for (let i = 0, j = 0; i < source.length;) {
 		j = source.indexOf(prefix, i);
@@ -76,3 +77,4 @@ function tokenize(source: string, prefix: string, suffix: string): Array<Token> 
 
 	return tokens;
 }
+
