@@ -1,6 +1,8 @@
 "use strict";
+// Copyright (c) 2018-2019 urain39 <urain39[AT]qq[DOT]com>
 exports.__esModule = true;
 var tokenizer_1 = require("./tokenizer");
+var renderer_1 = require("./renderer");
 function buildTree(tokens) {
     var token, type, value, section, sections = [], treeRoot = [], collector = treeRoot;
     for (var i = 0; i < tokens.length; i++) {
@@ -49,6 +51,7 @@ function buildTree(tokens) {
 function parse(source, prefix, suffix) {
     if (prefix === void 0) { prefix = '{'; }
     if (suffix === void 0) { suffix = '}'; }
-    return buildTree(tokenizer_1.tokenize(source, prefix, suffix));
+    var treeRoot = buildTree(tokenizer_1.tokenize(source, prefix, suffix));
+    return new renderer_1.Renderer(treeRoot);
 }
 exports.parse = parse;

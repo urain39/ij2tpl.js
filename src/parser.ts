@@ -1,4 +1,7 @@
+// Copyright (c) 2018-2019 urain39 <urain39[AT]qq[DOT]com>
+
 import { Token, TokenMember, TokenType, tokenize } from './tokenizer';
+import { Renderer } from './renderer';
 
 function buildTree(tokens: Token[]): Token[] {
 	let token: Token,
@@ -62,8 +65,10 @@ function buildTree(tokens: Token[]): Token[] {
 	return treeRoot;
 }
 
-export function parse(source, prefix: string = '{', suffix: string = '}'): Token[] {
-	return buildTree(tokenize(
+export function parse(source, prefix: string = '{', suffix: string = '}'): Renderer {
+	let treeRoot = buildTree(tokenize(
 		source, prefix, suffix
 	));
+
+	return new Renderer(treeRoot);
 }
