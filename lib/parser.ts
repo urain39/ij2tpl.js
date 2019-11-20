@@ -7,7 +7,7 @@ function buildTree(tokens: Token[]): Token[] {
 	let token: Token,
 		type: TokenType,
 		value: string,
-		section: Token,
+		section: Token | undefined,
 		sections: Token[] = [],
 		treeRoot: Token[] = [],
 		collector: Token[] = treeRoot;
@@ -56,8 +56,8 @@ function buildTree(tokens: Token[]): Token[] {
 
 	if (sections.length > 0) {
 		section = sections.pop();
-		type = section[TokenMember.TYPE];
-		value = section[TokenMember.VALUE];
+		type = (<Token>section)[TokenMember.TYPE];
+		value = (<Token>section)[TokenMember.VALUE];
 
 		throw new SyntaxError(`No match section '<type=${type}, value=${value}>'`);
 	}
@@ -65,7 +65,7 @@ function buildTree(tokens: Token[]): Token[] {
 	return treeRoot;
 }
 
-export function parse(source, prefix: string = '{', suffix: string = '}'): Renderer {
+export function parse(source: string, prefix: string = '{', suffix: string = '}'): Renderer {
 	let treeRoot = buildTree(tokenize(
 		source, prefix, suffix
 	));

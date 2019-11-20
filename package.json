@@ -4,6 +4,8 @@
   "description": "Mustache-like Template for Javascript.",
   "main": "index.js",
   "scripts": {
+    "build": "tsc && webpack",
+    "clean": "rm -r dist",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
