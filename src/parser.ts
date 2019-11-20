@@ -1,6 +1,6 @@
 import { Token, TokenMember, TokenType, tokenize } from './tokenizer';
 
-export function buildTree(tokens: Token[]): Token[] {
+function buildTree(tokens: Token[]): Token[] {
 	let token: Token,
 		type: TokenType,
 		value: string,
@@ -27,7 +27,7 @@ export function buildTree(tokens: Token[]): Token[] {
 			section = sections[sections.length - 1];
 
 			if (!section || section[TokenMember.TYPE] !== TokenType.IF || value !== section[TokenMember.VALUE])
-				throw new SyntaxError(`No match token '<type=${type}, value=${value}>'`);
+				throw new SyntaxError(`Unexpected token '<type=${type}, value=${value}>'`);
 
 			collector = section[TokenMember.ELSE_BLOCK] = [];
 			break;
@@ -35,7 +35,7 @@ export function buildTree(tokens: Token[]): Token[] {
 			section = sections.pop();
 
 			if (!section || value !== section[TokenMember.VALUE])
-				throw new SyntaxError(`No match token '<type=${type}, value=${value}>'`);
+				throw new SyntaxError(`Unexpected token '<type=${type}, value=${value}>'`);
 
 			if (section[TokenMember.ELSE_BLOCK] instanceof Array && sections.length > 0)
 				section[TokenMember.TYPE] = TokenType.ELSE;
@@ -45,8 +45,25 @@ export function buildTree(tokens: Token[]): Token[] {
 					section[TokenMember.ELSE_BLOCK] : section[TokenMember.BLOCK];
 			else
 				collector = treeRoot;
+			break;
+		default:
+			collector.push(token);
 		}
 	}
 
+	if (sections.length > 0) {
+		section = sections.pop();
+		type = section[TokenMember.TYPE];
+		value = section[TokenMember.VALUE];
+
+		throw new SyntaxError(`No match section '<type=${type}, value=${value}>'`);
+	}
+
 	return treeRoot;
+}
+
+export function parse(source, prefix: string = '{', suffix: string = '}'): Token[] {
+	return buildTree(tokenize(
+		source, prefix, suffix
+	));
 }

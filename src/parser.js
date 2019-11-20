@@ -1,5 +1,6 @@
 "use strict";
 exports.__esModule = true;
+var tokenizer_1 = require("./tokenizer");
 function buildTree(tokens) {
     var token, type, value, section, sections = [], treeRoot = [], collector = treeRoot;
     for (var i = 0; i < tokens.length; i++) {
@@ -18,13 +19,13 @@ function buildTree(tokens) {
             case 2 /* ELSE */:
                 section = sections[sections.length - 1];
                 if (!section || section[0 /* TYPE */] !== 0 /* IF */ || value !== section[1 /* VALUE */])
-                    throw new SyntaxError("No match token '<type=" + type + ", value=" + value + ">'");
+                    throw new SyntaxError("Unexpected token '<type=" + type + ", value=" + value + ">'");
                 collector = section[3 /* ELSE_BLOCK */] = [];
                 break;
             case 3 /* END */:
                 section = sections.pop();
                 if (!section || value !== section[1 /* VALUE */])
-                    throw new SyntaxError("No match token '<type=" + type + ", value=" + value + ">'");
+                    throw new SyntaxError("Unexpected token '<type=" + type + ", value=" + value + ">'");
                 if (section[3 /* ELSE_BLOCK */] instanceof Array && sections.length > 0)
                     section[0 /* TYPE */] = 2 /* ELSE */;
                 if (sections.length > 0)
@@ -32,8 +33,22 @@ function buildTree(tokens) {
                         section[3 /* ELSE_BLOCK */] : section[2 /* BLOCK */];
                 else
                     collector = treeRoot;
+                break;
+            default:
+                collector.push(token);
         }
+    }
+    if (sections.length > 0) {
+        section = sections.pop();
+        type = section[0 /* TYPE */];
+        value = section[1 /* VALUE */];
+        throw new SyntaxError("No match section '<type=" + type + ", value=" + value + ">'");
     }
     return treeRoot;
 }
-exports.buildTree = buildTree;
+function parse(source, prefix, suffix) {
+    if (prefix === void 0) { prefix = '{'; }
+    if (suffix === void 0) { suffix = '}'; }
+    return buildTree(tokenizer_1.tokenize(source, prefix, suffix));
+}
+exports.parse = parse;
