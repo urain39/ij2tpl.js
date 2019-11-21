@@ -1,15 +1,7 @@
-import {
-	tokenize,
-	TokenTypeMap
-} from './lib/tokenizer';
 import { parse } from './lib/parser';
+import { Renderer } from './lib/renderer';
 
-var IJ2TPL = {
-	tokenize: tokenize,
-	parse: parse
-};
-
-export {
-	IJ2TPL,
-	TokenTypeMap
+export var IJ2TPL = {
+	parse,
+	Renderer
 };

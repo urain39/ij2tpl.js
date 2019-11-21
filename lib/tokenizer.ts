@@ -21,7 +21,7 @@ export const enum TokenType {
 	FORMAT_ESCAPE
 }
 
-export let TokenTypeMap = {
+let TokenTypeMap = {
 	'?': TokenType.IF,
 	'!': TokenType.NOT,
 	'*': TokenType.ELSE,

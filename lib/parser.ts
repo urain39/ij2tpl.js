@@ -55,7 +55,7 @@ function buildTree(tokens: Token[]): Token[] {
 	}
 
 	if (sections.length > 0) {
-		section = (<Token>sections.pop());
+		section = (<Token>(sections.pop()));
 		type_ = section[TokenMember.TYPE];
 		value = section[TokenMember.VALUE];
 
