@@ -5,7 +5,7 @@ import { Renderer } from './renderer';
 
 function buildTree(tokens: Token[]): Token[] {
 	let token: Token,
-		type: TokenType,
+		type_: TokenType,
 		value: string,
 		section: Token | undefined,
 		sections: Token[] = [],
@@ -14,10 +14,10 @@ function buildTree(tokens: Token[]): Token[] {
 
 	for (let i = 0; i < tokens.length; i++) {
 		token = tokens[i];
-		type = token[TokenMember.TYPE];
+		type_ = token[TokenMember.TYPE];
 		value = token[TokenMember.VALUE];
 
-		switch (type) {
+		switch (type_) {
 		case TokenType.IF:
 		case TokenType.NOT:
 			collector.push(token);
@@ -30,7 +30,7 @@ function buildTree(tokens: Token[]): Token[] {
 			section = sections[sections.length - 1];
 
 			if (!section || section[TokenMember.TYPE] !== TokenType.IF || value !== section[TokenMember.VALUE])
-				throw new SyntaxError(`Unexpected token '<type=${type}, value=${value}>'`);
+				throw new SyntaxError(`Unexpected token '<type=${type_}, value=${value}>'`);
 
 			collector = section[TokenMember.ELSE_BLOCK] = [];
 			break;
@@ -38,7 +38,7 @@ function buildTree(tokens: Token[]): Token[] {
 			section = sections.pop();
 
 			if (!section || value !== section[TokenMember.VALUE])
-				throw new SyntaxError(`Unexpected token '<type=${type}, value=${value}>'`);
+				throw new SyntaxError(`Unexpected token '<type=${type_}, value=${value}>'`);
 
 			if ((<Token>section)[TokenMember.ELSE_BLOCK] instanceof Array && section[TokenMember.ELSE_BLOCK].length > 0)
 				section[TokenMember.TYPE] = TokenType.ELSE;
@@ -56,10 +56,10 @@ function buildTree(tokens: Token[]): Token[] {
 
 	if (sections.length > 0) {
 		section = (<Token>sections.pop());
-		type = (<Token>section)[TokenMember.TYPE];
-		value = (<Token>section)[TokenMember.VALUE];
+		type_ = section[TokenMember.TYPE];
+		value = section[TokenMember.VALUE];
 
-		throw new SyntaxError(`No match section '<type=${type}, value=${value}>'`);
+		throw new SyntaxError(`No match section '<type=${type_}, value=${value}>'`);
 	}
 
 	return treeRoot;

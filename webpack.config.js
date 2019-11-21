@@ -3,7 +3,7 @@ module.exports = {
 	entry: __dirname + '/index.js',
 	output: {
 		path: __dirname + '/dist',
-		filename: 'ij2tpl.[hash].js',
+		filename: 'ij2tpl.js',
 		libraryTarget: 'umd',
 		globalObject: 'this'
 	}

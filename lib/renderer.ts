@@ -2,17 +2,42 @@
 
 import { Token, TokenMember, TokenType } from './tokenizer';
 
-export type Map = Object;
+export interface Map {
+	[key: string]: any;
+	[index: number]: any;
+}
 
 export class Context {
-	private cache = [];
+	private data: Map;
+	private cache: Map;
+	private parent: Context | undefined;
 
-	public lookup(name: string): any {
-		
+	public constructor(data: Map, parent?: Context) {
+		this.data = data;
+		this.cache = { '.': this.data };
+
+		if (parent)
+			this.parent = parent;
 	}
 
-	public constructor(data: Map) {
-		
+	public lookup(name: string): any {
+		let value: any;
+
+		if (this.cache.hasOwnProperty(name)) {
+			value = this.cache[name];
+		} else {
+			let context = this;
+
+			for (; context.parent; ) {
+				
+			}
+		}
+
+		return value;
+	}
+
+	public push(data: Map): Context {
+		return new Context(data, this);
 	}
 }
 

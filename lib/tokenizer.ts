@@ -4,6 +4,13 @@ export type Token = any[];
 //export type Token = Array<any>;
 //export class Token extends Array {};
 
+export const enum TokenMember {
+	TYPE = 0,
+	VALUE,
+	BLOCK,
+	ELSE_BLOCK
+}
+
 export const enum TokenType {
 	IF = 0, // '?'
 	NOT,	// '!'
@@ -12,13 +19,6 @@ export const enum TokenType {
 	TEXT,
 	FORMAT,	// '#'
 	FORMAT_ESCAPE
-}
-
-export const enum TokenMember {
-	TYPE = 0,
-	VALUE,
-	BLOCK,
-	ELSE_BLOCK
 }
 
 export let TokenTypeMap = {
@@ -69,6 +69,8 @@ export function tokenize(source: string, prefix: string, suffix: string): Token[
 		case '/':
 		case '#':
 			tokens.push([TokenTypeMap[type_], value.slice(1)]);
+			break;
+		case '-':
 			break;
 		default:
 			tokens.push([TokenType.FORMAT_ESCAPE, value]);
