@@ -1,9 +1,5 @@
 // Copyright (c) 2018-2019 urain39 <urain39[AT]qq[DOT]com>
 
-export type Token = any[];
-//export type Token = Array<any>;
-//export class Token extends Array {};
-
 export const enum TokenMember {
 	TYPE = 0,
 	VALUE,
@@ -29,6 +25,10 @@ let TokenTypeMap = {
 	'#': TokenType.FORMAT
 };
 
+//export type Token = any[];
+//export type Token = Array<any>;
+export type Token = [TokenType, string, Token[] | undefined, Token[] | undefined];
+
 export function tokenize(source: string, prefix: string, suffix: string): Token[] {
 	let type_: string,
 		value: string,
@@ -41,7 +41,7 @@ export function tokenize(source: string, prefix: string, suffix: string): Token[
 			value = source.slice(i, source.length);
 
 			if (value.length > 0)
-				tokens.push([TokenType.TEXT, value]);
+				tokens.push([TokenType.TEXT, value, undefined, undefined]);
 
 			break;
 		}
@@ -50,7 +50,7 @@ export function tokenize(source: string, prefix: string, suffix: string): Token[
 		j += prefix.length;
 
 		if (value.length > 0)
-			tokens.push([TokenType.TEXT, value]);
+			tokens.push([TokenType.TEXT, value, undefined, undefined]);
 
 		i = source.indexOf(suffix, j);
 
@@ -68,12 +68,12 @@ export function tokenize(source: string, prefix: string, suffix: string): Token[
 		case '*':
 		case '/':
 		case '#':
-			tokens.push([TokenTypeMap[type_], value.slice(1)]);
+			tokens.push([TokenTypeMap[type_], value.slice(1), undefined, undefined]);
 			break;
 		case '-':
 			break;
 		default:
-			tokens.push([TokenType.FORMAT_ESCAPE, value]);
+			tokens.push([TokenType.FORMAT_ESCAPE, value, undefined, undefined]);
 		}
 	}
 
