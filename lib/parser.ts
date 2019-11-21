@@ -40,11 +40,11 @@ function buildTree(tokens: Token[]): Token[] {
 			if (!section || value !== section[TokenMember.VALUE])
 				throw new SyntaxError(`Unexpected token '<type=${type_}, value=${value}>'`);
 
-			if ((<Token>section)[TokenMember.ELSE_BLOCK] instanceof Array && section[TokenMember.ELSE_BLOCK].length > 0)
+			if ((section as Token)[TokenMember.ELSE_BLOCK] instanceof Array && section[TokenMember.ELSE_BLOCK].length > 0)
 				section[TokenMember.TYPE] = TokenType.ELSE;
 
 			if (sections.length > 0)
-				collector = ((<Token>section) = sections[sections.length - 1], section[TokenMember.ELSE_BLOCK] instanceof Array) ?
+				collector = ((section as Token) = sections[sections.length - 1], section[TokenMember.ELSE_BLOCK] instanceof Array) ?
 					section[TokenMember.ELSE_BLOCK] : section[TokenMember.BLOCK];
 			else
 				collector = treeRoot;
@@ -55,7 +55,7 @@ function buildTree(tokens: Token[]): Token[] {
 	}
 
 	if (sections.length > 0) {
-		section = (<Token>(sections.pop()));
+		section = ((sections.pop()) as Token);
 		type_ = section[TokenMember.TYPE];
 		value = section[TokenMember.VALUE];
 
