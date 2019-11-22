@@ -44,7 +44,7 @@ function buildTree(tokens: Token[]): Token[] {
 			if (!section || value !== section[TokenMember.VALUE])
 				throw new SyntaxError(`Unexpected token '<type=${type_}, value=${value}>'`);
 
-			// Change type of which section contain else block
+			// Change type of which section contains else block
 			if ((section as Token)[TokenMember.ELSE_BLOCK] instanceof Array && (section[TokenMember.ELSE_BLOCK] as Token[]).length > 0)
 				section[TokenMember.TYPE] = TokenType.ELSE;
 
