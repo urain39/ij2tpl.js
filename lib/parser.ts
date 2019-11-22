@@ -4,44 +4,51 @@ import { Token, TokenMember, TokenType, tokenize } from './tokenizer';
 import { Renderer } from './renderer';
 
 function buildTree(tokens: Token[]): Token[] {
-	let token: Token,
-		type_: TokenType,
+	let type_: TokenType,
 		value: string,
 		section: Token | undefined,
 		sections: Token[] = [],
 		treeRoot: Token[] = [],
 		collector: Token[] = treeRoot;
 
-	for (let i = 0; i < tokens.length; i++) {
-		token = tokens[i];
+	for (let token of tokens) {
 		type_ = token[TokenMember.TYPE];
 		value = token[TokenMember.VALUE];
 
 		switch (type_) {
+		// Enter a section
 		case TokenType.IF:
 		case TokenType.NOT:
+			// Current block saves token
 			collector.push(token);
 			section = token;
+			// Stack saves section
 			sections.push(section);
+			// Initialize section block
 			collector = section[TokenMember.BLOCK] = [];
 			break;
 		case TokenType.ELSE:
 			section = sections[sections.length - 1];
 
+			// Check current(top) section is valid?
 			if (!section || section[TokenMember.TYPE] !== TokenType.IF || value !== section[TokenMember.VALUE])
 				throw new SyntaxError(`Unexpected token '<type=${type_}, value=${value}>'`);
 
+			// Switch the block to else block
 			collector = section[TokenMember.ELSE_BLOCK] = [];
 			break;
 		case TokenType.END:
 			section = sections.pop();
 
+			// Check if section is not match
 			if (!section || value !== section[TokenMember.VALUE])
 				throw new SyntaxError(`Unexpected token '<type=${type_}, value=${value}>'`);
 
+			// Change type of which section contain else block
 			if ((section as Token)[TokenMember.ELSE_BLOCK] instanceof Array && (section[TokenMember.ELSE_BLOCK] as Token[]).length > 0)
 				section[TokenMember.TYPE] = TokenType.ELSE;
 
+			// Re-bind block to parent block
 			if (sections.length > 0)
 				collector = ((section = (sections[sections.length - 1] as Token), section[TokenMember.ELSE_BLOCK] instanceof Array) ?
 					section[TokenMember.ELSE_BLOCK] : section[TokenMember.BLOCK]) as Token[];

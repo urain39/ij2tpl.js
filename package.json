@@ -5,15 +5,15 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc && webpack",
-    "clean": "rm -r dist",
+    "clean": "rm -r dist/*.js",
     "test": "find tests/ -type f -name '*.js' | xargs -r -i node '{}'"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/urain39/ij2tpl.js.git"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "urain39",
+  "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/urain39/ij2tpl.js/issues"
   },
