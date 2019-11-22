@@ -20,7 +20,7 @@ export class Context {
 			this.parent = parent;
 	}
 
-	public lookup(name: string): any {
+	public resolve(name: string): any {
 		let value: any = null,
 			found: boolean = false;
 
@@ -33,7 +33,7 @@ export class Context {
 			}
 		}
 
-		// Not found
+		// No cached record found
 		if (!found) {
 			let key: string,
 				keys: string[] = name.split('.');
@@ -50,15 +50,17 @@ export class Context {
 				}
 			}
 
+			// Resolve properties
 			for (key of keys) {
-				if (!(value instanceof Object) || !value.hasOwnProperty(key)) {
+				if (value instanceof Object && value.hasOwnProperty(key)) {
+					value = value[key];
+				} else {
 					value = null // Reset value
 					break;
 				}
-
-				value = value[key];
 			}
 
+			// Cache the name          vvvvv NOTE: value may be undefined
 			this.cache[name] = value = value ? value : null;
 		}
 
@@ -81,6 +83,6 @@ export class Renderer {
 		let value: any = null,
 			context = new Context(data);
 
-		value = context.lookup('');
+		value = context.resolve('');
 	}
 }
