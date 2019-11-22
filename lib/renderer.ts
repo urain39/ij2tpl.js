@@ -21,15 +21,24 @@ export class Context {
 	}
 
 	public lookup(name: string): any {
-		let value: any;
+		let value: any = null,
+			found: boolean = false;
 
-		if (this.cache.hasOwnProperty(name)) {
-			value = this.cache[name];
-		} else {
-			let context = this;
+		// Maybe name cached in context and parents?
+		for (let context: Context　| undefined = this; context; context = context.parent) {
+			if (context.cache.hasOwnProperty(name)) {
+				found = true;
+				value = context.cache[name];
+				break;
+			}
+		}
 
-			for (; context.parent; ) {
-				
+		// Not found, try to look up the name in data.
+		if (!found) {
+			let keys: string[] = name.split('.');
+
+			for (let context: Context | undefined = this; context; context = context.parent) {
+				// TODO:
 			}
 		}
 
@@ -46,5 +55,12 @@ export class Renderer {
 
 	public constructor(treeRoot: Token[]) {
 		this.treeRoot = treeRoot;
+	}
+
+	public render(data: Map): any {
+		let value: any = null,
+			context = new Context(data);
+
+		value = context.lookup('');
 	}
 }
