@@ -20,7 +20,7 @@ export class Context {
 			this.parent = parent;
 	}
 
-	public lookup(name: string): any {
+	public resolve(name: string): any {
 		let value: any = null,
 			found: boolean = false;
 
@@ -33,13 +33,35 @@ export class Context {
 			}
 		}
 
-		// Not found, try to look up the name in data.
+		// No cached record found
 		if (!found) {
-			let keys: string[] = name.split('.');
+			let key: string,
+				keys: string[] = name.split('.');
 
+			key = keys[0];
+			keys = keys.slice(1);
+
+			// Try to look up the name in data
 			for (let context: Context | undefined = this; context; context = context.parent) {
-				// TODO:
+				// Find out which context contains key
+				if (context.data.hasOwnProperty(key)) {
+					value = context.data[key];
+					break;
+				}
 			}
+
+			// Resolve properties
+			for (key of keys) {
+				if (value instanceof Object && value.hasOwnProperty(key)) {
+					value = value[key];
+				} else {
+					value = null // Reset value
+					break;
+				}
+			}
+
+			// Cache the name          vvvvv NOTE: value may be undefined
+			this.cache[name] = value = value ? value : null;
 		}
 
 		return value;
@@ -61,6 +83,6 @@ export class Renderer {
 		let value: any = null,
 			context = new Context(data);
 
-		value = context.lookup('');
+		value = context.resolve('');
 	}
 }
