@@ -1,6 +1,10 @@
 // Copyright (c) 2018-2019 urain39 <urain39[AT]qq[DOT]com>
 
-import { Token, TokenMember, TokenType } from './tokenizer';
+import {
+	Token,
+	TokenMember,
+	TokenType
+} from './tokenizer';
 
 export interface Map {
 	[key: string]: any;
@@ -44,13 +48,14 @@ export class Context {
 			// Try to look up the name in data
 			for (let context: Context | undefined = this; context; context = context.parent) {
 				// Find out which context contains name
-				if (context.data.hasOwnProperty(name_)) {
-					value = context.data[name_];
+				if (context.data instanceof Object && context.data.hasOwnProperty(name_)) {
+					value = (context.data as Map)[name_];
 					break;
 				}
 			}
 
 			// Resolve properties
+			// XXX: Should we check value valid at first?
 			for (const property of properties) {
 				if (value instanceof Object && value.hasOwnProperty(property)) {
 					value = value[property];
@@ -75,7 +80,88 @@ export class Renderer {
 		this.treeRoot = treeRoot;
 	}
 
-	public render(data: Map): any {
-		// TODO:
+	public renderTree(treeRoot: Token[], context: Context): string[] {
+		let value: any,
+			buffer: string[] = [];
+
+		for (const token of treeRoot) {
+			switch (token[TokenMember.TYPE]) {
+			case TokenType.IF:
+				value = context.resolve(token[TokenMember.VALUE]);
+
+				if (!value)
+					continue;
+
+				if (value instanceof Array)
+					for (const value_ of value)
+						buffer.push(this.renderTree(
+							token[TokenMember.BLOCK] as Token[],
+							new Context(value_, context)
+						).join(''));
+				else
+					buffer.push(this.renderTree(
+						token[TokenMember.BLOCK] as Token[],
+						context
+					).join(''));
+				break;
+			case TokenType.NOT:
+				value = context.resolve(token[TokenMember.VALUE]);
+
+				if (value)
+					continue;
+
+				buffer.push(this.renderTree(
+					token[TokenMember.BLOCK] as Token[],
+					context
+				).join(''));
+				break;
+			case TokenType.ELSE:
+				value = context.resolve(token[TokenMember.VALUE]);
+
+				if (value) {
+					if (value instanceof Array)
+						for (const value_ of value)
+							buffer.push(this.renderTree(
+								token[TokenMember.BLOCK] as Token[],
+								new Context(value_, context)
+							).join(''));
+					else
+						buffer.push(this.renderTree(
+							token[TokenMember.BLOCK] as Token[],
+							context
+						).join(''));
+				} else {
+					buffer.push(this.renderTree(
+						token[TokenMember.ELSE_BLOCK] as Token[],
+						context
+					).join(''));
+				}
+				break;
+			case TokenType.TEXT:
+				buffer.push(
+					token[TokenMember.VALUE]
+				);
+				break;
+			case TokenType.FORMAT:
+				buffer.push(context.resolve(
+					token[TokenMember.VALUE]
+				));
+				break;
+			// TODO: escapeHTML
+			case TokenType.FORMAT_ESCAPE:
+				buffer.push(context.resolve(
+					token[TokenMember.VALUE]
+				));
+				break;
+			}
+		}
+
+		return buffer;
+	}
+
+	public render(data: Map): string {
+		return this.renderTree(
+			this.treeRoot, new Context(data)
+		).join('');
 	}
 }
