@@ -27,7 +27,7 @@ let TokenTypeMap = {
 
 // See https://github.com/microsoft/TypeScript/pull/33050
 //     https://stackoverflow.com/questions/47842266/recursive-types-in-typescript
-type TokenTuple<T> = [TokenType, string | undefined, T[] | undefined, T[] | undefined];
+type TokenTuple<T> = [TokenType, string, T[] | undefined, T[] | undefined];
 export interface Token extends TokenTuple<Token> {}
 
 export function tokenize(source: string, prefix: string, suffix: string): Token[] {

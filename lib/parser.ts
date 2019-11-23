@@ -5,7 +5,7 @@ import { Renderer } from './renderer';
 
 function buildTree(tokens: Token[]): Token[] {
 	let type_: TokenType,
-		value: string | undefined,
+		value: string,
 		section: Token | undefined,
 		sections: Token[] = [],
 		treeRoot: Token[] = [],
