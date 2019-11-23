@@ -44,13 +44,14 @@ export class Context {
 			// Try to look up the name in data
 			for (let context: Context | undefined = this; context; context = context.parent) {
 				// Find out which context contains name
-				if (context.data && context.data.hasOwnProperty && context.data.hasOwnProperty(name_)) {
-					value = context.data[name_];
+				if (context.data instanceof Object && context.data.hasOwnProperty(name_)) {
+					value = (context.data as Map)[name_];
 					break;
 				}
 			}
 
 			// Resolve properties
+			// XXX: Should we check value valid at first?
 			for (const property of properties) {
 				if (value instanceof Object && value.hasOwnProperty(property)) {
 					value = value[property];
