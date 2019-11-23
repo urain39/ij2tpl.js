@@ -35,23 +35,23 @@ export class Context {
 
 		// No cached record found
 		if (!found) {
-			let key: string,
+			let name_: string,
 				keys: string[] = name.split('.');
 
-			key = keys[0];
+			name_ = keys[0];
 			keys = keys.slice(1);
 
 			// Try to look up the name in data
 			for (let context: Context | undefined = this; context; context = context.parent) {
-				// Find out which context contains key
-				if (context.data.hasOwnProperty(key)) {
-					value = context.data[key];
+				// Find out which context contains name
+				if (context.data.hasOwnProperty(name_)) {
+					value = context.data[name_];
 					break;
 				}
 			}
 
 			// Resolve properties
-			for (key of keys) {
+			for (const key of keys) {
 				if (value instanceof Object && value.hasOwnProperty(key)) {
 					value = value[key];
 				} else {
@@ -70,6 +70,10 @@ export class Context {
 	public push(data: Map): Context {
 		return new Context(data, this);
 	}
+
+	public pop(): Context | undefined {
+		return this.parent;
+	}
 }
 
 export class Renderer {
@@ -80,9 +84,10 @@ export class Renderer {
 	}
 
 	public render(data: Map): any {
-		let value: any = null,
-			context = new Context(data);
+		let value: any,
+			token: Token,
+			buffer: string[],
+			context: Context = new Context(data);
 
-		value = context.resolve('');
 	}
 }

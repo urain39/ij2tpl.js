@@ -5,13 +5,13 @@ import { Renderer } from './renderer';
 
 function buildTree(tokens: Token[]): Token[] {
 	let type_: TokenType,
-		value: string,
+		value: string | undefined,
 		section: Token | undefined,
 		sections: Token[] = [],
 		treeRoot: Token[] = [],
 		collector: Token[] = treeRoot;
 
-	for (let token of tokens) {
+	for (const token of tokens) {
 		type_ = token[TokenMember.TYPE];
 		value = token[TokenMember.VALUE];
 
@@ -27,6 +27,7 @@ function buildTree(tokens: Token[]): Token[] {
 			// Initialize section block
 			collector = section[TokenMember.BLOCK] = [];
 			break;
+		// Switch section block
 		case TokenType.ELSE:
 			section = sections[sections.length - 1];
 
@@ -34,9 +35,13 @@ function buildTree(tokens: Token[]): Token[] {
 			if (!section || section[TokenMember.TYPE] !== TokenType.IF || value !== section[TokenMember.VALUE])
 				throw new SyntaxError(`Unexpected token '<type=${type_}, value=${value}>'`);
 
+			// Mark section ended(for context.pop)
+			collector.push([TokenType.END, undefined, undefined, undefined]);
+
 			// Switch the block to else block
 			collector = section[TokenMember.ELSE_BLOCK] = [];
 			break;
+		// Leave a section
 		case TokenType.END:
 			section = sections.pop();
 
@@ -48,6 +53,9 @@ function buildTree(tokens: Token[]): Token[] {
 			if ((section as Token)[TokenMember.ELSE_BLOCK] instanceof Array && (section[TokenMember.ELSE_BLOCK] as Token[]).length > 0)
 				section[TokenMember.TYPE] = TokenType.ELSE;
 
+			// Mark section ended(for context.pop)
+			collector.push([TokenType.END, undefined, undefined, undefined]);
+
 			// Re-bind block to parent block
 			if (sections.length > 0)
 				collector = ((section = (sections[sections.length - 1] as Token), section[TokenMember.ELSE_BLOCK] instanceof Array) ?
@@ -55,13 +63,14 @@ function buildTree(tokens: Token[]): Token[] {
 			else
 				collector = treeRoot;
 			break;
+		// Text or Formatter
 		default:
 			collector.push(token);
 		}
 	}
 
 	if (sections.length > 0) {
-		section = (sections.pop() as Token);
+		section = sections.pop() as Token;
 		type_ = section[TokenMember.TYPE];
 		value = section[TokenMember.VALUE];
 
