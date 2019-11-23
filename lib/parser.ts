@@ -35,9 +35,6 @@ function buildTree(tokens: Token[]): Token[] {
 			if (!section || section[TokenMember.TYPE] !== TokenType.IF || value !== section[TokenMember.VALUE])
 				throw new SyntaxError(`Unexpected token '<type=${type_}, value=${value}>'`);
 
-			// Mark section ended(for context.pop)
-			collector.push([TokenType.END, undefined, undefined, undefined]);
-
 			// Switch the block to else block
 			collector = section[TokenMember.ELSE_BLOCK] = [];
 			break;
@@ -52,9 +49,6 @@ function buildTree(tokens: Token[]): Token[] {
 			// Change type of which section contains else block
 			if ((section as Token)[TokenMember.ELSE_BLOCK] instanceof Array && (section[TokenMember.ELSE_BLOCK] as Token[]).length > 0)
 				section[TokenMember.TYPE] = TokenType.ELSE;
-
-			// Mark section ended(for context.pop)
-			collector.push([TokenType.END, undefined, undefined, undefined]);
 
 			// Re-bind block to parent block
 			if (sections.length > 0)
