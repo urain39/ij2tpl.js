@@ -11,7 +11,7 @@ function buildTree(tokens: Token[]): Token[] {
 		treeRoot: Token[] = [],
 		collector: Token[] = treeRoot;
 
-	for (let token of tokens) {
+	for (const token of tokens) {
 		type_ = token[TokenMember.TYPE];
 		value = token[TokenMember.VALUE];
 
@@ -27,6 +27,7 @@ function buildTree(tokens: Token[]): Token[] {
 			// Initialize section block
 			collector = section[TokenMember.BLOCK] = [];
 			break;
+		// Switch section block
 		case TokenType.ELSE:
 			section = sections[sections.length - 1];
 
@@ -37,6 +38,7 @@ function buildTree(tokens: Token[]): Token[] {
 			// Switch the block to else block
 			collector = section[TokenMember.ELSE_BLOCK] = [];
 			break;
+		// Leave a section
 		case TokenType.END:
 			section = sections.pop();
 
@@ -55,13 +57,14 @@ function buildTree(tokens: Token[]): Token[] {
 			else
 				collector = treeRoot;
 			break;
+		// Text or Formatter
 		default:
 			collector.push(token);
 		}
 	}
 
 	if (sections.length > 0) {
-		section = (sections.pop() as Token);
+		section = sections.pop() as Token;
 		type_ = section[TokenMember.TYPE];
 		value = section[TokenMember.VALUE];
 
