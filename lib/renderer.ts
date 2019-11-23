@@ -75,7 +75,89 @@ export class Renderer {
 		this.treeRoot = treeRoot;
 	}
 
-	public render(data: Map): any {
-		// TODO:
+	public renderTree(treeRoot: Token[], context: Context): string[] {
+		let value: any,
+			buffer: string[] = [];
+
+		for (const token of treeRoot) {
+			switch (token[TokenMember.TYPE]) {
+			case TokenType.IF:
+				value = context.resolve(token[TokenMember.VALUE]);
+
+				if (!value)
+					continue;
+
+				if (value instanceof Array)
+					for (const v of value)
+						buffer.push(this.renderTree(
+							token[TokenMember.BLOCK] as Token[],
+							new Context(v, context)
+						).join(''));
+				else
+					buffer.push(this.renderTree(
+						token[TokenMember.BLOCK] as Token[],
+						context
+					).join(''));
+				break;
+			case TokenType.NOT:
+				value = context.resolve(token[TokenMember.VALUE]);
+
+				if (value)
+					continue;
+
+				buffer.push(this.renderTree(
+					token[TokenMember.BLOCK] as Token[],
+					context
+				).join(''));
+				break;
+			case TokenType.ELSE:
+				value = context.resolve(token[TokenMember.VALUE]);
+
+				if (value) {
+					if (value instanceof Array)
+						for (const v of value)
+							buffer.push(this.renderTree(
+								token[TokenMember.BLOCK] as Token[],
+								new Context(v, context)
+							).join(''));
+					else
+						buffer.push(this.renderTree(
+							token[TokenMember.BLOCK] as Token[],
+							context
+						).join(''));
+				} else {
+					buffer.push(this.renderTree(
+						token[TokenMember.ELSE_BLOCK] as Token[],
+						context
+					).join(''));
+				}
+				break;
+			case TokenType.TEXT:
+				buffer.push(
+					token[TokenMember.VALUE]
+				);
+				break;
+			case TokenType.FORMAT:
+				buffer.push(context.resolve(
+					token[TokenMember.VALUE]
+				));
+				break;
+			// TODO: escapeHTML
+			case TokenType.FORMAT_ESCAPE:
+				buffer.push(context.resolve(
+					token[TokenMember.VALUE]
+				));
+				break;
+			}
+		}
+
+		return buffer;
+	}
+
+	public render(data: Map): string {
+		return this.renderTree(
+			this.treeRoot,
+			new Context(data)
+		).join('');
 	}
 }
