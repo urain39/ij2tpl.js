@@ -46,6 +46,7 @@ export function tokenize(source: string, prefix: string, suffix: string): Token[
 
 		// Not found the '{'
 		if (j === -1) {
+			// Eat the rest of the source
 			value = source.slice(i, source.length);
 
 			if (value.length > 0)
@@ -87,7 +88,7 @@ export function tokenize(source: string, prefix: string, suffix: string): Token[
 		case '#':
 			tokens.push([TokenTypeMap[type_], value.slice(1), undefined, undefined]);
 			break;
-		case '-':
+		case '-': // comment
 			break;
 		default:
 			tokens.push([TokenType.FORMAT_ESCAPE, value, undefined, undefined]);
@@ -147,7 +148,7 @@ export class Context {
 					if (context.data && context.data.hasOwnProperty && context.data.hasOwnProperty(names[0])) {
 						value = (context.data as Map)[names[0]];
 
-						// Resolve names
+						// Resolve sub-names
 						for (const name_ of names.slice(1)) {
 							if (value && value.hasOwnProperty && value.hasOwnProperty(name_)) {
 								value = value[name_];

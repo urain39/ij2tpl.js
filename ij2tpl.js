@@ -15,6 +15,7 @@ function tokenize(source, prefix, suffix) {
         j = source.indexOf(prefix, i);
         // Not found the '{'
         if (j === -1) {
+            // Eat the rest of the source
             value = source.slice(i, source.length);
             if (value.length > 0)
                 tokens.push([4 /* TEXT */, value, undefined, undefined]);
@@ -46,7 +47,7 @@ function tokenize(source, prefix, suffix) {
             case '#':
                 tokens.push([TokenTypeMap[type_], value.slice(1), undefined, undefined]);
                 break;
-            case '-':
+            case '-': // comment
                 break;
             default:
                 tokens.push([6 /* FORMAT_ESCAPE */, value, undefined, undefined]);
@@ -94,7 +95,7 @@ var Context = /** @class */ (function () {
                     // Find out which context contains name
                     if (context.data && context.data.hasOwnProperty && context.data.hasOwnProperty(names[0])) {
                         value = context.data[names[0]];
-                        // Resolve names
+                        // Resolve sub-names
                         for (var _i = 0, _a = names.slice(1); _i < _a.length; _i++) {
                             var name_ = _a[_i];
                             if (value && value.hasOwnProperty && value.hasOwnProperty(name_)) {
