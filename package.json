@@ -2,9 +2,9 @@
   "name": "ij2tpl",
   "version": "1.0.0",
   "description": "Mustache-like Template for Javascript.",
-  "main": "index.js",
+  "main": "ij2tpl.js",
   "scripts": {
-    "build": "tsc && webpack",
+    "build": "tsc && uglifyjs ij2tpl.js -o dist/ij2tpl.min.js",
     "clean": "rm -r dist/*.js",
     "test": "find tests/ -type f -name '*.js' | xargs -r -i node '{}'"
   },
@@ -17,5 +17,6 @@
   "bugs": {
     "url": "https://github.com/urain39/ij2tpl.js/issues"
   },
-  "homepage": "https://github.com/urain39/ij2tpl.js#readme"
+  "homepage": "https://github.com/urain39/ij2tpl.js#readme",
+  "dependencies": {}
 }
