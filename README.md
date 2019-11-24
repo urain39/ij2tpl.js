@@ -4,7 +4,7 @@ Mustache-like Template for Javascript.
 **Usage**:
 ```js
 // import ij2tpl.js, for example nodejs:
-const { IJ2TPL } = require('./dist/ij2tpl.min.js');
+const IJ2TPL = require('./dist/ij2tpl.min.js');
 
 // Parse a template source
 let renderer = IJ2TPL.parse('Hello, {name}!');

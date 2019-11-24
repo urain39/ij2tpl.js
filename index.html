@@ -5,7 +5,7 @@
 	</head>
 	<body>
 		<div id='content'>Failed to render!</div>
-		<script id='content-tpl' type='text/ij2tpl'>
+		<script id='content-tpl' type='text/x-template'>
 		{?valid}
 		<ul>
 			{?users}
@@ -19,9 +19,11 @@
 			{*users}
 			<li>&lt;No user found&gt;</li>
 			{/users}
-			{?messages}
-			<p>{.}</p>
-			{/messages}
+			{?messages.length}
+				{?messages}
+				<p>{.}</p>
+				{/messages}
+			{/messages.length}
 		</ul>
 		{/valid}
 		</script>

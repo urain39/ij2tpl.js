@@ -89,7 +89,7 @@ var Context = /** @class */ (function () {
         if (!found) {
             if (name.indexOf('.') > 0) {
                 var names = name.split('.');
-                // Try to look up the name in data
+                // Try to look up the (first)name in data
                 for (var context = this; context; context = context.parent) {
                     // Find out which context contains name
                     if (context.data && context.data.hasOwnProperty && context.data.hasOwnProperty(names[0])) {

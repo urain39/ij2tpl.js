@@ -141,7 +141,7 @@ export class Context {
 			if (name.indexOf('.') > 0) {
 				let names: string[] = name.split('.');
 
-				// Try to look up the name in data
+				// Try to look up the (first)name in data
 				for (let context: Context | null = this; context; context = context.parent) {
 					// Find out which context contains name
 					if (context.data && context.data.hasOwnProperty && context.data.hasOwnProperty(names[0])) {
