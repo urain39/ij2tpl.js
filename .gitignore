@@ -1,4 +1,5 @@
 *.bak
 dist/*.js
+!dist/*.min.js
 lib/*.js
 node_modules/

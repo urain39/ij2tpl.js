@@ -1,4 +1,4 @@
-var { IJ2TPL } = require('../dist/ij2tpl.min');
+var IJ2TPL = require('../dist/ij2tpl.min');
 
 let source = `{content}`;
 

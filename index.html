@@ -1,0 +1,70 @@
+<html>
+	<head>
+		<title>IJ2TPL TEST</title>
+		<script src='./dist/ij2tpl.min.js'></script>
+	</head>
+	<body>
+		<div id='content'>Failed to render!</div>
+		<script id='content-tpl' type='text/ij2tpl'>
+		{?valid}
+		<ul>
+			{?users}
+			<li>
+			{?show}
+				name: {name}(length: {name.length})
+			{*show}
+				name: {name}(hidden)(length: {name.length})
+			{/show}
+			</li>
+			{*users}
+			<li>&lt;No user found&gt;</li>
+			{/users}
+			{?messages}
+			<p>{.}</p>
+			{/messages}
+		</ul>
+		{/valid}
+		</script>
+		<script>
+			(function () {
+				window.onload = function(event) {
+					function Q(selector, element) {
+						return (element instanceof HTMLElement ? element : document)
+							.querySelectorAll(selector);
+					}
+
+					var el = Q('#content')[0],
+						tpl = Q('#content-tpl')[0];
+
+					try {
+						tpl = IJ2TPL.parse(tpl.innerHTML);
+					} catch (error) {
+						alert(error);
+					}
+
+					el.innerHTML = tpl.render({
+						valid: true,
+						users: [
+							{
+								show: false,
+								name: 'root'
+							},
+							{
+								show: true,
+								name: 'urain39'
+							},
+							{
+								show: false,
+								name: 'admin'
+							}
+						],
+						messages: [
+							'Hello, IJ2TPL!',
+							'XSS Test <a herf="">Click me!</a>'
+						]
+					});
+				};
+			})();
+		</script>
+	</body>
+</html>

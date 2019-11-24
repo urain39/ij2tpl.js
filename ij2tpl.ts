@@ -35,7 +35,7 @@ let TokenTypeMap: Map = {
 	'#': TokenType.FORMAT
 };
 
-function tokenize(source: string, prefix: string, suffix: string): Token[] {
+export function tokenize(source: string, prefix: string, suffix: string): Token[] {
 	let type_: string,
 		value: string,
 		tokens: Token[] = [];
@@ -112,7 +112,7 @@ function escapeHTML(value: any) {
 	});
 }
 
-class Context {
+export class Context {
 	private data: Map;
 	private cache: Map;
 	private parent: Context | null;
@@ -178,7 +178,7 @@ class Context {
 	}
 }
 
-class Renderer {
+export class Renderer {
 	private treeRoot: Token[];
 
 	public constructor(treeRoot: Token[]) {
@@ -334,17 +334,10 @@ function buildTree(tokens: Token[]): Token[] {
 	return treeRoot;
 }
 
-function parse(source: string, prefix: string = '{', suffix: string = '}'): Renderer {
+export function parse(source: string, prefix: string = '{', suffix: string = '}'): Renderer {
 	let treeRoot = buildTree(tokenize(
 		source, prefix, suffix
 	));
 
 	return new Renderer(treeRoot);
 }
-
-export let IJ2TPL = {
-	parse,
-	tokenize,
-	Context,
-	Renderer
-};
