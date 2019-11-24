@@ -80,9 +80,8 @@
     var Context = /** @class */ (function () {
         function Context(data, parent) {
             this.data = data;
+            this.parent = parent;
             this.cache = { '.': this.data };
-            if (parent)
-                this.parent = parent;
         }
         Context.prototype.resolve = function (name) {
             var value = null, found = false;
@@ -96,27 +95,36 @@
             }
             // No cached record found
             if (!found) {
-                var name_ = void 0, properties = name.split('.');
-                name_ = properties[0];
-                properties = properties.slice(1);
-                // Try to look up the name in data
-                for (var context = this; context; context = context.parent) {
-                    // Find out which context contains name
-                    if (context.data instanceof Object && context.data.hasOwnProperty(name_)) {
-                        value = context.data[name_];
-                        break;
+                if (name.indexOf('.') > 0) {
+                    var names = name.split('.');
+                    // Try to look up the name in data
+                    for (var context = this; context; context = context.parent) {
+                        // Find out which context contains name
+                        if (context.data && context.data.hasOwnProperty && context.data.hasOwnProperty(names[0])) {
+                            value = context.data[names[0]];
+                            // Resolve names
+                            for (var _i = 0, _a = names.slice(1); _i < _a.length; _i++) {
+                                var name_ = _a[_i];
+                                if (value && value.hasOwnProperty && value.hasOwnProperty(name_)) {
+                                    value = value[name_];
+                                }
+                                else {
+                                    value = null; // Reset value
+                                    break;
+                                }
+                            }
+                            break;
+                        }
                     }
                 }
-                // Resolve properties
-                // XXX: Should we check value valid at first?
-                for (var _i = 0, properties_1 = properties; _i < properties_1.length; _i++) {
-                    var property = properties_1[_i];
-                    if (value instanceof Object && value.hasOwnProperty(property)) {
-                        value = value[property];
-                    }
-                    else {
-                        value = null; // Reset value
-                        break;
+                else {
+                    // Try to look up the name in data
+                    for (var context = this; context; context = context.parent) {
+                        // Find out which context contains name
+                        if (context.data && context.data.hasOwnProperty && context.data.hasOwnProperty(name)) {
+                            value = context.data[name];
+                            break;
+                        }
                     }
                 }
                 // Cache the name          vvvvv NOTE: value may be undefined
@@ -174,7 +182,6 @@
                     case 5 /* FORMAT */:
                         buffer.push(context.resolve(token[1 /* VALUE */]));
                         break;
-                    // TODO: escapeHTML
                     case 6 /* FORMAT_ESCAPE */:
                         buffer.push(escapeHTML(context.resolve(token[1 /* VALUE */])));
                         break;
@@ -183,7 +190,7 @@
             return buffer;
         };
         Renderer.prototype.render = function (data) {
-            return this.renderTree(this.treeRoot, new Context(data)).join('');
+            return this.renderTree(this.treeRoot, new Context(data, null)).join('');
         };
         return Renderer;
     }());
