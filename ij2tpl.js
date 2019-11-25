@@ -18,7 +18,7 @@ function tokenize(source, prefix, suffix) {
             // Eat the rest of the source
             value = source.slice(i, source.length);
             if (value.length > 0)
-                tokens.push([4 /* TEXT */, value, undefined, undefined]);
+                tokens.push([4 /* TEXT */, value]);
             break; // Done
         }
         // Eat the left side of a token
@@ -26,7 +26,7 @@ function tokenize(source, prefix, suffix) {
         j += prefix.length; // Skip the '{'
         // Don't eat the empty text ''
         if (value.length > 0)
-            tokens.push([4 /* TEXT */, value, undefined, undefined]);
+            tokens.push([4 /* TEXT */, value]);
         // Match '}'
         i = source.indexOf(suffix, j);
         // Not found the '}'
@@ -45,12 +45,12 @@ function tokenize(source, prefix, suffix) {
             case '*':
             case '/':
             case '#':
-                tokens.push([TokenTypeMap[type_], value.slice(1), undefined, undefined]);
+                tokens.push([TokenTypeMap[type_], value.slice(1)]);
                 break;
             case '-': // comment
                 break;
             default:
-                tokens.push([6 /* FORMAT_ESCAPE */, value, undefined, undefined]);
+                tokens.push([6 /* FORMAT_ESCAPE */, value]);
         }
     }
     return tokens;

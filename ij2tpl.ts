@@ -24,7 +24,7 @@ const enum TokenType {
 
 // See https://github.com/microsoft/TypeScript/pull/33050
 //     https://stackoverflow.com/questions/47842266/recursive-types-in-typescript
-type TokenTuple<T> = [TokenType, string, T[] | undefined, T[] | undefined];
+type TokenTuple<T> = [TokenType, string, T[]?, T[]?];
 interface Token extends TokenTuple<Token> {}
 
 let TokenTypeMap: Map = {
@@ -50,7 +50,7 @@ export function tokenize(source: string, prefix: string, suffix: string): Token[
 			value = source.slice(i, source.length);
 
 			if (value.length > 0)
-				tokens.push([TokenType.TEXT, value, undefined, undefined]);
+				tokens.push([TokenType.TEXT, value]);
 
 			break; // Done
 		}
@@ -61,7 +61,7 @@ export function tokenize(source: string, prefix: string, suffix: string): Token[
 
 		// Don't eat the empty text ''
 		if (value.length > 0)
-			tokens.push([TokenType.TEXT, value, undefined, undefined]);
+			tokens.push([TokenType.TEXT, value]);
 
 		// Match '}'
 		i = source.indexOf(suffix, j);
@@ -86,12 +86,12 @@ export function tokenize(source: string, prefix: string, suffix: string): Token[
 		case '*':
 		case '/':
 		case '#':
-			tokens.push([TokenTypeMap[type_], value.slice(1), undefined, undefined]);
+			tokens.push([TokenTypeMap[type_], value.slice(1)]);
 			break;
 		case '-': // comment
 			break;
 		default:
-			tokens.push([TokenType.FORMAT_ESCAPE, value, undefined, undefined]);
+			tokens.push([TokenType.FORMAT_ESCAPE, value]);
 		}
 	}
 
