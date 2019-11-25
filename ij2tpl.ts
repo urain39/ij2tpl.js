@@ -186,9 +186,9 @@ export class Renderer {
 		this.treeRoot = treeRoot;
 	}
 
-	public renderTree(treeRoot: Token[], context: Context): string[] {
+	public renderTree(treeRoot: Token[], context: Context): string {
 		let value: any,
-			buffer: any[] = [];
+			buffer: string = '';
 
 		for (const token of treeRoot) {
 			switch (token[TokenMember.TYPE]) {
@@ -200,15 +200,15 @@ export class Renderer {
 
 				if (value instanceof Array)
 					for (const value_ of value)
-						buffer.push(this.renderTree(
+						buffer += this.renderTree(
 							token[TokenMember.BLOCK] as Token[],
 							new Context(value_, context)
-						).join(''));
+						);
 				else
-					buffer.push(this.renderTree(
+					buffer += this.renderTree(
 						token[TokenMember.BLOCK] as Token[],
 						new Context(value, context)
-					).join(''));
+					);
 				break;
 			case TokenType.NOT:
 				value = context.resolve(token[TokenMember.VALUE]);
@@ -216,10 +216,10 @@ export class Renderer {
 				if (value)
 					continue;
 
-				buffer.push(this.renderTree(
+				buffer += this.renderTree(
 					token[TokenMember.BLOCK] as Token[],
 					context
-				).join(''));
+				);
 				break;
 			case TokenType.ELSE:
 				value = context.resolve(token[TokenMember.VALUE]);
@@ -227,36 +227,34 @@ export class Renderer {
 				if (value) {
 					if (value instanceof Array)
 						for (const value_ of value)
-							buffer.push(this.renderTree(
+							buffer += this.renderTree(
 								token[TokenMember.BLOCK] as Token[],
 								new Context(value_, context)
-							).join(''));
+							);
 					else
-						buffer.push(this.renderTree(
+						buffer += this.renderTree(
 							token[TokenMember.BLOCK] as Token[],
 							new Context(value, context)
-						).join(''));
+						);
 				} else {
-					buffer.push(this.renderTree(
+					buffer += this.renderTree(
 						token[TokenMember.ELSE_BLOCK] as Token[],
 						context
-					).join(''));
+					);
 				}
 				break;
 			case TokenType.TEXT:
-				buffer.push(
+				buffer += token[TokenMember.VALUE];
+				break;
+			case TokenType.FORMAT:
+				buffer += context.resolve(
 					token[TokenMember.VALUE]
 				);
 				break;
-			case TokenType.FORMAT:
-				buffer.push(context.resolve(
+			case TokenType.FORMAT_ESCAPE:
+				buffer += escapeHTML(context.resolve(
 					token[TokenMember.VALUE]
 				));
-				break;
-			case TokenType.FORMAT_ESCAPE:
-				buffer.push(escapeHTML(context.resolve(
-					token[TokenMember.VALUE]
-				)));
 				break;
 			}
 		}
@@ -267,7 +265,7 @@ export class Renderer {
 	public render(data: Map): string {
 		return this.renderTree(
 			this.treeRoot, new Context(data, null)
-		).join('');
+		);
 	}
 }
 

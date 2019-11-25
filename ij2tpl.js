@@ -133,7 +133,7 @@ var Renderer = /** @class */ (function () {
         this.treeRoot = treeRoot;
     }
     Renderer.prototype.renderTree = function (treeRoot, context) {
-        var value, buffer = [];
+        var value, buffer = '';
         for (var _i = 0, treeRoot_1 = treeRoot; _i < treeRoot_1.length; _i++) {
             var token = treeRoot_1[_i];
             switch (token[0 /* TYPE */]) {
@@ -144,16 +144,16 @@ var Renderer = /** @class */ (function () {
                     if (value instanceof Array)
                         for (var _a = 0, value_1 = value; _a < value_1.length; _a++) {
                             var value_ = value_1[_a];
-                            buffer.push(this.renderTree(token[2 /* BLOCK */], new Context(value_, context)).join(''));
+                            buffer += this.renderTree(token[2 /* BLOCK */], new Context(value_, context));
                         }
                     else
-                        buffer.push(this.renderTree(token[2 /* BLOCK */], new Context(value, context)).join(''));
+                        buffer += this.renderTree(token[2 /* BLOCK */], new Context(value, context));
                     break;
                 case 1 /* NOT */:
                     value = context.resolve(token[1 /* VALUE */]);
                     if (value)
                         continue;
-                    buffer.push(this.renderTree(token[2 /* BLOCK */], context).join(''));
+                    buffer += this.renderTree(token[2 /* BLOCK */], context);
                     break;
                 case 2 /* ELSE */:
                     value = context.resolve(token[1 /* VALUE */]);
@@ -161,30 +161,30 @@ var Renderer = /** @class */ (function () {
                         if (value instanceof Array)
                             for (var _b = 0, value_2 = value; _b < value_2.length; _b++) {
                                 var value_ = value_2[_b];
-                                buffer.push(this.renderTree(token[2 /* BLOCK */], new Context(value_, context)).join(''));
+                                buffer += this.renderTree(token[2 /* BLOCK */], new Context(value_, context));
                             }
                         else
-                            buffer.push(this.renderTree(token[2 /* BLOCK */], new Context(value, context)).join(''));
+                            buffer += this.renderTree(token[2 /* BLOCK */], new Context(value, context));
                     }
                     else {
-                        buffer.push(this.renderTree(token[3 /* ELSE_BLOCK */], context).join(''));
+                        buffer += this.renderTree(token[3 /* ELSE_BLOCK */], context);
                     }
                     break;
                 case 4 /* TEXT */:
-                    buffer.push(token[1 /* VALUE */]);
+                    buffer += token[1 /* VALUE */];
                     break;
                 case 5 /* FORMAT */:
-                    buffer.push(context.resolve(token[1 /* VALUE */]));
+                    buffer += context.resolve(token[1 /* VALUE */]);
                     break;
                 case 6 /* FORMAT_ESCAPE */:
-                    buffer.push(escapeHTML(context.resolve(token[1 /* VALUE */])));
+                    buffer += escapeHTML(context.resolve(token[1 /* VALUE */]));
                     break;
             }
         }
         return buffer;
     };
     Renderer.prototype.render = function (data) {
-        return this.renderTree(this.treeRoot, new Context(data, null)).join('');
+        return this.renderTree(this.treeRoot, new Context(data, null));
     };
     return Renderer;
 }());
