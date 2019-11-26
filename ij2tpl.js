@@ -1,6 +1,6 @@
 "use strict";
 // Copyright (c) 2018-2019 urain39 <urain39[AT]qq[DOT]com>
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 var TokenTypeMap = {
     '?': 0 /* IF */,
     '!': 1 /* NOT */,
