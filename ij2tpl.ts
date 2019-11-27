@@ -213,13 +213,11 @@ export class Renderer {
 			case TokenType.NOT:
 				value = context.resolve(token[TokenMember.VALUE]);
 
-				if (value)
-					continue;
-
-				buffer += this.renderTree(
-					token[TokenMember.BLOCK] as Token[],
-					context
-				);
+				if (!value || value instanceof Array && value.length < 1)
+					buffer += this.renderTree(
+						token[TokenMember.BLOCK] as Token[],
+						context
+					);
 				break;
 			case TokenType.ELSE:
 				value = context.resolve(token[TokenMember.VALUE]);

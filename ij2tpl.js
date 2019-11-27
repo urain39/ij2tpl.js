@@ -151,9 +151,8 @@ var Renderer = /** @class */ (function () {
                     break;
                 case 1 /* NOT */:
                     value = context.resolve(token[1 /* VALUE */]);
-                    if (value)
-                        continue;
-                    buffer += this.renderTree(token[2 /* BLOCK */], context);
+                    if (!value || value instanceof Array && value.length < 1)
+                        buffer += this.renderTree(token[2 /* BLOCK */], context);
                     break;
                 case 2 /* ELSE */:
                     value = context.resolve(token[1 /* VALUE */]);
