@@ -47,7 +47,7 @@ export function tokenize(source: string, prefix: string, suffix: string): Token[
 		// Not found the '{'
 		if (j === -1) {
 			// Eat the rest of the source
-			value = source.slice(i, source.length);
+			value = source.slice(i);
 
 			if (value.length > 0)
 				tokens.push([TokenType.TEXT, value]);
@@ -86,7 +86,8 @@ export function tokenize(source: string, prefix: string, suffix: string): Token[
 		case '*':
 		case '/':
 		case '#':
-			tokens.push([TokenTypeMap[type_], value.slice(1)]);
+			value = value.slice(1);
+			tokens.push([TokenTypeMap[type_], value]);
 			break;
 		case '-': // comment
 			break;
@@ -126,32 +127,26 @@ export class Context {
 
 	public resolve(name: string): any {
 		let value: any = null,
-			found: boolean = false;
+			context: Context | null = this;
 
-		// Maybe name cached in context and parents?
-		for (let context: Context | null = this; context; context = context.parent) {
-			if (context.cache.hasOwnProperty(name)) {
-				found = true;
-				value = context.cache[name];
-				break;
-			}
-		}
-
-		// No cached record found
-		if (!found) {
+		// Cached in context?
+		if (context.cache.hasOwnProperty(name)) {
+			value = context.cache[name];
+		} else {
+			// No cached record found
 			if (name.indexOf('.') > 0) {
 				let names: string[] = name.split('.');
 
 				// Try to look up the (first)name in data
-				for (let context: Context | null = this; context; context = context.parent) {
+				for (; context; context = context.parent) {
 					// Find out which context contains name
 					if (context.data && context.data.hasOwnProperty && context.data.hasOwnProperty(names[0])) {
 						value = (context.data as Map)[names[0]];
 
 						// Resolve sub-names
-						for (const name_ of names.slice(1)) {
-							if (value && value.hasOwnProperty && value.hasOwnProperty(name_)) {
-								value = value[name_];
+						for (let i = 1; i < names.length; i++) {
+							if (value && value.hasOwnProperty && value.hasOwnProperty(names[i])) {
+								value = value[names[i]];
 							} else {
 								value = null // Reset value
 								break;
@@ -162,7 +157,7 @@ export class Context {
 				}
 			} else {
 				// Try to look up the name in data
-				for (let context: Context | null = this; context; context = context.parent) {
+				for (; context; context = context.parent) {
 					// Find out which context contains name
 					if (context.data && context.data.hasOwnProperty && context.data.hasOwnProperty(name)) {
 						value = (context.data as Map)[name];

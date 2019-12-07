@@ -16,7 +16,7 @@ function tokenize(source, prefix, suffix) {
         // Not found the '{'
         if (j === -1) {
             // Eat the rest of the source
-            value = source.slice(i, source.length);
+            value = source.slice(i);
             if (value.length > 0)
                 tokens.push([4 /* TEXT */, value]);
             break; // Done
@@ -45,7 +45,8 @@ function tokenize(source, prefix, suffix) {
             case '*':
             case '/':
             case '#':
-                tokens.push([TokenTypeMap[type_], value.slice(1)]);
+                value = value.slice(1);
+                tokens.push([TokenTypeMap[type_], value]);
                 break;
             case '-': // comment
                 break;
@@ -77,29 +78,24 @@ var Context = /** @class */ (function () {
         this.cache = { '.': this.data };
     }
     Context.prototype.resolve = function (name) {
-        var value = null, found = false;
-        // Maybe name cached in context and parents?
-        for (var context = this; context; context = context.parent) {
-            if (context.cache.hasOwnProperty(name)) {
-                found = true;
-                value = context.cache[name];
-                break;
-            }
+        var value = null, context = this;
+        // Cached in context?
+        if (context.cache.hasOwnProperty(name)) {
+            value = context.cache[name];
         }
-        // No cached record found
-        if (!found) {
+        else {
+            // No cached record found
             if (name.indexOf('.') > 0) {
                 var names = name.split('.');
                 // Try to look up the (first)name in data
-                for (var context = this; context; context = context.parent) {
+                for (; context; context = context.parent) {
                     // Find out which context contains name
                     if (context.data && context.data.hasOwnProperty && context.data.hasOwnProperty(names[0])) {
                         value = context.data[names[0]];
                         // Resolve sub-names
-                        for (var _i = 0, _a = names.slice(1); _i < _a.length; _i++) {
-                            var name_ = _a[_i];
-                            if (value && value.hasOwnProperty && value.hasOwnProperty(name_)) {
-                                value = value[name_];
+                        for (var i = 1; i < names.length; i++) {
+                            if (value && value.hasOwnProperty && value.hasOwnProperty(names[i])) {
+                                value = value[names[i]];
                             }
                             else {
                                 value = null; // Reset value
@@ -112,7 +108,7 @@ var Context = /** @class */ (function () {
             }
             else {
                 // Try to look up the name in data
-                for (var context = this; context; context = context.parent) {
+                for (; context; context = context.parent) {
                     // Find out which context contains name
                     if (context.data && context.data.hasOwnProperty && context.data.hasOwnProperty(name)) {
                         value = context.data[name];
