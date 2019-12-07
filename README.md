@@ -1,7 +1,7 @@
 # ij2tpl.js
 Mustache-like Template for Javascript.
 
-**Usage**:
+**Usage:**
 ```js
 // import ij2tpl.js, for example nodejs:
 const IJ2TPL = require('./dist/ij2tpl.min.js');
@@ -14,7 +14,7 @@ let renderer = IJ2TPL.parse('Hello, {name}!');
 renderer.render({name: 'IJ2TPL'}); // -> "Hello, IJ2TPL"
 ```
 
-**comments**
+**Comments**
 ```html
 {- A comment }
 {-- A comment too }
@@ -45,3 +45,10 @@ renderer.render({name: 'IJ2TPL'}); // -> "Hello, IJ2TPL"
 	Oops, something wrong?
 {/valid}
 ```
+
+**Not Implemented Yet:**
+- Function type
+- Format pipe(filter)
+
+Last update: 2019-12-08
+
