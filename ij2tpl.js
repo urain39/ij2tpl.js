@@ -114,8 +114,8 @@ var Context = /** @class */ (function () {
                     }
                 }
             }
-            // Cache the name  vvvvv NOTE: value may be undefined
-            this.cache[name] = value ? value : null;
+            // Cache the name          vvvvv NOTE: value may be undefined
+            this.cache[name] = value = value ? value : null;
         }
         return value;
     };
