@@ -9,13 +9,11 @@ const enum TokenMember {
 	TYPE = 0,
 	VALUE,
 	BLOCK,
-	ELSE_BLOCK
 }
 
 const enum TokenType {
 	IF = 0, // '?'
 	NOT,	// '!'
-	ELSE,	// '*'
 	END,	// '/'
 	TEXT,
 	FORMAT,	// '#'
@@ -24,13 +22,12 @@ const enum TokenType {
 
 // See https://github.com/microsoft/TypeScript/pull/33050
 //     https://stackoverflow.com/questions/47842266/recursive-types-in-typescript
-type TokenTuple<T> = [TokenType, string, T[]?, T[]?];
+type TokenTuple<T> = [TokenType, string, T[]?];
 interface Token extends TokenTuple<Token> {}
 
 let TokenTypeMap: Map = {
 	'?': TokenType.IF,
 	'!': TokenType.NOT,
-	'*': TokenType.ELSE,
 	'/': TokenType.END,
 	'#': TokenType.FORMAT
 };
@@ -83,7 +80,6 @@ export function tokenize(source: string, prefix: string, suffix: string): Token[
 		switch (type_) {
 		case '?':
 		case '!':
-		case '*':
 		case '/':
 		case '#':
 			value = value.slice(1);
@@ -214,28 +210,6 @@ export class Renderer {
 						context
 					);
 				break;
-			case TokenType.ELSE:
-				value = context.resolve(token[TokenMember.VALUE]);
-
-				if (value) {
-					if (value instanceof Array)
-						for (const value_ of value)
-							buffer += this.renderTree(
-								token[TokenMember.BLOCK] as Token[],
-								new Context(value_, context)
-							);
-					else
-						buffer += this.renderTree(
-							token[TokenMember.BLOCK] as Token[],
-							new Context(value, context)
-						);
-				} else {
-					buffer += this.renderTree(
-						token[TokenMember.ELSE_BLOCK] as Token[],
-						context
-					);
-				}
-				break;
 			case TokenType.TEXT:
 				buffer += token[TokenMember.VALUE];
 				break;
@@ -281,17 +255,6 @@ function buildTree(tokens: Token[]): Token[] {
 			// Initialize section block
 			collector = section[TokenMember.BLOCK] = [];
 			break;
-		// Switch section block
-		case TokenType.ELSE:
-			section = sections[sections.length - 1];
-
-			// Check current(top) section is valid?
-			if (!section || section[TokenMember.TYPE] !== TokenType.IF || token[TokenMember.VALUE] !== section[TokenMember.VALUE])
-				throw new SyntaxError(`Unexpected token '<type=${token[TokenMember.TYPE]}, value=${token[TokenMember.VALUE]}>'`);
-
-			// Switch the block to else block
-			collector = section[TokenMember.ELSE_BLOCK] = [];
-			break;
 		// Leave a section
 		case TokenType.END:
 			section = sections.pop();
@@ -300,16 +263,12 @@ function buildTree(tokens: Token[]): Token[] {
 			if (!section || token[TokenMember.VALUE] !== section[TokenMember.VALUE])
 				throw new SyntaxError(`Unexpected token '<type=${token[TokenMember.TYPE]}, value=${token[TokenMember.VALUE]}>'`);
 
-			// Change type of which section contains else block
-			if ((section as Token)[TokenMember.ELSE_BLOCK] instanceof Array && (section[TokenMember.ELSE_BLOCK] as Token[]).length > 0)
-				section[TokenMember.TYPE] = TokenType.ELSE;
-
 			// Re-bind block to parent block
-			if (sections.length > 0)
-				collector = ((section = (sections[sections.length - 1] as Token), section[TokenMember.ELSE_BLOCK] instanceof Array) ?
-					section[TokenMember.ELSE_BLOCK] : section[TokenMember.BLOCK]) as Token[];
-			else
-				collector = treeRoot;
+			sections.length > 0 ?
+				collector = (sections[sections.length - 1] as Token)[TokenMember.BLOCK] as Token[]
+			:
+				collector = treeRoot
+			;
 			break;
 		// Text or Formatter
 		default:

@@ -37,7 +37,7 @@ renderer.render({name: 'IJ2TPL'}); // -> "Hello, IJ2TPL"
 {/valid}
 ```
 
-**If-Else Section(Feature)**
+~~**If-Else Section(Removed)**~~
 ```html
 {?valid}
 	only valid data can be rendered.
@@ -50,5 +50,5 @@ renderer.render({name: 'IJ2TPL'}); // -> "Hello, IJ2TPL"
 - Function type
 - Format pipe(filter)
 
-Last update: 2019-12-08
+Last update: 2019-12-22
 

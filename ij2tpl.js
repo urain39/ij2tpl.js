@@ -4,9 +4,8 @@ exports.__esModule = true;
 var TokenTypeMap = {
     '?': 0 /* IF */,
     '!': 1 /* NOT */,
-    '*': 2 /* ELSE */,
-    '/': 3 /* END */,
-    '#': 5 /* FORMAT */
+    '/': 2 /* END */,
+    '#': 4 /* FORMAT */
 };
 function tokenize(source, prefix, suffix) {
     var type_, value, tokens = [];
@@ -18,7 +17,7 @@ function tokenize(source, prefix, suffix) {
             // Eat the rest of the source
             value = source.slice(i);
             if (value.length > 0)
-                tokens.push([4 /* TEXT */, value]);
+                tokens.push([3 /* TEXT */, value]);
             break; // Done
         }
         // Eat the left side of a token
@@ -26,7 +25,7 @@ function tokenize(source, prefix, suffix) {
         j += prefix.length; // Skip the '{'
         // Don't eat the empty text ''
         if (value.length > 0)
-            tokens.push([4 /* TEXT */, value]);
+            tokens.push([3 /* TEXT */, value]);
         // Match '}'
         i = source.indexOf(suffix, j);
         // Not found the '}'
@@ -42,7 +41,6 @@ function tokenize(source, prefix, suffix) {
         switch (type_) {
             case '?':
             case '!':
-            case '*':
             case '/':
             case '#':
                 value = value.slice(1);
@@ -51,7 +49,7 @@ function tokenize(source, prefix, suffix) {
             case '-': // comment
                 break;
             default:
-                tokens.push([6 /* FORMAT_ESCAPE */, value]);
+                tokens.push([5 /* FORMAT_ESCAPE */, value]);
         }
     }
     return tokens;
@@ -150,28 +148,13 @@ var Renderer = /** @class */ (function () {
                     if (!value || value instanceof Array && value.length < 1)
                         buffer += this.renderTree(token[2 /* BLOCK */], context);
                     break;
-                case 2 /* ELSE */:
-                    value = context.resolve(token[1 /* VALUE */]);
-                    if (value) {
-                        if (value instanceof Array)
-                            for (var _b = 0, value_2 = value; _b < value_2.length; _b++) {
-                                var value_ = value_2[_b];
-                                buffer += this.renderTree(token[2 /* BLOCK */], new Context(value_, context));
-                            }
-                        else
-                            buffer += this.renderTree(token[2 /* BLOCK */], new Context(value, context));
-                    }
-                    else {
-                        buffer += this.renderTree(token[3 /* ELSE_BLOCK */], context);
-                    }
-                    break;
-                case 4 /* TEXT */:
+                case 3 /* TEXT */:
                     buffer += token[1 /* VALUE */];
                     break;
-                case 5 /* FORMAT */:
+                case 4 /* FORMAT */:
                     buffer += context.resolve(token[1 /* VALUE */]);
                     break;
-                case 6 /* FORMAT_ESCAPE */:
+                case 5 /* FORMAT_ESCAPE */:
                     buffer += escapeHTML(context.resolve(token[1 /* VALUE */]));
                     break;
             }
@@ -200,30 +183,17 @@ function buildTree(tokens) {
                 // Initialize section block
                 collector = section[2 /* BLOCK */] = [];
                 break;
-            // Switch section block
-            case 2 /* ELSE */:
-                section = sections[sections.length - 1];
-                // Check current(top) section is valid?
-                if (!section || section[0 /* TYPE */] !== 0 /* IF */ || token[1 /* VALUE */] !== section[1 /* VALUE */])
-                    throw new SyntaxError("Unexpected token '<type=" + token[0 /* TYPE */] + ", value=" + token[1 /* VALUE */] + ">'");
-                // Switch the block to else block
-                collector = section[3 /* ELSE_BLOCK */] = [];
-                break;
             // Leave a section
-            case 3 /* END */:
+            case 2 /* END */:
                 section = sections.pop();
                 // Check if section is not match
                 if (!section || token[1 /* VALUE */] !== section[1 /* VALUE */])
                     throw new SyntaxError("Unexpected token '<type=" + token[0 /* TYPE */] + ", value=" + token[1 /* VALUE */] + ">'");
-                // Change type of which section contains else block
-                if (section[3 /* ELSE_BLOCK */] instanceof Array && section[3 /* ELSE_BLOCK */].length > 0)
-                    section[0 /* TYPE */] = 2 /* ELSE */;
                 // Re-bind block to parent block
-                if (sections.length > 0)
-                    collector = ((section = sections[sections.length - 1], section[3 /* ELSE_BLOCK */] instanceof Array) ?
-                        section[3 /* ELSE_BLOCK */] : section[2 /* BLOCK */]);
-                else
-                    collector = treeRoot;
+                sections.length > 0 ?
+                    collector = sections[sections.length - 1][2 /* BLOCK */]
+                    :
+                        collector = treeRoot;
                 break;
             // Text or Formatter
             default:
