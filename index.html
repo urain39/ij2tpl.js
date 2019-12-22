@@ -12,11 +12,13 @@
 			<li>
 			{?show}
 				name: {name}(length: {name.length})
-			{*show}
+			{/show}
+			{!show}
 				name: {name}(hidden)(length: {name.length})
 			{/show}
 			</li>
-			{*users}
+			{/users}
+			{!users}
 			<li>&lt;No user found&gt;</li>
 			{/users}
 			{?messages.length}

@@ -84,16 +84,18 @@ var Context = /** @class */ (function () {
         else {
             // No cached record found
             if (name.indexOf('.') > 0) {
-                var names = name.split('.');
+                var name_ = void 0, names = name.split('.');
+                name_ = names[0];
                 // Try to look up the (first)name in data
                 for (; context; context = context.parent) {
                     // Find out which context contains name
-                    if (context.data && context.data.hasOwnProperty && context.data.hasOwnProperty(names[0])) {
-                        value = context.data[names[0]];
+                    if (context.data && context.data.hasOwnProperty && context.data.hasOwnProperty(name_)) {
+                        value = context.data[name_];
                         // Resolve sub-names
-                        for (var i = 1; i < names.length; i++) {
-                            if (value && value.hasOwnProperty && value.hasOwnProperty(names[i])) {
-                                value = value[names[i]];
+                        for (var i = 1, l = names.length; i < l; i++) {
+                            name_ = names[i];
+                            if (value && value.hasOwnProperty && value.hasOwnProperty(name_)) {
+                                value = value[name_];
                             }
                             else {
                                 value = null; // Reset value

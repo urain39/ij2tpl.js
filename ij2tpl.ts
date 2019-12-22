@@ -131,18 +131,23 @@ export class Context {
 		} else {
 			// No cached record found
 			if (name.indexOf('.') > 0) {
-				let names: string[] = name.split('.');
+				let name_: string,
+					names: string[] = name.split('.');
+
+				name_ = names[0];
 
 				// Try to look up the (first)name in data
 				for (; context; context = context.parent) {
 					// Find out which context contains name
-					if (context.data && context.data.hasOwnProperty && context.data.hasOwnProperty(names[0])) {
-						value = (context.data as Map)[names[0]];
+					if (context.data && context.data.hasOwnProperty && context.data.hasOwnProperty(name_)) {
+						value = (context.data as Map)[name_];
 
 						// Resolve sub-names
-						for (let i = 1; i < names.length; i++) {
-							if (value && value.hasOwnProperty && value.hasOwnProperty(names[i])) {
-								value = value[names[i]];
+						for (let i = 1, l = names.length; i < l; i++) {
+							name_ = names[i];
+
+							if (value && value.hasOwnProperty && value.hasOwnProperty(name_)) {
+								value = value[name_];
 							} else {
 								value = null // Reset value
 								break;
