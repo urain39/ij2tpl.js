@@ -16,8 +16,8 @@ const enum TokenType {
 	NOT,	// '!'
 	END,	// '/'
 	TEXT,
-	FORMAT,	// '#'
-	FORMAT_ESCAPE
+	RAW,	// '#'
+	FORMAT
 }
 
 // See https://github.com/microsoft/TypeScript/pull/33050
@@ -29,7 +29,7 @@ let TokenTypeMap: Map = {
 	'?': TokenType.IF,
 	'!': TokenType.NOT,
 	'/': TokenType.END,
-	'#': TokenType.FORMAT
+	'#': TokenType.RAW
 };
 
 export function tokenize(source: string, prefix: string, suffix: string): Token[] {
@@ -37,7 +37,10 @@ export function tokenize(source: string, prefix: string, suffix: string): Token[
 		value: string,
 		tokens: Token[] = [];
 
-	for (let i = 0, j = 0; i < source.length;) {
+	for (let i = 0, j = 0,
+		l = source.length,
+		pl = prefix.length,
+		sl = suffix.length; i < l;) {
 		// Match '{'
 		j = source.indexOf(prefix, i);
 
@@ -54,7 +57,7 @@ export function tokenize(source: string, prefix: string, suffix: string): Token[
 
 		// Eat the left side of a token
 		value = source.slice(i, j);
-		j += prefix.length; // Skip the '{'
+		j += pl; // Skip the '{'
 
 		// Don't eat the empty text ''
 		if (value.length > 0)
@@ -69,7 +72,7 @@ export function tokenize(source: string, prefix: string, suffix: string): Token[
 
 		// Eat the text between the '{' and '}'
 		value = source.slice(j, i);
-		i += suffix.length; // Skip the '}'
+		i += sl; // Skip the '}'
 
 		// Skip the empty token, such as '{}'
 		if (value.length < 1)
@@ -88,15 +91,15 @@ export function tokenize(source: string, prefix: string, suffix: string): Token[
 		case '-': // comment
 			break;
 		default:
-			tokens.push([TokenType.FORMAT_ESCAPE, value]);
+			tokens.push([TokenType.FORMAT, value]);
 		}
 	}
 
 	return tokens;
 }
 
-function escapeHTML(value: any) {
-	return String(value).replace(/[&<>"'`=\/]/g, function(key: string) {
+function escapeHTML(value: any): string {
+	return String(value).replace(/[&<>"'`=\/]/g, function(key: string): string {
 		return ({
 			'&': '&amp;',
 			'<': '&lt;',
@@ -218,12 +221,12 @@ export class Renderer {
 			case TokenType.TEXT:
 				buffer += token[TokenMember.VALUE];
 				break;
-			case TokenType.FORMAT:
+			case TokenType.RAW:
 				buffer += context.resolve(
 					token[TokenMember.VALUE]
 				);
 				break;
-			case TokenType.FORMAT_ESCAPE:
+			case TokenType.FORMAT:
 				buffer += escapeHTML(context.resolve(
 					token[TokenMember.VALUE]
 				));

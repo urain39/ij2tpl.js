@@ -1,5 +1,5 @@
 # ij2tpl.js
-Mustache-like Template for Javascript.
+Mustache-like Template for Javascript(Only 3kB!).
 
 **Usage:**
 ```js
@@ -11,7 +11,7 @@ let renderer = IJ2TPL.parse('Hello, {name}!');
 
 
 // Then let's render it!
-renderer.render({name: 'IJ2TPL'}); // -> "Hello, IJ2TPL"
+renderer.render({name: 'IJ2TPL'}); // -> "Hello, IJ2TPL!"
 ```
 
 **Comments**
@@ -42,7 +42,7 @@ renderer.render({name: 'IJ2TPL'}); // -> "Hello, IJ2TPL"
 {?valid}
 	only valid data can be rendered.
 {*valid}
-	Oops, something wrong?
+	Oops, something's wrong?
 {/valid}
 ```
 
@@ -50,5 +50,5 @@ renderer.render({name: 'IJ2TPL'}); // -> "Hello, IJ2TPL"
 - Function type
 - Format pipe(filter)
 
-Last update: 2019-12-22
+Last update: 2020-04-08
 

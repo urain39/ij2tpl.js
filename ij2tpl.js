@@ -5,11 +5,11 @@ var TokenTypeMap = {
     '?': 0 /* IF */,
     '!': 1 /* NOT */,
     '/': 2 /* END */,
-    '#': 4 /* FORMAT */
+    '#': 4 /* RAW */
 };
 function tokenize(source, prefix, suffix) {
     var type_, value, tokens = [];
-    for (var i = 0, j = 0; i < source.length;) {
+    for (var i = 0, j = 0, l = source.length, pl = prefix.length, sl = suffix.length; i < l;) {
         // Match '{'
         j = source.indexOf(prefix, i);
         // Not found the '{'
@@ -22,7 +22,7 @@ function tokenize(source, prefix, suffix) {
         }
         // Eat the left side of a token
         value = source.slice(i, j);
-        j += prefix.length; // Skip the '{'
+        j += pl; // Skip the '{'
         // Don't eat the empty text ''
         if (value.length > 0)
             tokens.push([3 /* TEXT */, value]);
@@ -33,7 +33,7 @@ function tokenize(source, prefix, suffix) {
             throw new SyntaxError("No match prefix '" + prefix + "'");
         // Eat the text between the '{' and '}'
         value = source.slice(j, i);
-        i += suffix.length; // Skip the '}'
+        i += sl; // Skip the '}'
         // Skip the empty token, such as '{}'
         if (value.length < 1)
             continue;
@@ -49,7 +49,7 @@ function tokenize(source, prefix, suffix) {
             case '-': // comment
                 break;
             default:
-                tokens.push([5 /* FORMAT_ESCAPE */, value]);
+                tokens.push([5 /* FORMAT */, value]);
         }
     }
     return tokens;
@@ -153,10 +153,10 @@ var Renderer = /** @class */ (function () {
                 case 3 /* TEXT */:
                     buffer += token[1 /* VALUE */];
                     break;
-                case 4 /* FORMAT */:
+                case 4 /* RAW */:
                     buffer += context.resolve(token[1 /* VALUE */]);
                     break;
-                case 5 /* FORMAT_ESCAPE */:
+                case 5 /* FORMAT */:
                     buffer += escapeHTML(context.resolve(token[1 /* VALUE */]));
                     break;
             }
