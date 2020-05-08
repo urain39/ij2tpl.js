@@ -91,7 +91,7 @@ var Context = /** @class */ (function () {
                     data = context.data;
                     // Find out which context contains name
                     if (data && data.hasOwnProperty && data.hasOwnProperty(name_)) {
-                        value = context.data[name_];
+                        value = data[name_];
                         // Resolve sub-names
                         for (var i = 1, l = names.length; i < l; i++) {
                             name_ = names[i];
@@ -113,7 +113,7 @@ var Context = /** @class */ (function () {
                     data = context.data;
                     // Find out which context contains name
                     if (data && data.hasOwnProperty && data.hasOwnProperty(name)) {
-                        value = context.data[name];
+                        value = data[name];
                         break;
                     }
                 }

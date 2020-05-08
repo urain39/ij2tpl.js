@@ -145,7 +145,7 @@ export class Context {
 					data = context.data;
 					// Find out which context contains name
 					if (data && data.hasOwnProperty && data.hasOwnProperty(name_)) {
-						value = (context.data as IMap)[name_];
+						value = (data as IMap)[name_];
 
 						// Resolve sub-names
 						for (let i = 1, l = names.length; i < l; i++) {
@@ -167,7 +167,7 @@ export class Context {
 					data = context.data;
 					// Find out which context contains name
 					if (data && data.hasOwnProperty && data.hasOwnProperty(name)) {
-						value = (context.data as IMap)[name];
+						value = (data as IMap)[name];
 						break;
 					}
 				}
