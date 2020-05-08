@@ -1,6 +1,6 @@
 // Copyright (c) 2018-2019 urain39 <urain39[AT]qq[DOT]com>
 
-interface Map {
+interface IMap {
 	[key: string]: any;
 	[index: number]: any;
 }
@@ -23,19 +23,19 @@ const enum TokenType {
 // See https://github.com/microsoft/TypeScript/pull/33050
 //     https://stackoverflow.com/questions/47842266/recursive-types-in-typescript
 type TokenTuple<T> = [TokenType, string, T[]?];
-interface Token extends TokenTuple<Token> {}
+interface IToken extends TokenTuple<IToken> {}
 
-let TokenTypeMap: Map = {
+let TokenTypeMap: IMap = {
 	'?': TokenType.IF,
 	'!': TokenType.NOT,
 	'/': TokenType.END,
 	'#': TokenType.RAW
 };
 
-export function tokenize(source: string, prefix: string, suffix: string): Token[] {
+export function tokenize(source: string, prefix: string, suffix: string): IToken[] {
 	let type_: string,
 		value: string,
-		tokens: Token[] = [];
+		tokens: IToken[] = [];
 
 	for (let i = 0, j = 0,
 		l = source.length,
@@ -109,16 +109,16 @@ function escapeHTML(value: any): string {
 			'`': '&#x60;',
 			'=': '&#x3D;',
 			'/': '&#x2F;'
-		} as Map)[key];
+		} as IMap)[key];
 	});
 }
 
 export class Context {
-	private data: Map;
-	private cache: Map;
+	private data: IMap;
+	private cache: IMap;
 	private parent: Context | null;
 
-	public constructor(data: Map, parent: Context | null) {
+	public constructor(data: IMap, parent: Context | null) {
 		this.data = data;
 		this.parent = parent;
 		this.cache = { '.': this.data };
@@ -143,7 +143,7 @@ export class Context {
 				for (; context; context = context.parent) {
 					// Find out which context contains name
 					if (context.data && context.data.hasOwnProperty && context.data.hasOwnProperty(name_)) {
-						value = (context.data as Map)[name_];
+						value = (context.data as IMap)[name_];
 
 						// Resolve sub-names
 						for (let i = 1, l = names.length; i < l; i++) {
@@ -164,7 +164,7 @@ export class Context {
 				for (; context; context = context.parent) {
 					// Find out which context contains name
 					if (context.data && context.data.hasOwnProperty && context.data.hasOwnProperty(name)) {
-						value = (context.data as Map)[name];
+						value = (context.data as IMap)[name];
 						break;
 					}
 				}
@@ -179,13 +179,13 @@ export class Context {
 }
 
 export class Renderer {
-	private treeRoot: Token[];
+	private treeRoot: IToken[];
 
-	public constructor(treeRoot: Token[]) {
+	public constructor(treeRoot: IToken[]) {
 		this.treeRoot = treeRoot;
 	}
 
-	public renderTree(treeRoot: Token[], context: Context): string {
+	public renderTree(treeRoot: IToken[], context: Context): string {
 		let value: any,
 			buffer: string = '';
 
@@ -200,12 +200,12 @@ export class Renderer {
 				if (value instanceof Array)
 					for (const value_ of value)
 						buffer += this.renderTree(
-							token[TokenMember.BLOCK] as Token[],
+							token[TokenMember.BLOCK] as IToken[],
 							new Context(value_, context)
 						);
 				else
 					buffer += this.renderTree(
-						token[TokenMember.BLOCK] as Token[],
+						token[TokenMember.BLOCK] as IToken[],
 						new Context(value, context)
 					);
 				break;
@@ -214,7 +214,7 @@ export class Renderer {
 
 				if (!value || value instanceof Array && value.length < 1)
 					buffer += this.renderTree(
-						token[TokenMember.BLOCK] as Token[],
+						token[TokenMember.BLOCK] as IToken[],
 						context
 					);
 				break;
@@ -237,18 +237,18 @@ export class Renderer {
 		return buffer;
 	}
 
-	public render(data: Map): string {
+	public render(data: IMap): string {
 		return this.renderTree(
 			this.treeRoot, new Context(data, null)
 		);
 	}
 }
 
-function buildTree(tokens: Token[]): Token[] {
-	let section: Token | undefined,
-		sections: Token[] = [],
-		treeRoot: Token[] = [],
-		collector: Token[] = treeRoot;
+function buildTree(tokens: IToken[]): IToken[] {
+	let section: IToken | undefined,
+		sections: IToken[] = [],
+		treeRoot: IToken[] = [],
+		collector: IToken[] = treeRoot;
 
 	for (const token of tokens) {
 		switch (token[TokenMember.TYPE]) {
@@ -273,7 +273,7 @@ function buildTree(tokens: Token[]): Token[] {
 
 			// Re-bind block to parent block
 			sections.length > 0 ?
-				collector = (sections[sections.length - 1] as Token)[TokenMember.BLOCK] as Token[]
+				collector = (sections[sections.length - 1] as IToken)[TokenMember.BLOCK] as IToken[]
 			:
 				collector = treeRoot
 			;
@@ -285,7 +285,7 @@ function buildTree(tokens: Token[]): Token[] {
 	}
 
 	if (sections.length > 0) {
-		section = sections.pop() as Token;
+		section = sections.pop() as IToken;
 
 		throw new SyntaxError(`No match section '<type=${section[TokenMember.TYPE]}, value=${section[TokenMember.VALUE]}>'`);
 	}
