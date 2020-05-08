@@ -76,10 +76,11 @@ var Context = /** @class */ (function () {
         this.cache = { '.': this.data };
     }
     Context.prototype.resolve = function (name) {
-        var data, value = null, context = this;
+        var data, cache, value = null, context = this;
+        cache = context.cache;
         // Cached in context?
-        if (context.cache.hasOwnProperty(name)) {
-            value = context.cache[name];
+        if (cache.hasOwnProperty(name)) {
+            value = cache[name];
         }
         else {
             // No cached record found

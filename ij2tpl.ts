@@ -126,12 +126,14 @@ export class Context {
 
 	public resolve(name: string): any {
 		let data: IMap,
+			cache: IMap,
 			value: any = null,
 			context: Context | null = this;
 
+		cache = context.cache;
 		// Cached in context?
-		if (context.cache.hasOwnProperty(name)) {
-			value = context.cache[name];
+		if (cache.hasOwnProperty(name)) {
+			value = cache[name];
 		} else {
 			// No cached record found
 			if (name.indexOf('.') > 0) {
@@ -139,7 +141,6 @@ export class Context {
 					names: string[] = name.split('.');
 
 				name_ = names[0];
-
 				// Try to look up the (first)name in data
 				for (; context; context = context.parent) {
 					data = context.data;
