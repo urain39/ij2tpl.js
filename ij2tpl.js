@@ -76,7 +76,7 @@ var Context = /** @class */ (function () {
         this.cache = { '.': this.data };
     }
     Context.prototype.resolve = function (name) {
-        var value = null, context = this;
+        var data, value = null, context = this;
         // Cached in context?
         if (context.cache.hasOwnProperty(name)) {
             value = context.cache[name];
@@ -88,8 +88,9 @@ var Context = /** @class */ (function () {
                 name_ = names[0];
                 // Try to look up the (first)name in data
                 for (; context; context = context.parent) {
+                    data = context.data;
                     // Find out which context contains name
-                    if (context.data && context.data.hasOwnProperty && context.data.hasOwnProperty(name_)) {
+                    if (data && data.hasOwnProperty && data.hasOwnProperty(name_)) {
                         value = context.data[name_];
                         // Resolve sub-names
                         for (var i = 1, l = names.length; i < l; i++) {
@@ -109,14 +110,15 @@ var Context = /** @class */ (function () {
             else {
                 // Try to look up the name in data
                 for (; context; context = context.parent) {
+                    data = context.data;
                     // Find out which context contains name
-                    if (context.data && context.data.hasOwnProperty && context.data.hasOwnProperty(name)) {
+                    if (data && data.hasOwnProperty && data.hasOwnProperty(name)) {
                         value = context.data[name];
                         break;
                     }
                 }
             }
-            // Cache the name          vvvvv NOTE: value may be undefined
+            // Cache the name  vvvvv NOTE: value may be undefined
             this.cache[name] = value = value ? value : null;
         }
         return value;

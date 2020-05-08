@@ -1,10 +1,5 @@
 // Copyright (c) 2018-2019 urain39 <urain39[AT]qq[DOT]com>
 
-interface IMap {
-	[key: string]: any;
-	[index: number]: any;
-}
-
 const enum TokenMember {
 	TYPE = 0,
 	VALUE,
@@ -24,6 +19,11 @@ const enum TokenType {
 //     https://stackoverflow.com/questions/47842266/recursive-types-in-typescript
 type TokenTuple<T> = [TokenType, string, T[]?];
 interface IToken extends TokenTuple<IToken> {}
+
+interface IMap {
+	[key: string]: any;
+	[index: number]: any;
+}
 
 let TokenTypeMap: IMap = {
 	'?': TokenType.IF,
@@ -125,7 +125,8 @@ export class Context {
 	}
 
 	public resolve(name: string): any {
-		let value: any = null,
+		let data: IMap,
+			value: any = null,
 			context: Context | null = this;
 
 		// Cached in context?
@@ -141,8 +142,9 @@ export class Context {
 
 				// Try to look up the (first)name in data
 				for (; context; context = context.parent) {
+					data = context.data;
 					// Find out which context contains name
-					if (context.data && context.data.hasOwnProperty && context.data.hasOwnProperty(name_)) {
+					if (data && data.hasOwnProperty && data.hasOwnProperty(name_)) {
 						value = (context.data as IMap)[name_];
 
 						// Resolve sub-names
@@ -162,15 +164,16 @@ export class Context {
 			} else {
 				// Try to look up the name in data
 				for (; context; context = context.parent) {
+					data = context.data;
 					// Find out which context contains name
-					if (context.data && context.data.hasOwnProperty && context.data.hasOwnProperty(name)) {
+					if (data && data.hasOwnProperty && data.hasOwnProperty(name)) {
 						value = (context.data as IMap)[name];
 						break;
 					}
 				}
 			}
 
-			// Cache the name          vvvvv NOTE: value may be undefined
+			// Cache the name  vvvvv NOTE: value may be undefined
 			this.cache[name] = value = value ? value : null;
 		}
 
