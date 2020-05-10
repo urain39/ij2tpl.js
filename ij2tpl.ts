@@ -98,18 +98,20 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 	return tokens;
 }
 
+let htmlEntityMap: IMap = {
+	'&': '&amp;',
+	'<': '&lt;',
+	'>': '&gt;',
+	'"': '&quot;',
+	"'": '&#39;',
+	'`': '&#x60;',
+	'=': '&#x3D;',
+	'/': '&#x2F;'
+};
+
 function escapeHTML(value: any): string {
 	return String(value).replace(/[&<>"'`=\/]/g, function(key: string): string {
-		return ({
-			'&': '&amp;',
-			'<': '&lt;',
-			'>': '&gt;',
-			'"': '&quot;',
-			"'": '&#39;',
-			'`': '&#x60;',
-			'=': '&#x3D;',
-			'/': '&#x2F;'
-		} as IMap)[key];
+		return htmlEntityMap[key];
 	});
 }
 

@@ -55,18 +55,19 @@ function tokenize(source, prefix, suffix) {
     return tokens;
 }
 exports.tokenize = tokenize;
+var htmlEntityMap = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+    '`': '&#x60;',
+    '=': '&#x3D;',
+    '/': '&#x2F;'
+};
 function escapeHTML(value) {
     return String(value).replace(/[&<>"'`=\/]/g, function (key) {
-        return {
-            '&': '&amp;',
-            '<': '&lt;',
-            '>': '&gt;',
-            '"': '&quot;',
-            "'": '&#39;',
-            '`': '&#x60;',
-            '=': '&#x3D;',
-            '/': '&#x2F;'
-        }[key];
+        return htmlEntityMap[key];
     });
 }
 var Context = /** @class */ (function () {
