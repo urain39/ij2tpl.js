@@ -177,7 +177,7 @@ export class Context {
 			}
 
 			// Cache the name  vvvvv NOTE: value may be undefined
-			this.cache[name] = value = value ? value : null;
+			this.cache[name] = value = value ? value : '';
 		}
 
 		return value;
