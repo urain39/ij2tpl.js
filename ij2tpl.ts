@@ -98,18 +98,20 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 	return tokens;
 }
 
+let htmlEntityMap: IMap = {
+	'&': '&amp;',
+	'<': '&lt;',
+	'>': '&gt;',
+	'"': '&quot;',
+	"'": '&#39;',
+	'`': '&#x60;',
+	'=': '&#x3D;',
+	'/': '&#x2F;'
+};
+
 function escapeHTML(value: any): string {
 	return String(value).replace(/[&<>"'`=\/]/g, function(key: string): string {
-		return ({
-			'&': '&amp;',
-			'<': '&lt;',
-			'>': '&gt;',
-			'"': '&quot;',
-			"'": '&#39;',
-			'`': '&#x60;',
-			'=': '&#x3D;',
-			'/': '&#x2F;'
-		} as IMap)[key];
+		return htmlEntityMap[key];
 	});
 }
 
@@ -126,12 +128,14 @@ export class Context {
 
 	public resolve(name: string): any {
 		let data: IMap,
+			cache: IMap,
 			value: any = null,
 			context: Context | null = this;
 
+		cache = context.cache;
 		// Cached in context?
-		if (context.cache.hasOwnProperty(name)) {
-			value = context.cache[name];
+		if (cache.hasOwnProperty(name)) {
+			value = cache[name];
 		} else {
 			// No cached record found
 			if (name.indexOf('.') > 0) {
@@ -139,7 +143,6 @@ export class Context {
 					names: string[] = name.split('.');
 
 				name_ = names[0];
-
 				// Try to look up the (first)name in data
 				for (; context; context = context.parent) {
 					data = context.data;
@@ -174,7 +177,7 @@ export class Context {
 			}
 
 			// Cache the name  vvvvv NOTE: value may be undefined
-			this.cache[name] = value = value ? value : null;
+			this.cache[name] = value = value ? value : '';
 		}
 
 		return value;

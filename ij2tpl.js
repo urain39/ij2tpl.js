@@ -55,18 +55,19 @@ function tokenize(source, prefix, suffix) {
     return tokens;
 }
 exports.tokenize = tokenize;
+var htmlEntityMap = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+    '`': '&#x60;',
+    '=': '&#x3D;',
+    '/': '&#x2F;'
+};
 function escapeHTML(value) {
     return String(value).replace(/[&<>"'`=\/]/g, function (key) {
-        return {
-            '&': '&amp;',
-            '<': '&lt;',
-            '>': '&gt;',
-            '"': '&quot;',
-            "'": '&#39;',
-            '`': '&#x60;',
-            '=': '&#x3D;',
-            '/': '&#x2F;'
-        }[key];
+        return htmlEntityMap[key];
     });
 }
 var Context = /** @class */ (function () {
@@ -76,10 +77,11 @@ var Context = /** @class */ (function () {
         this.cache = { '.': this.data };
     }
     Context.prototype.resolve = function (name) {
-        var data, value = null, context = this;
+        var data, cache, value = null, context = this;
+        cache = context.cache;
         // Cached in context?
-        if (context.cache.hasOwnProperty(name)) {
-            value = context.cache[name];
+        if (cache.hasOwnProperty(name)) {
+            value = cache[name];
         }
         else {
             // No cached record found
@@ -119,7 +121,7 @@ var Context = /** @class */ (function () {
                 }
             }
             // Cache the name  vvvvv NOTE: value may be undefined
-            this.cache[name] = value = value ? value : null;
+            this.cache[name] = value = value ? value : '';
         }
         return value;
     };
