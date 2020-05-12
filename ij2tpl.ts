@@ -176,8 +176,8 @@ export class Context {
 				}
 			}
 
-			// Cache the name  vvvvv NOTE: value may be undefined
-			this.cache[name] = value = value ? value : '';
+			// Cache the name
+			cache[name] = value;
 		}
 
 		return value;
@@ -228,14 +228,20 @@ export class Renderer {
 				buffer += token[TokenMember.VALUE];
 				break;
 			case TokenType.RAW:
-				buffer += context.resolve(
-					token[TokenMember.VALUE]
-				);
+				value = context.resolve(token[TokenMember.VALUE]);
+				buffer += value;
 				break;
 			case TokenType.FORMAT:
-				buffer += escapeHTML(context.resolve(
-					token[TokenMember.VALUE]
-				));
+				value = context.resolve(token[TokenMember.VALUE]);
+
+				if (value || value === 0)
+					// NOTE: `<object>.toString` will be called when we try to
+					// append a stringified object to buffer, it is not safe!
+					buffer += typeof value == 'number' ?
+						value
+					:
+						escapeHTML(value)
+					;
 				break;
 			}
 		}
@@ -274,7 +280,7 @@ function buildTree(tokens: IToken[]): IToken[] {
 			section = sections.pop();
 
 			// Check if section is not match
-			if (!section || token[TokenMember.VALUE] !== section[TokenMember.VALUE])
+			if (!section || token[TokenMember.VALUE] != section[TokenMember.VALUE])
 				throw new SyntaxError(`Unexpected token '<type=${token[TokenMember.TYPE]}, value=${token[TokenMember.VALUE]}>'`);
 
 			// Re-bind block to parent block
@@ -292,7 +298,6 @@ function buildTree(tokens: IToken[]): IToken[] {
 
 	if (sections.length > 0) {
 		section = sections.pop() as IToken;
-
 		throw new SyntaxError(`No match section '<type=${section[TokenMember.TYPE]}, value=${section[TokenMember.VALUE]}>'`);
 	}
 
