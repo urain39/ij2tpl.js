@@ -158,14 +158,15 @@ var Renderer = /** @class */ (function () {
                     buffer += token[1 /* VALUE */];
                     break;
                 case 4 /* RAW */:
-                    buffer += context.resolve(token[1 /* VALUE */]);
+                    value = context.resolve(token[1 /* VALUE */]);
+                    buffer += value;
                     break;
                 case 5 /* FORMAT */:
                     value = context.resolve(token[1 /* VALUE */]);
                     if (value || value === 0)
                         // NOTE: `<object>.toString` will be called when we try to
-                        // append an stringified object to buffer, it is not safe!
-                        buffer += typeof value === 'number' ?
+                        // append a stringified object to buffer, it is not safe!
+                        buffer += typeof value == 'number' ?
                             value
                             :
                                 escapeHTML(value);
@@ -200,7 +201,7 @@ function buildTree(tokens) {
             case 2 /* END */:
                 section = sections.pop();
                 // Check if section is not match
-                if (!section || token[1 /* VALUE */] !== section[1 /* VALUE */])
+                if (!section || token[1 /* VALUE */] != section[1 /* VALUE */])
                     throw new SyntaxError("Unexpected token '<type=" + token[0 /* TYPE */] + ", value=" + token[1 /* VALUE */] + ">'");
                 // Re-bind block to parent block
                 sections.length > 0 ?
