@@ -120,8 +120,8 @@ var Context = /** @class */ (function () {
                     }
                 }
             }
-            // Cache the name  vvvvv NOTE: value may be undefined
-            this.cache[name] = value = value ? value : '';
+            // Cache the name
+            cache[name] = value;
         }
         return value;
     };
@@ -161,7 +161,14 @@ var Renderer = /** @class */ (function () {
                     buffer += context.resolve(token[1 /* VALUE */]);
                     break;
                 case 5 /* FORMAT */:
-                    buffer += escapeHTML(context.resolve(token[1 /* VALUE */]));
+                    value = context.resolve(token[1 /* VALUE */]);
+                    if (value || value === 0)
+                        // NOTE: `<object>.toString` will be called when we try to
+                        // append an stringified object to buffer, it is not safe!
+                        buffer += typeof value === 'number' ?
+                            value
+                            :
+                                escapeHTML(value);
                     break;
             }
         }

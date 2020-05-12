@@ -176,8 +176,8 @@ export class Context {
 				}
 			}
 
-			// Cache the name  vvvvv NOTE: value may be undefined
-			this.cache[name] = value = value ? value : '';
+			// Cache the name
+			cache[name] = value;
 		}
 
 		return value;
@@ -233,9 +233,16 @@ export class Renderer {
 				);
 				break;
 			case TokenType.FORMAT:
-				buffer += escapeHTML(context.resolve(
-					token[TokenMember.VALUE]
-				));
+				value = context.resolve(token[TokenMember.VALUE]);
+
+				if (value || value === 0)
+					// NOTE: `<object>.toString` will be called when we try to
+					// append an stringified object to buffer, it is not safe!
+					buffer += typeof value === 'number' ?
+						value
+					:
+						escapeHTML(value)
+					;
 				break;
 			}
 		}
@@ -292,7 +299,6 @@ function buildTree(tokens: IToken[]): IToken[] {
 
 	if (sections.length > 0) {
 		section = sections.pop() as IToken;
-
 		throw new SyntaxError(`No match section '<type=${section[TokenMember.TYPE]}, value=${section[TokenMember.VALUE]}>'`);
 	}
 
