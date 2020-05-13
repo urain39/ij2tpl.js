@@ -1,6 +1,7 @@
 "use strict";
-// Copyright (c) 2018-2019 urain39 <urain39[AT]qq[DOT]com>
+// Copyright (c) 2018-2020 urain39 <urain39[AT]qq[DOT]com>
 exports.__esModule = true;
+exports.version = '0.0.2-dev';
 if (!Array.isArray) {
     var objectToString_1 = Object.prototype.toString;
     Array.isArray = (function (value) {

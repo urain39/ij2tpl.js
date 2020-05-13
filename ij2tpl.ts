@@ -1,13 +1,13 @@
-// Copyright (c) 2018-2019 urain39 <urain39[AT]qq[DOT]com>
+// Copyright (c) 2018-2020 urain39 <urain39[AT]qq[DOT]com>
 
+export const version: string = '0.0.2-dev';
 
 if (!Array.isArray) {
-	type ArrayIsArrayType = typeof Array.isArray;
 	const objectToString = Object.prototype.toString;
 
-	Array.isArray = (function(value) {
+	Array.isArray = (function(value: any): value is any[] {
 		return objectToString.call(value) === '[object Array]';
-	}) as ArrayIsArrayType;
+	});
 }
 
 const enum TokenMember {
