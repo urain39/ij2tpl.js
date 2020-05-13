@@ -1,6 +1,12 @@
 "use strict";
 // Copyright (c) 2018-2019 urain39 <urain39[AT]qq[DOT]com>
 exports.__esModule = true;
+if (!Array.isArray) {
+    var objectToString_1 = Object.prototype.toString;
+    Array.isArray = (function (value) {
+        return objectToString_1.call(value) === '[object Array]';
+    });
+}
 var TokenTypeMap = {
     '?': 0 /* IF */,
     '!': 1 /* NOT */,
@@ -141,7 +147,7 @@ var Renderer = /** @class */ (function () {
                     value = context.resolve(token[1 /* VALUE */]);
                     if (!value)
                         continue;
-                    if (value instanceof Array)
+                    if (Array.isArray(value))
                         for (var _a = 0, value_1 = value; _a < value_1.length; _a++) {
                             var value_ = value_1[_a];
                             buffer += this.renderTree(token[2 /* BLOCK */], new Context(value_, context));
@@ -151,7 +157,7 @@ var Renderer = /** @class */ (function () {
                     break;
                 case 1 /* NOT */:
                     value = context.resolve(token[1 /* VALUE */]);
-                    if (!value || value instanceof Array && value.length < 1)
+                    if (!value || Array.isArray(value) && value.length < 1)
                         buffer += this.renderTree(token[2 /* BLOCK */], context);
                     break;
                 case 3 /* TEXT */:

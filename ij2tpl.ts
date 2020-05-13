@@ -1,5 +1,15 @@
 // Copyright (c) 2018-2019 urain39 <urain39[AT]qq[DOT]com>
 
+
+if (!Array.isArray) {
+	type ArrayIsArrayType = typeof Array.isArray;
+	const objectToString = Object.prototype.toString;
+
+	Array.isArray = (function(value) {
+		return objectToString.call(value) === '[object Array]';
+	}) as ArrayIsArrayType;
+}
+
 const enum TokenMember {
 	TYPE = 0,
 	VALUE,
@@ -203,7 +213,7 @@ export class Renderer {
 				if (!value)
 					continue;
 
-				if (value instanceof Array)
+				if (Array.isArray(value))
 					for (const value_ of value)
 						buffer += this.renderTree(
 							token[TokenMember.BLOCK] as IToken[],
@@ -218,7 +228,7 @@ export class Renderer {
 			case TokenType.NOT:
 				value = context.resolve(token[TokenMember.VALUE]);
 
-				if (!value || value instanceof Array && value.length < 1)
+				if (!value || Array.isArray(value) && value.length < 1)
 					buffer += this.renderTree(
 						token[TokenMember.BLOCK] as IToken[],
 						context
