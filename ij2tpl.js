@@ -173,10 +173,8 @@ var Renderer = /** @class */ (function () {
                 case 5 /* FORMAT */:
                     value = context.resolve(token[1 /* VALUE */]);
                     // Support for Function
-                    value = typeof value === 'function' ?
-                        value(context)
-                        :
-                            value;
+                    if (typeof value === 'function')
+                        value = value(context);
                     if (value || value === 0)
                         // NOTE: `<object>.toString` will be called when we try to
                         // append a stringified object to buffer, it is not safe!

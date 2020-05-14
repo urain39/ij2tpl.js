@@ -1,5 +1,3 @@
-// INFO: test for #808e99f55f277ee2d04e736195a897b3ae60225a
-
 var IJ2TPL = require('../dist/ij2tpl.min');
 
 let source = `{a}{?a}{a}{/a}`;
