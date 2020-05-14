@@ -2,6 +2,7 @@
 
 export const version: string = '0.0.2-dev';
 
+// Compatible for ES3-ES5
 if (!Array.isArray) {
 	const objectToString = Object.prototype.toString;
 
@@ -143,6 +144,7 @@ export class Context {
 			context: Context | null = this;
 
 		cache = context.cache;
+
 		// Cached in context?
 		if (cache.hasOwnProperty(name)) {
 			value = cache[name];
@@ -153,9 +155,11 @@ export class Context {
 					names: string[] = name.split('.');
 
 				name_ = names[0];
+
 				// Try to look up the (first)name in data
 				for (; context; context = context.parent) {
 					data = context.data;
+
 					// Find out which context contains name
 					if (data && data.hasOwnProperty && data.hasOwnProperty(name_)) {
 						value = (data as IMap)[name_];
@@ -178,6 +182,7 @@ export class Context {
 				// Try to look up the name in data
 				for (; context; context = context.parent) {
 					data = context.data;
+
 					// Find out which context contains name
 					if (data && data.hasOwnProperty && data.hasOwnProperty(name)) {
 						value = (data as IMap)[name];
@@ -239,12 +244,20 @@ export class Renderer {
 				break;
 			case TokenType.RAW:
 				value = context.resolve(token[TokenMember.VALUE]);
-				buffer += value;
+
+				// Check if it is non-values(null and undefined)
+				if (value != null)
+					buffer += value;
+
 				break;
 			case TokenType.FORMAT:
 				value = context.resolve(token[TokenMember.VALUE]);
 
-				if (value || value === 0)
+				// Support for Function
+				if (typeof value === 'function')
+					value = value(context);
+
+				if (value != null)
 					// NOTE: `<object>.toString` will be called when we try to
 					// append a stringified object to buffer, it is not safe!
 					buffer += typeof value === 'number' ?
