@@ -167,7 +167,8 @@ var Renderer = /** @class */ (function () {
                     break;
                 case 4 /* RAW */:
                     value = context.resolve(token[1 /* VALUE */]);
-                    if (value || value === 0)
+                    // Check if it is non-values(null and undefined)
+                    if (value != null)
                         buffer += value;
                     break;
                 case 5 /* FORMAT */:
@@ -175,7 +176,7 @@ var Renderer = /** @class */ (function () {
                     // Support for Function
                     if (typeof value === 'function')
                         value = value(context);
-                    if (value || value === 0)
+                    if (value != null)
                         // NOTE: `<object>.toString` will be called when we try to
                         // append a stringified object to buffer, it is not safe!
                         buffer += typeof value === 'number' ?
