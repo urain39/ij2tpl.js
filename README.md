@@ -37,7 +37,15 @@ renderer.render({name: 'IJ2TPL'}); // -> "Hello, IJ2TPL!"
 {/valid}
 ```
 
-~~**If-Else Section(Removed)**~~
+**Raw Formatter**
+```html
+{-- name = '<b>urain39</b>' --}
+Hello {#name}
+```
+
+<details>
+<summary><del> **If-Else Section(Re-Working)** </del></summary>
+
 ```html
 {?valid}
 	only valid data can be rendered.
@@ -46,9 +54,29 @@ renderer.render({name: 'IJ2TPL'}); // -> "Hello, IJ2TPL!"
 {/valid}
 ```
 
+</details>
+
+
+**Function type**
+```js
+function toHumanReadableSize(size) {
+	var i = 0,
+	dataUnits = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB', 'BiB', 'NiB', 'DiB'];
+
+	while (size >= 1024)
+		i++, size /= 1024;
+
+	return String(size.toFixed(2)) + dataUnits[i];
+}
+
+function humanReadableSize(context) {
+	var downloadedSize = context.resolve('downloadedSize');
+	return toHumanReadableSize(downloadedSize);
+}
+```
+
 **Not Implemented Yet:**
-- Function type
-- Format pipe(filter)
+- ~~Function type(Supported on v0.0.2-dev)~~
+- Format pipe(Filter)
 
-Last update: 2020-04-08
-
+Last update: 2020-05-14

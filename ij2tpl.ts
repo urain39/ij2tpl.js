@@ -2,6 +2,7 @@
 
 export const version: string = '0.0.2-dev';
 
+// Compatible for ES3-ES5
 if (!Array.isArray) {
 	const objectToString = Object.prototype.toString;
 
@@ -243,6 +244,13 @@ export class Renderer {
 				break;
 			case TokenType.FORMAT:
 				value = context.resolve(token[TokenMember.VALUE]);
+
+				// Support for Function
+				value = typeof value === 'function' ?
+					value(context)
+				:
+					value
+				;
 
 				if (value || value === 0)
 					// NOTE: `<object>.toString` will be called when we try to

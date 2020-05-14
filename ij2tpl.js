@@ -2,6 +2,7 @@
 // Copyright (c) 2018-2020 urain39 <urain39[AT]qq[DOT]com>
 exports.__esModule = true;
 exports.version = '0.0.2-dev';
+// Compatible for ES3-ES5
 if (!Array.isArray) {
     var objectToString_1 = Object.prototype.toString;
     Array.isArray = (function (value) {
@@ -166,10 +167,16 @@ var Renderer = /** @class */ (function () {
                     break;
                 case 4 /* RAW */:
                     value = context.resolve(token[1 /* VALUE */]);
-                    buffer += value;
+                    if (value || value === 0)
+                        buffer += value;
                     break;
                 case 5 /* FORMAT */:
                     value = context.resolve(token[1 /* VALUE */]);
+                    // Support for Function
+                    value = typeof value === 'function' ?
+                        value(context)
+                        :
+                            value;
                     if (value || value === 0)
                         // NOTE: `<object>.toString` will be called when we try to
                         // append a stringified object to buffer, it is not safe!
