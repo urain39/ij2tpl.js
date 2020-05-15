@@ -18,7 +18,7 @@ const enum TokenMember {
 }
 
 const enum TokenType {
-	IF = 0, // '?'
+	IF = 0,	// '?'
 	NOT,	// '!'
 	END,	// '/'
 	TEXT,
@@ -120,7 +120,7 @@ let htmlEntityMap: IMap = {
 	'/': '&#x2F;'
 };
 
-function escapeHTML(value: any): string {
+export function escapeHTML(value: any): string {
 	return String(value).replace(/[&<>"'`=\/]/g, function(key: string): string {
 		return htmlEntityMap[key];
 	});
@@ -191,6 +191,10 @@ export class Context {
 				}
 			}
 
+			// Support for Function
+			if (typeof value === 'function')
+				value = value(this); // `this` means give full-access to contexts
+
 			// Cache the name
 			cache[name] = value;
 		}
@@ -217,8 +221,7 @@ export class Renderer {
 
 				if (!value)
 					continue;
-
-				if (Array.isArray(value))
+				else if (Array.isArray(value))
 					for (const value_ of value)
 						buffer += this.renderTree(
 							token[TokenMember.BLOCK] as IToken[],
@@ -252,10 +255,6 @@ export class Renderer {
 				break;
 			case TokenType.FORMAT:
 				value = context.resolve(token[TokenMember.VALUE]);
-
-				// Support for Function
-				if (typeof value === 'function')
-					value = value(context);
 
 				if (value != null)
 					// NOTE: `<object>.toString` will be called when we try to

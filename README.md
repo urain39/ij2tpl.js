@@ -69,10 +69,15 @@ function toHumanReadableSize(size) {
 	return String(size.toFixed(2)) + dataUnits[i];
 }
 
+/* You can think it is a property getter, same as other formatters */
 function humanReadableSize(context) {
 	var downloadedSize = context.resolve('downloadedSize');
 	return toHumanReadableSize(downloadedSize);
 }
+```
+
+```html
+Downloaded {humanReadableSize}
 ```
 
 **Not Implemented Yet:**

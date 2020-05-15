@@ -1,6 +1,7 @@
 "use strict";
 // Copyright (c) 2018-2020 urain39 <urain39[AT]qq[DOT]com>
 exports.__esModule = true;
+exports.parse = exports.Renderer = exports.Context = exports.escapeHTML = exports.tokenize = exports.version = void 0;
 exports.version = '0.0.2-dev';
 // Compatible for ES3-ES5
 if (!Array.isArray) {
@@ -78,6 +79,7 @@ function escapeHTML(value) {
         return htmlEntityMap[key];
     });
 }
+exports.escapeHTML = escapeHTML;
 var Context = /** @class */ (function () {
     function Context(data, parent) {
         this.data = data;
@@ -128,6 +130,9 @@ var Context = /** @class */ (function () {
                     }
                 }
             }
+            // Support for Function
+            if (typeof value === 'function')
+                value = value(this); // `this` means give full-access to contexts
             // Cache the name
             cache[name] = value;
         }
@@ -149,7 +154,7 @@ var Renderer = /** @class */ (function () {
                     value = context.resolve(token[1 /* VALUE */]);
                     if (!value)
                         continue;
-                    if (Array.isArray(value))
+                    else if (Array.isArray(value))
                         for (var _a = 0, value_1 = value; _a < value_1.length; _a++) {
                             var value_ = value_1[_a];
                             buffer += this.renderTree(token[2 /* BLOCK */], new Context(value_, context));
@@ -173,9 +178,6 @@ var Renderer = /** @class */ (function () {
                     break;
                 case 5 /* FORMAT */:
                     value = context.resolve(token[1 /* VALUE */]);
-                    // Support for Function
-                    if (typeof value === 'function')
-                        value = value(context);
                     if (value != null)
                         // NOTE: `<object>.toString` will be called when we try to
                         // append a stringified object to buffer, it is not safe!
