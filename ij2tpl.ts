@@ -6,9 +6,15 @@ export const version: string = '0.0.2-dev';
 if (!Array.isArray) {
 	const objectToString = Object.prototype.toString;
 
-	Array.isArray = (function(value: any): value is any[] {
+	Array.isArray = function(value: any): value is any[] {
 		return objectToString.call(value) === '[object Array]';
-	});
+	};
+}
+
+if (!String.prototype.trim) {
+	String.prototype.trim = function(): string {
+		return this.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
+	};
 }
 
 const enum TokenMember {
@@ -89,6 +95,8 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 		if (value.length < 1)
 			continue;
 
+		value = value.trim();
+
 		type_ = value[0];
 
 		switch (type_) {
@@ -96,7 +104,7 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 		case '!':
 		case '/':
 		case '#':
-			value = value.slice(1);
+			value = value.slice(1).trim();
 			tokens.push([TokenTypeMap[type_], value]);
 			break;
 		case '-': // comment

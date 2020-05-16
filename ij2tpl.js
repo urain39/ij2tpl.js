@@ -6,9 +6,14 @@ exports.version = '0.0.2-dev';
 // Compatible for ES3-ES5
 if (!Array.isArray) {
     var objectToString_1 = Object.prototype.toString;
-    Array.isArray = (function (value) {
+    Array.isArray = function (value) {
         return objectToString_1.call(value) === '[object Array]';
-    });
+    };
+}
+if (!String.prototype.trim) {
+    String.prototype.trim = function () {
+        return this.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
+    };
 }
 var TokenTypeMap = {
     '?': 0 /* IF */,
@@ -46,13 +51,14 @@ function tokenize(source, prefix, suffix) {
         // Skip the empty token, such as '{}'
         if (value.length < 1)
             continue;
+        value = value.trim();
         type_ = value[0];
         switch (type_) {
             case '?':
             case '!':
             case '/':
             case '#':
-                value = value.slice(1);
+                value = value.slice(1).trim();
                 tokens.push([TokenTypeMap[type_], value]);
                 break;
             case '-': // comment
