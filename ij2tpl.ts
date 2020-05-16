@@ -193,7 +193,7 @@ export class Context {
 
 			// Support for Function
 			if (typeof value === 'function')
-				value = value(this); // `this` means give full-access to contexts
+				value = value(context);
 
 			// Cache the name
 			cache[name] = value;
