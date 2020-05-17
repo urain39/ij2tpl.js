@@ -8,7 +8,7 @@ let source = `\
 
 let tpl = IJ2TPL.parse(source);
 
-if (tpl.render({names: [{valid: true, name: 'uzilla'}, {valid: false, name: 'urain39'}]}) === '\n\tuzilla\n\n\t\n')
+if (tpl.render({names: [{valid: true, name: 'uzilla'}, {valid: false, name: 'urain39'}]}) === '\nuzilla\n\n\n')
 	console.log(`${__filename}: PASS`);
 else
 	console.log(`${__filename}: FAIL`);

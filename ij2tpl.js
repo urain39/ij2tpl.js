@@ -22,7 +22,7 @@ var TokenTypeMap = {
     '#': 5 /* RAW */
 };
 function tokenize(source, prefix, suffix) {
-    var type_, value, token, tokens = [];
+    var type_, value, token = [7 /* INVALID */, '!'], tokens = [];
     for (var i = 0, j = 0, l = source.length, pl = prefix.length, sl = suffix.length; i < l;) {
         // Match '{'
         j = source.indexOf(prefix, i);
@@ -56,9 +56,27 @@ function tokenize(source, prefix, suffix) {
         switch (type_) {
             case '?':
             case '!':
+            case '*':
             case '/':
+                // Remove indentations and newline for sections
+                if (token[0 /* TYPE */] === 4 /* TEXT */) {
+                    token[1 /* VALUE */] = token[1 /* VALUE */].replace(/(^|[\n\r])[\t \xA0\uFEFF]+$/, '$1');
+                    if (!token[1 /* VALUE */])
+                        tokens.pop(); // Drop the empty text ''
+                    // Skip next newline if it is exists
+                    switch (source[i]) {
+                        case '\n':
+                            i += 1;
+                            break;
+                        case '\r':
+                            i += source[i + 1] === '\n' ?
+                                2
+                                :
+                                    1;
+                    }
+                }
             case '#':
-                value = value.slice(1);
+                value = value.slice(1).trim();
                 token = [TokenTypeMap[type_], value], tokens.push(token);
                 break;
             case '-': // comment
@@ -136,7 +154,7 @@ var Context = /** @class */ (function () {
                     }
                 }
             }
-            // Support for Function
+            // Support for function
             if (typeof value === 'function')
                 value = value(context);
             // Cache the name

@@ -31,7 +31,7 @@ const enum TokenType {
 	TEXT,
 	RAW,	// '#'
 	FORMAT,
-	DELETE	// Mark to delete
+	INVALID	// Mark to delete
 }
 
 // See https://github.com/microsoft/TypeScript/pull/33050
@@ -54,7 +54,7 @@ let TokenTypeMap: IMap = {
 export function tokenize(source: string, prefix: string, suffix: string): IToken[] {
 	let type_: string,
 		value: string,
-		token: IToken,
+		token: IToken = [TokenType.INVALID, '!'],
 		tokens: IToken[] = [];
 
 	for (let i = 0, j = 0,
@@ -105,9 +105,30 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 		switch (type_) {
 		case '?':
 		case '!':
+		case '*':
 		case '/':
+			// Remove indentations and newline for sections
+			if (token[TokenMember.TYPE] === TokenType.TEXT) {
+				token[TokenMember.VALUE] = token[TokenMember.VALUE].replace(/(^|[\n\r])[\t \xA0\uFEFF]+$/, '$1');
+
+				if(!token[TokenMember.VALUE])
+					tokens.pop(); // Drop the empty text ''
+
+				// Skip next newline if it is exists
+				switch (source[i]) {
+				case '\n':
+					i += 1;
+					break;
+				case '\r':
+					i += source[i + 1] === '\n' ?
+						2
+					:
+						1
+					;
+				}
+			}
 		case '#':
-			value = value.slice(1);
+			value = value.slice(1).trim();
 			token = [TokenTypeMap[type_], value], tokens.push(token);
 			break;
 		case '-': // comment
@@ -202,7 +223,7 @@ export class Context {
 				}
 			}
 
-			// Support for Function
+			// Support for function
 			if (typeof value === 'function')
 				value = value(context);
 
