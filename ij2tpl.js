@@ -12,17 +12,17 @@ if (!Array.isArray) {
 }
 if (!String.prototype.trim) {
     String.prototype.trim = function () {
-        return this.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
+        return this.replace(/^[\s\xA0\uFEFF]+|[\s\xA0\uFEFF]+$/g, '');
     };
 }
 var TokenTypeMap = {
     '?': 0 /* IF */,
     '!': 1 /* NOT */,
-    '/': 2 /* END */,
-    '#': 4 /* RAW */
+    '/': 3 /* END */,
+    '#': 5 /* RAW */
 };
 function tokenize(source, prefix, suffix) {
-    var type_, value, tokens = [];
+    var type_, value, token, tokens = [];
     for (var i = 0, j = 0, l = source.length, pl = prefix.length, sl = suffix.length; i < l;) {
         // Match '{'
         j = source.indexOf(prefix, i);
@@ -31,7 +31,7 @@ function tokenize(source, prefix, suffix) {
             // Eat the rest of the source
             value = source.slice(i);
             if (value.length > 0)
-                tokens.push([3 /* TEXT */, value]);
+                token = [4 /* TEXT */, value], tokens.push(token);
             break; // Done
         }
         // Eat the left side of a token
@@ -39,7 +39,7 @@ function tokenize(source, prefix, suffix) {
         j += pl; // Skip the '{'
         // Don't eat the empty text ''
         if (value.length > 0)
-            tokens.push([3 /* TEXT */, value]);
+            token = [4 /* TEXT */, value], tokens.push(token);
         // Match '}'
         i = source.indexOf(suffix, j);
         // Not found the '}'
@@ -58,13 +58,13 @@ function tokenize(source, prefix, suffix) {
             case '!':
             case '/':
             case '#':
-                value = value.slice(1).trim();
-                tokens.push([TokenTypeMap[type_], value]);
+                value = value.slice(1);
+                token = [TokenTypeMap[type_], value], tokens.push(token);
                 break;
             case '-': // comment
                 break;
             default:
-                tokens.push([5 /* FORMAT */, value]);
+                token = [6 /* FORMAT */, value], tokens.push(token);
         }
     }
     return tokens;
@@ -173,16 +173,16 @@ var Renderer = /** @class */ (function () {
                     if (!value || Array.isArray(value) && value.length < 1)
                         buffer += this.renderTree(token[2 /* BLOCK */], context);
                     break;
-                case 3 /* TEXT */:
+                case 4 /* TEXT */:
                     buffer += token[1 /* VALUE */];
                     break;
-                case 4 /* RAW */:
+                case 5 /* RAW */:
                     value = context.resolve(token[1 /* VALUE */]);
                     // Check if it is non-values(null and undefined)
                     if (value != null)
                         buffer += value;
                     break;
-                case 5 /* FORMAT */:
+                case 6 /* FORMAT */:
                     value = context.resolve(token[1 /* VALUE */]);
                     if (value != null)
                         // NOTE: `<object>.toString` will be called when we try to
@@ -219,7 +219,7 @@ function buildTree(tokens) {
                 collector = section[2 /* BLOCK */] = [];
                 break;
             // Leave a section
-            case 2 /* END */:
+            case 3 /* END */:
                 section = sections.pop();
                 // Check if section is not match
                 if (!section || token[1 /* VALUE */] !== section[1 /* VALUE */])

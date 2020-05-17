@@ -13,7 +13,7 @@ if (!Array.isArray) {
 
 if (!String.prototype.trim) {
 	String.prototype.trim = function(): string {
-		return this.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
+		return this.replace(/^[\s\xA0\uFEFF]+|[\s\xA0\uFEFF]+$/g, '');
 	};
 }
 
@@ -26,10 +26,12 @@ const enum TokenMember {
 const enum TokenType {
 	IF = 0,	// '?'
 	NOT,	// '!'
+	ELSE,	// '*' (Re-working)
 	END,	// '/'
 	TEXT,
 	RAW,	// '#'
-	FORMAT
+	FORMAT,
+	DELETE	// Mark to delete
 }
 
 // See https://github.com/microsoft/TypeScript/pull/33050
@@ -52,6 +54,7 @@ let TokenTypeMap: IMap = {
 export function tokenize(source: string, prefix: string, suffix: string): IToken[] {
 	let type_: string,
 		value: string,
+		token: IToken,
 		tokens: IToken[] = [];
 
 	for (let i = 0, j = 0,
@@ -67,7 +70,7 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 			value = source.slice(i);
 
 			if (value.length > 0)
-				tokens.push([TokenType.TEXT, value]);
+				token = [TokenType.TEXT, value], tokens.push(token);
 
 			break; // Done
 		}
@@ -78,7 +81,7 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 
 		// Don't eat the empty text ''
 		if (value.length > 0)
-			tokens.push([TokenType.TEXT, value]);
+			token = [TokenType.TEXT, value], tokens.push(token);
 
 		// Match '}'
 		i = source.indexOf(suffix, j);
@@ -104,13 +107,13 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 		case '!':
 		case '/':
 		case '#':
-			value = value.slice(1).trim();
-			tokens.push([TokenTypeMap[type_], value]);
+			value = value.slice(1);
+			token = [TokenTypeMap[type_], value], tokens.push(token);
 			break;
 		case '-': // comment
 			break;
 		default:
-			tokens.push([TokenType.FORMAT, value]);
+			token = [TokenType.FORMAT, value], tokens.push(token);
 		}
 	}
 
