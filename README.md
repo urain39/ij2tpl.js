@@ -44,7 +44,7 @@ Hello {#name}
 ```
 
 <details>
-<summary><del> **If-Else Section(Re-Working)** </del></summary>
+<summary><del><b>If-Else Section(Re-Working)</b></del></summary>
 
 ```html
 {?valid}
@@ -53,6 +53,8 @@ Hello {#name}
 	Oops, something's wrong?
 {/valid}
 ```
+
+**Notice** if-else statement still are re-working. It can be tokenized on v0.0.3, but doesn't work true.
 
 </details>
 
@@ -84,4 +86,4 @@ Downloaded {humanReadableSize}
 - ~~Function type(Supported on v0.0.2-dev)~~
 - Format pipe(Filter)
 
-Last update: 2020-05-14
+Last update: 2020-05-18
