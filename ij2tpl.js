@@ -2,7 +2,7 @@
 // Copyright (c) 2018-2020 urain39 <urain39[AT]qq[DOT]com>
 exports.__esModule = true;
 exports.parse = exports.Renderer = exports.Context = exports.escapeHTML = exports.tokenize = exports.version = void 0;
-exports.version = '0.0.2-dev';
+exports.version = '0.0.3-dev';
 // Compatible for ES3-ES5
 if (!Array.isArray) {
     var objectToString_1 = Object.prototype.toString;
@@ -18,11 +18,12 @@ if (!String.prototype.trim) {
 var TokenTypeMap = {
     '?': 0 /* IF */,
     '!': 1 /* NOT */,
+    '*': 2 /* ELSE */,
     '/': 3 /* END */,
     '#': 5 /* RAW */
 };
 function tokenize(source, prefix, suffix) {
-    var type_, value, token = [7 /* INVALID */, '!'], tokens = [];
+    var type_, value, token = [7 /* INVALID */, '^'], tokens = [];
     for (var i = 0, j = 0, l = source.length, pl = prefix.length, sl = suffix.length; i < l;) {
         // Match '{'
         j = source.indexOf(prefix, i);
@@ -57,22 +58,33 @@ function tokenize(source, prefix, suffix) {
             case '?':
             case '!':
             case '*':
+            // XXX: need replace when TypeScript support
+            // eslint-like ignore-syntax with given errors.
+            // @ts-ignore TS7029: Fallthrough case in switch
             case '/':
-                // Remove indentations and newline for sections
+                // Remove indentations for section token
                 if (token[0 /* TYPE */] === 4 /* TEXT */) {
                     token[1 /* VALUE */] = token[1 /* VALUE */].replace(/(^|[\n\r])[\t \xA0\uFEFF]+$/, '$1');
                     if (!token[1 /* VALUE */])
                         tokens.pop(); // Drop the empty text ''
-                    // Skip next newline if it is exists
+                }
+                // Skip section's newline if it exists
+                if (i < l) {
                     switch (source[i]) {
                         case '\n':
-                            i += 1;
+                            i += 1; // LF
                             break;
                         case '\r':
-                            i += source[i + 1] === '\n' ?
-                                2
+                            i += i + 1 < l ?
+                                // Is CRLF?
+                                source[i + 1] === '\n' ?
+                                    2 // CRLF
+                                    :
+                                        1 // CR
                                 :
-                                    1;
+                                    1 // CR
+                            ;
+                            break;
                     }
                 }
             case '#':
@@ -83,6 +95,7 @@ function tokenize(source, prefix, suffix) {
                 break;
             default:
                 token = [6 /* FORMAT */, value], tokens.push(token);
+                break;
         }
     }
     return tokens;

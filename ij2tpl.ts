@@ -1,6 +1,6 @@
 // Copyright (c) 2018-2020 urain39 <urain39[AT]qq[DOT]com>
 
-export const version: string = '0.0.2-dev';
+export const version: string = '0.0.3-dev';
 
 // Compatible for ES3-ES5
 if (!Array.isArray) {
@@ -31,7 +31,7 @@ const enum TokenType {
 	TEXT,
 	RAW,	// '#'
 	FORMAT,
-	INVALID	// Mark to delete
+	INVALID
 }
 
 // See https://github.com/microsoft/TypeScript/pull/33050
@@ -47,6 +47,7 @@ interface IMap {
 let TokenTypeMap: IMap = {
 	'?': TokenType.IF,
 	'!': TokenType.NOT,
+	'*': TokenType.ELSE,
 	'/': TokenType.END,
 	'#': TokenType.RAW
 };
@@ -54,7 +55,7 @@ let TokenTypeMap: IMap = {
 export function tokenize(source: string, prefix: string, suffix: string): IToken[] {
 	let type_: string,
 		value: string,
-		token: IToken = [TokenType.INVALID, '!'],
+		token: IToken = [TokenType.INVALID, '^'],
 		tokens: IToken[] = [];
 
 	for (let i = 0, j = 0,
@@ -106,25 +107,35 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 		case '?':
 		case '!':
 		case '*':
+		// XXX: need replace when TypeScript support
+		// eslint-like ignore-syntax with given errors.
+		// @ts-ignore TS7029: Fallthrough case in switch
 		case '/':
-			// Remove indentations and newline for sections
+			// Remove indentations for section token
 			if (token[TokenMember.TYPE] === TokenType.TEXT) {
 				token[TokenMember.VALUE] = token[TokenMember.VALUE].replace(/(^|[\n\r])[\t \xA0\uFEFF]+$/, '$1');
 
 				if(!token[TokenMember.VALUE])
 					tokens.pop(); // Drop the empty text ''
+			}
 
-				// Skip next newline if it is exists
+			// Skip section's newline if it exists
+			if (i < l) {
 				switch (source[i]) {
 				case '\n':
-					i += 1;
+					i += 1; // LF
 					break;
 				case '\r':
-					i += source[i + 1] === '\n' ?
-						2
+					i += i + 1 < l ?
+						// Is CRLF?
+						source[i + 1] === '\n' ?
+							2 // CRLF
+						:
+							1 // CR
 					:
-						1
+						1 // CR
 					;
+					break;
 				}
 			}
 		case '#':
@@ -135,6 +146,7 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 			break;
 		default:
 			token = [TokenType.FORMAT, value], tokens.push(token);
+			break;
 		}
 	}
 
