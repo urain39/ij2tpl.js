@@ -1,14 +1,20 @@
 // Copyright (c) 2018-2020 urain39 <urain39[AT]qq[DOT]com>
 
-export const version: string = '0.0.2-dev';
+export const version: string = '0.0.3-dev';
 
 // Compatible for ES3-ES5
 if (!Array.isArray) {
 	const objectToString = Object.prototype.toString;
 
-	Array.isArray = (function(value: any): value is any[] {
+	Array.isArray = function(value: any): value is any[] {
 		return objectToString.call(value) === '[object Array]';
-	});
+	};
+}
+
+if (!String.prototype.trim) {
+	String.prototype.trim = function(): string {
+		return this.replace(/^[\s\xA0\uFEFF]+|[\s\xA0\uFEFF]+$/g, '');
+	};
 }
 
 const enum TokenMember {
@@ -20,10 +26,12 @@ const enum TokenMember {
 const enum TokenType {
 	IF = 0,	// '?'
 	NOT,	// '!'
+	ELSE,	// '*' (Re-working)
 	END,	// '/'
 	TEXT,
 	RAW,	// '#'
-	FORMAT
+	FORMAT,
+	INVALID
 }
 
 // See https://github.com/microsoft/TypeScript/pull/33050
@@ -39,6 +47,7 @@ interface IMap {
 let TokenTypeMap: IMap = {
 	'?': TokenType.IF,
 	'!': TokenType.NOT,
+	'*': TokenType.ELSE,
 	'/': TokenType.END,
 	'#': TokenType.RAW
 };
@@ -46,6 +55,7 @@ let TokenTypeMap: IMap = {
 export function tokenize(source: string, prefix: string, suffix: string): IToken[] {
 	let type_: string,
 		value: string,
+		token: IToken = [TokenType.INVALID, '^'],
 		tokens: IToken[] = [];
 
 	for (let i = 0, j = 0,
@@ -61,7 +71,7 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 			value = source.slice(i);
 
 			if (value.length > 0)
-				tokens.push([TokenType.TEXT, value]);
+				token = [TokenType.TEXT, value], tokens.push(token);
 
 			break; // Done
 		}
@@ -72,7 +82,7 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 
 		// Don't eat the empty text ''
 		if (value.length > 0)
-			tokens.push([TokenType.TEXT, value]);
+			token = [TokenType.TEXT, value], tokens.push(token);
 
 		// Match '}'
 		i = source.indexOf(suffix, j);
@@ -89,20 +99,54 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 		if (value.length < 1)
 			continue;
 
+		value = value.trim();
+
 		type_ = value[0];
 
 		switch (type_) {
 		case '?':
 		case '!':
+		case '*':
+		// XXX: need replace when TypeScript support
+		// eslint-like ignore-syntax with given errors.
+		// @ts-ignore TS7029: Fallthrough case in switch
 		case '/':
+			// Remove indentations for section token
+			if (token[TokenMember.TYPE] === TokenType.TEXT) {
+				token[TokenMember.VALUE] = token[TokenMember.VALUE].replace(/(^|[\n\r])[\t \xA0\uFEFF]+$/, '$1');
+
+				if(!token[TokenMember.VALUE])
+					tokens.pop(); // Drop the empty text ''
+			}
+
+			// Skip section's newline if it exists
+			if (i < l) {
+				switch (source[i]) {
+				case '\n':
+					i += 1; // LF
+					break;
+				case '\r':
+					i += i + 1 < l ?
+						// Is CRLF?
+						source[i + 1] === '\n' ?
+							2 // CRLF
+						:
+							1 // CR
+					:
+						1 // CR
+					;
+					break;
+				}
+			}
 		case '#':
-			value = value.slice(1);
-			tokens.push([TokenTypeMap[type_], value]);
+			value = value.slice(1).trim();
+			token = [TokenTypeMap[type_], value], tokens.push(token);
 			break;
 		case '-': // comment
 			break;
 		default:
-			tokens.push([TokenType.FORMAT, value]);
+			token = [TokenType.FORMAT, value], tokens.push(token);
+			break;
 		}
 	}
 
@@ -191,9 +235,9 @@ export class Context {
 				}
 			}
 
-			// Support for Function
+			// Support for function
 			if (typeof value === 'function')
-				value = value(this); // `this` means give full-access to contexts
+				value = value(context);
 
 			// Cache the name
 			cache[name] = value;

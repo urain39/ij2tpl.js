@@ -1,14 +1,10 @@
 var IJ2TPL = require('../dist/ij2tpl.min');
 
-let source = `\
-{?names}
-	{.}
-{/names}\
-`;
+let source = '{?name}{#name}{/name}';
 
 let tpl = IJ2TPL.parse(source);
 
-if (tpl.render({names: ['uzilla', 'urain39']}) === '\tuzilla\n\turain39\n')
+if (tpl.render({name: '<b>urain39</b>'}) === '<b>urain39</b>')
 	console.log(`${__filename}: PASS`);
 else
 	console.log(`${__filename}: FAIL`);

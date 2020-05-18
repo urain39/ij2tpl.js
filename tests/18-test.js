@@ -1,15 +1,15 @@
 var IJ2TPL = require('../dist/ij2tpl.min');
 
-let source = `\
-{?names}
-	{.}
-{/names}\
-`;
+let source = `{   #   content
+
+
+		
+
+}`;
 
 let tpl = IJ2TPL.parse(source);
 
-if (tpl.render({names: ['uzilla', 'urain39']}) === '\tuzilla\n\turain39\n')
+if (tpl.render({content: `<script>alert('XSS Test');</script>`}) === `<script>alert('XSS Test');</script>`)
 	console.log(`${__filename}: PASS`);
 else
 	console.log(`${__filename}: FAIL`);
-
