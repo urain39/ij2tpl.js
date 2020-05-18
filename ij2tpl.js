@@ -31,7 +31,7 @@ function tokenize(source, prefix, suffix) {
         if (j === -1) {
             // Eat the rest of the source
             value = source.slice(i);
-            if (value.length > 0)
+            if (value)
                 token = [4 /* TEXT */, value], tokens.push(token);
             break; // Done
         }
@@ -39,7 +39,7 @@ function tokenize(source, prefix, suffix) {
         value = source.slice(i, j);
         j += pl; // Skip the '{'
         // Don't eat the empty text ''
-        if (value.length > 0)
+        if (value)
             token = [4 /* TEXT */, value], tokens.push(token);
         // Match '}'
         i = source.indexOf(suffix, j);
@@ -50,7 +50,7 @@ function tokenize(source, prefix, suffix) {
         value = source.slice(j, i);
         i += sl; // Skip the '}'
         // Skip the empty token, such as '{}'
-        if (value.length < 1)
+        if (!value)
             continue;
         value = value.trim();
         type_ = value[0];
@@ -62,13 +62,13 @@ function tokenize(source, prefix, suffix) {
             // eslint-like ignore-syntax with given errors.
             // @ts-ignore TS7029: Fallthrough case in switch
             case '/':
-                // Remove indentations for section token
+                // Remove section's indentations if exists
                 if (token[0 /* TYPE */] === 4 /* TEXT */) {
                     token[1 /* VALUE */] = token[1 /* VALUE */].replace(/(^|[\n\r])[\t \xA0\uFEFF]+$/, '$1');
                     if (!token[1 /* VALUE */])
                         tokens.pop(); // Drop the empty text ''
                 }
-                // Skip section's newline if it exists
+                // Skip section's newline if exists
                 if (i < l) {
                     switch (source[i]) {
                         case '\n':

@@ -70,7 +70,7 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 			// Eat the rest of the source
 			value = source.slice(i);
 
-			if (value.length > 0)
+			if (value)
 				token = [TokenType.TEXT, value], tokens.push(token);
 
 			break; // Done
@@ -81,7 +81,7 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 		j += pl; // Skip the '{'
 
 		// Don't eat the empty text ''
-		if (value.length > 0)
+		if (value)
 			token = [TokenType.TEXT, value], tokens.push(token);
 
 		// Match '}'
@@ -96,7 +96,7 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 		i += sl; // Skip the '}'
 
 		// Skip the empty token, such as '{}'
-		if (value.length < 1)
+		if (!value)
 			continue;
 
 		value = value.trim();
@@ -111,7 +111,7 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 		// eslint-like ignore-syntax with given errors.
 		// @ts-ignore TS7029: Fallthrough case in switch
 		case '/':
-			// Remove indentations for section token
+			// Remove section's indentations if exists
 			if (token[TokenMember.TYPE] === TokenType.TEXT) {
 				token[TokenMember.VALUE] = token[TokenMember.VALUE].replace(/(^|[\n\r])[\t \xA0\uFEFF]+$/, '$1');
 
@@ -119,7 +119,7 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 					tokens.pop(); // Drop the empty text ''
 			}
 
-			// Skip section's newline if it exists
+			// Skip section's newline if exists
 			if (i < l) {
 				switch (source[i]) {
 				case '\n':
