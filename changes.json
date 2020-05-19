@@ -1,0 +1,38 @@
+[
+	{
+		"date": "2019-11-25",
+		"version": "v0.0.1",
+		"status": "DEPRECATED",
+		"changes": [
+			"First release of IJ2TPL.js"
+		]
+	},
+	{
+		"date": "2019-12-08",
+		"version": "v0.0.2",
+		"status": "OUTDATED",
+		"changes": [
+			"Fixed `Context.resolve` bug"
+		]
+	},
+	{
+		"date": "2020-05-20",
+		"version": "v0.0.3",
+		"status": "RELEASED",
+		"changes": [
+			"Supported function values",
+			"Fixed newline and indentation problems",
+			"Fixed #36 (instanceof Array is not safe) (#39)",
+			"Added more optimizations..."
+		]
+	},
+	{
+		"date": "2020-06-15?",
+		"version": "v0.1.0",
+		"status": "DEVELOPING",
+		"changes": [
+			"Re-Supported If-Else Section",
+			"..."
+		]
+	}
+]
