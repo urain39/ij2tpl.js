@@ -76,7 +76,7 @@ function tokenize(source, prefix, suffix) {
                             i += 1; // LF
                             break;
                         case '\r':
-                            // Safe way for access a char in a string
+                            // Safe way for access a character in a string
                             i += source.charAt(i + 1) === '\n' ?
                                 2 // CRLF
                                 :
