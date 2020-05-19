@@ -114,7 +114,7 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 			// Remove section's indentations if exists
 			if (token[TokenMember.TYPE] === TokenType.TEXT) {
 				if (/(?:^|[\n\r])[\t \xA0\uFEFF]+$/.test(token[TokenMember.VALUE]))
-					token[TokenMember.VALUE] = token[TokenMember.VALUE].replace(/[\s\xA0\uFEFF]+$/g, '');
+					token[TokenMember.VALUE] = token[TokenMember.VALUE].replace(/[\t \xA0\uFEFF]+$/g, '');
 
 				if(!token[TokenMember.VALUE])
 					tokens.pop(); // Drop the empty text ''

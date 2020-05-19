@@ -65,7 +65,7 @@ function tokenize(source, prefix, suffix) {
                 // Remove section's indentations if exists
                 if (token[0 /* TYPE */] === 4 /* TEXT */) {
                     if (/(?:^|[\n\r])[\t \xA0\uFEFF]+$/.test(token[1 /* VALUE */]))
-                        token[1 /* VALUE */] = token[1 /* VALUE */].replace(/[\s\xA0\uFEFF]+$/g, '');
+                        token[1 /* VALUE */] = token[1 /* VALUE */].replace(/[\t \xA0\uFEFF]+$/g, '');
                     if (!token[1 /* VALUE */])
                         tokens.pop(); // Drop the empty text ''
                 }
