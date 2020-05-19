@@ -1,7 +1,7 @@
 var IJ2TPL = require('../dist/ij2tpl.min');
 
-// LF
-let source = `{?name}
+// CRLF
+let source = `{?name}\r
 {#name}
 {/name}
 `;

@@ -1,14 +1,19 @@
 var IJ2TPL = require('../dist/ij2tpl.min');
 
-// LF
-let source = `{?name}
+// CR
+let source = `    {?name}\r\
 {#name}
 {/name}
 `;
 
 let tpl = IJ2TPL.parse(source);
 
-if (tpl.render({name: '<b>urain39</b>'}) === '<b>urain39</b>\n')
+var exists = false;
+
+for (const token of tpl.treeRoot)
+	if (token[1] === '') exists = true;
+
+if (!exists)
 	console.log(`${__filename}: PASS`);
 else
 	console.log(`${__filename}: FAIL`);

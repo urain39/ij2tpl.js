@@ -113,7 +113,8 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 		case '/':
 			// Remove section's indentations if exists
 			if (token[TokenMember.TYPE] === TokenType.TEXT) {
-				token[TokenMember.VALUE] = token[TokenMember.VALUE].replace(/(^|[\n\r])[\t \xA0\uFEFF]+$/, '$1');
+				if (/(?:^|[\n\r])[\t \xA0\uFEFF]+$/.test(token[TokenMember.VALUE]))
+					token[TokenMember.VALUE] = token[TokenMember.VALUE].replace(/[\t \xA0\uFEFF]+$/g, '');
 
 				if(!token[TokenMember.VALUE])
 					tokens.pop(); // Drop the empty text ''
@@ -126,12 +127,9 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 					i += 1; // LF
 					break;
 				case '\r':
-					i += i + 1 < l ?
-						// Is CRLF?
-						source[i + 1] === '\n' ?
-							2 // CRLF
-						:
-							1 // CR
+					// Safe way for access a character in a string
+					i += source.charAt(i + 1) === '\n' ?
+						2 // CRLF
 					:
 						1 // CR
 					;
