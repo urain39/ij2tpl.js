@@ -1,5 +1,7 @@
-# ij2tpl.js
+# IJ2TPL.js
 Mustache-like Template Engine for Javascript(Only 3kB).
+
+> Faster than Mustache.js(at least not slower)!
 
 [English](./README.md) | [中文](./README.zh.md)
 

@@ -1,5 +1,7 @@
-# ij2tpl.js
+# IJ2TPL.js
 JavaScript 编写的类 Mustache 模板引擎(仅 3kB).
+
+> 比Mustache.js更快(至少不会更慢)！
 
 [English](./README.md) | [中文](./README.zh.md)
 
