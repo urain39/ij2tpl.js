@@ -1,0 +1,18 @@
+<!--
+	-- Auto-generated from <PROJECT ROOT>/changes.json
+	-- DO NOT TRY TO MODIFY DIRECTLY!!!
+	-->
+CHANGELOG
+==========
+
+{?.}
+	{?version}
+### {version}({date})
+	{?changes}
+- {.}
+	{/changes}
+
+**status**: *{status}*
+
+	{/version}
+{/.}
