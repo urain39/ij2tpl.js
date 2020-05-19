@@ -1,7 +1,7 @@
 var fs = require('fs');
 
 var IJ2TPL = require('./dist/ij2tpl.min');
-var Changes = require('./changes.json');
+var Changes = require('./changes');
 
 var template = fs.readFileSync('./templates/CHANGELOG.md.ij2');
 
