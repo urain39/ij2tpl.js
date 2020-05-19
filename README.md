@@ -1,14 +1,15 @@
 # ij2tpl.js
-Mustache-like Template for Javascript(Only 3kB!).
+Mustache-like Template Engine for Javascript(Only 3kB).
+
+[English](./README.md) | [中文](./README.zh.md)
 
 **Usage:**
 ```js
 // import ij2tpl.js, for example nodejs:
-const IJ2TPL = require('./dist/ij2tpl.min.js');
+const IJ2TPL = require('./dist/ij2tpl.min');
 
 // Parse a template source
 let renderer = IJ2TPL.parse('Hello, {name}!');
-
 
 // Then let's render it!
 renderer.render({name: 'IJ2TPL'}); // -> "Hello, IJ2TPL!"
@@ -26,14 +27,14 @@ renderer.render({name: 'IJ2TPL'}); // -> "Hello, IJ2TPL!"
 **If Section**
 ```html
 {?valid}
-	only valid data can be rendered.
+	Only valid data can be rendered.
 {/valid}
 ```
 
 **Not Section**
 ```html
 {!valid}
-	only invalid data can be rendered.
+	Only invalid data can be rendered.
 {/valid}
 ```
 
@@ -48,18 +49,18 @@ Hello {#name}
 
 ```html
 {?valid}
-	only valid data can be rendered.
+	Only valid data can be rendered.
 {*valid}
 	Oops, something's wrong?
 {/valid}
 ```
 
-**Notice** if-else statement still are re-working. It can be tokenized on v0.0.3, but doesn't work true.
+**Notice** if-else statement still are re-working. It can be tokenized on v0.0.3, do not use it!
 
 </details>
 
 
-**Function type**
+**Function type(Formatter)**
 ```js
 function toHumanReadableSize(size) {
 	var i = 0,
@@ -82,8 +83,14 @@ function humanReadableSize(context) {
 Downloaded {humanReadableSize}
 ```
 
+**Custom Prefix and Suffix(aka Delimiter or Tags)**
+```js
+IJ2TPL.parse('Hello <%name%>', '<%', '%>');
+```
+
 **Not Implemented Yet:**
 - ~~Function type(Supported on v0.0.2-dev)~~
-- Format pipe(Filter)
+- Sub-template(aka Partial Section)
+- Format Pipe(aka Filter)
 
 Last update: 2020-05-18

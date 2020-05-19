@@ -112,12 +112,9 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 		// @ts-ignore TS7029: Fallthrough case in switch
 		case '/':
 			// Remove section's indentations if exists
-			if (token[TokenMember.TYPE] === TokenType.TEXT) {
-				token[TokenMember.VALUE] = token[TokenMember.VALUE].replace(/(^|[\n\r])[\t \xA0\uFEFF]+$/, '$1');
-
-				if(!token[TokenMember.VALUE])
-					tokens.pop(); // Drop the empty text ''
-			}
+			if (token[TokenMember.TYPE] === TokenType.TEXT)
+				if (/(?:^|[\n\r])[\t \xA0\uFEFF]+$/.test(token[TokenMember.VALUE]))
+					token[TokenMember.VALUE] = token[TokenMember.VALUE].replace(/[\s\xA0\uFEFF]+$/g, '');
 
 			// Skip section's newline if exists
 			if (i < l) {
@@ -126,12 +123,8 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 					i += 1; // LF
 					break;
 				case '\r':
-					i += i + 1 < l ?
-						// Is CRLF?
-						source[i + 1] === '\n' ?
-							2 // CRLF
-						:
-							1 // CR
+					i += source.charAt(i + 1) === '\n' ?
+						2 // CRLF
 					:
 						1 // CR
 					;
