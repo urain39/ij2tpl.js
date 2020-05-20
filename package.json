@@ -1,7 +1,10 @@
 {
   "name": "ij2tpl",
-  "version": "0.0.3",
+  "version": "0.0.3-dirty",
   "description": "Mustache-like Template for Javascript.",
+  "bin": {
+    "ij2tpl": "./bin/ij2tpl.js"
+  },
   "main": "ij2tpl.js",
   "scripts": {
     "build": "tsc && browserify ij2tpl.js -s IJ2TPL -o dist/ij2tpl.umd.js && uglifyjs dist/ij2tpl.umd.js -m -o dist/ij2tpl.min.js",
