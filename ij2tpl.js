@@ -1,5 +1,6 @@
 "use strict";
 // Copyright (c) 2018-2020 urain39 <urain39[AT]qq[DOT]com>
+var _a;
 exports.__esModule = true;
 exports.parse = exports.Renderer = exports.Context = exports.escapeHTML = exports.tokenize = exports.version = void 0;
 exports.version = '0.0.3-dev';
@@ -45,7 +46,7 @@ function tokenize(source, prefix, suffix) {
         i = source.indexOf(suffix, j);
         // Not found the '}'
         if (i === -1)
-            throw new SyntaxError("No match prefix '" + prefix + "'");
+            throw new SyntaxError("No matching prefix '" + prefix + "'");
         // Eat the text between the '{' and '}'
         value = source.slice(j, i);
         i += sl; // Skip the '}'
@@ -231,6 +232,14 @@ var Renderer = /** @class */ (function () {
     return Renderer;
 }());
 exports.Renderer = Renderer;
+// See https://github.com/microsoft/TypeScript/issues/14682
+var TokenTypeReverseMap = (_a = {},
+    _a[0 /* IF */] = '?',
+    _a[1 /* NOT */] = '!',
+    _a[2 /* ELSE */] = '*',
+    _a[3 /* END */] = '/',
+    _a[5 /* RAW */] = '#',
+    _a);
 function buildTree(tokens) {
     var section, sections = [], treeRoot = [], collector = treeRoot;
     for (var _i = 0, tokens_1 = tokens; _i < tokens_1.length; _i++) {
@@ -252,7 +261,7 @@ function buildTree(tokens) {
                 section = sections.pop();
                 // Check if section is not match
                 if (!section || token[1 /* VALUE */] !== section[1 /* VALUE */])
-                    throw new SyntaxError("Unexpected token '<type=" + token[0 /* TYPE */] + ", value=" + token[1 /* VALUE */] + ">'");
+                    throw new SyntaxError("Unexpected token '<type=" + TokenTypeReverseMap[token[0 /* TYPE */]] + ", value=" + token[1 /* VALUE */] + ">'");
                 // Re-bind block to parent block
                 sections.length > 0 ?
                     collector = sections[sections.length - 1][2 /* BLOCK */]
@@ -262,11 +271,12 @@ function buildTree(tokens) {
             // Text or Formatter
             default:
                 collector.push(token);
+                break;
         }
     }
     if (sections.length > 0) {
         section = sections.pop();
-        throw new SyntaxError("No match section '<type=" + section[0 /* TYPE */] + ", value=" + section[1 /* VALUE */] + ">'");
+        throw new SyntaxError("No matching section '<type=" + TokenTypeReverseMap[section[0 /* TYPE */]] + ", value=" + section[1 /* VALUE */] + ">'");
     }
     return treeRoot;
 }

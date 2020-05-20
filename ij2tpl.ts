@@ -45,11 +45,11 @@ interface IMap {
 }
 
 let TokenTypeMap: IMap = {
-	'?': TokenType.IF,
-	'!': TokenType.NOT,
-	'*': TokenType.ELSE,
-	'/': TokenType.END,
-	'#': TokenType.RAW
+	'?':	TokenType.IF,
+	'!':	TokenType.NOT,
+	'*':	TokenType.ELSE,
+	'/':	TokenType.END,
+	'#':	TokenType.RAW
 };
 
 export function tokenize(source: string, prefix: string, suffix: string): IToken[] {
@@ -89,7 +89,7 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 
 		// Not found the '}'
 		if (i === -1)
-			throw new SyntaxError(`No match prefix '${prefix}'`);
+			throw new SyntaxError(`No matching prefix '${prefix}'`);
 
 		// Eat the text between the '{' and '}'
 		value = source.slice(j, i);
@@ -320,6 +320,15 @@ export class Renderer {
 	}
 }
 
+// See https://github.com/microsoft/TypeScript/issues/14682
+let TokenTypeReverseMap: IMap = {
+	[TokenType.IF]:	'?',
+	[TokenType.NOT]:	'!',
+	[TokenType.ELSE]:	'*',
+	[TokenType.END]:	'/',
+	[TokenType.RAW]:	'#'
+};
+
 function buildTree(tokens: IToken[]): IToken[] {
 	let section: IToken | undefined,
 		sections: IToken[] = [],
@@ -345,7 +354,8 @@ function buildTree(tokens: IToken[]): IToken[] {
 
 			// Check if section is not match
 			if (!section || token[TokenMember.VALUE] !== section[TokenMember.VALUE])
-				throw new SyntaxError(`Unexpected token '<type=${token[TokenMember.TYPE]}, value=${token[TokenMember.VALUE]}>'`);
+				throw new SyntaxError(`Unexpected token '<type=${
+					TokenTypeReverseMap[token[TokenMember.TYPE]]}, value=${token[TokenMember.VALUE]}>'`);
 
 			// Re-bind block to parent block
 			sections.length > 0 ?
@@ -357,12 +367,15 @@ function buildTree(tokens: IToken[]): IToken[] {
 		// Text or Formatter
 		default:
 			collector.push(token);
+			break;
 		}
 	}
 
 	if (sections.length > 0) {
 		section = sections.pop() as IToken;
-		throw new SyntaxError(`No match section '<type=${section[TokenMember.TYPE]}, value=${section[TokenMember.VALUE]}>'`);
+
+		throw new SyntaxError(`No matching section '<type=${
+			TokenTypeReverseMap[section[TokenMember.TYPE]]}, value=${section[TokenMember.VALUE]}>'`);
 	}
 
 	return treeRoot;
