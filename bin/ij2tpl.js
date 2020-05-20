@@ -2,15 +2,15 @@
 
 const fs = require('fs'),
 	IJ2TPL = require('../dist/ij2tpl.min'),
-	Package = require('../package');
+	PACKAGE = require('../package');
 
 function help() {
 	process.stdout.write(`\
 Usage:
-	${Package.name || 'ij2tpl'} <infile> <datafile>
+	${PACKAGE.name || 'ij2tpl'} <infile> <datafile>
 
 Version:
-	${Package.version}
+	${PACKAGE.version}
 `);
 }
 
