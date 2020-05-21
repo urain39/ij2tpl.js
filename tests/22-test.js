@@ -16,5 +16,5 @@ for (const token of tpl.treeRoot)
 if (!exists)
 	console.log(`${__filename}: PASS`);
 else
-	console.log(`${__filename}: FAIL`);
-
+	console.log(`${__filename}: FAIL`),
+	process.exit(1);

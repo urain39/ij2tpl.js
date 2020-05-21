@@ -1,14 +1,10 @@
 var IJ2TPL = require('../dist/ij2tpl.min');
 
-// CRLF
-let source = `{?name}\r
-\r\n{#name}
-{/name}
-`;
+let source = `{content}`;
 
 let tpl = IJ2TPL.parse(source);
 
-if (tpl.render({name: '<b>urain39</b>'}) === '\r\n<b>urain39</b>\n')
+if (tpl.render({content: `&<>"'\`=/`}) === '&amp;&lt;&gt;&quot;&#39;&#x60;&#x3D;&#x2F;')
 	console.log(`${__filename}: PASS`);
 else
 	console.log(`${__filename}: FAIL`),

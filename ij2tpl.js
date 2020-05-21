@@ -6,7 +6,7 @@ exports.parse = exports.Renderer = exports.Context = exports.escapeHTML = export
 exports.version = '0.0.3-dev';
 // Compatible for ES3-ES5
 if (!Array.isArray) {
-    var objectToString_1 = Object.prototype.toString;
+    var objectToString_1 = {}.toString;
     Array.isArray = function (value) {
         return objectToString_1.call(value) === '[object Array]';
     };
@@ -59,9 +59,6 @@ function tokenize(source, prefix, suffix) {
             case '?':
             case '!':
             case '*':
-            // XXX: need replace when TypeScript support
-            // eslint-like ignore-syntax with given errors.
-            // @ts-ignore TS7029: Fallthrough case in switch
             case '/':
                 // Remove section's indentations if exists
                 if (token[0 /* TYPE */] === 4 /* TEXT */) {
@@ -86,6 +83,7 @@ function tokenize(source, prefix, suffix) {
                             break;
                     }
                 }
+            // eslint-disable-line no-fallthrough
             case '#':
                 value = value.slice(1).trim();
                 token = [TokenTypeMap[type_], value], tokens.push(token);
@@ -111,11 +109,12 @@ var htmlEntityMap = {
     '/': '&#x2F;'
 };
 function escapeHTML(value) {
-    return String(value).replace(/[&<>"'`=\/]/g, function (key) {
+    return String(value).replace(/[&<>"'`=/]/g, function (key) {
         return htmlEntityMap[key];
     });
 }
 exports.escapeHTML = escapeHTML;
+var hasOwnProperty = {}.hasOwnProperty;
 var Context = /** @class */ (function () {
     function Context(data, parent) {
         this.data = data;
@@ -126,7 +125,7 @@ var Context = /** @class */ (function () {
         var data, cache, value = null, context = this;
         cache = context.cache;
         // Cached in context?
-        if (cache.hasOwnProperty(name)) {
+        if (hasOwnProperty.call(cache, name)) {
             value = cache[name];
         }
         else {
@@ -138,12 +137,12 @@ var Context = /** @class */ (function () {
                 for (; context; context = context.parent) {
                     data = context.data;
                     // Find out which context contains name
-                    if (data && data.hasOwnProperty && data.hasOwnProperty(name_)) {
+                    if (data && hasOwnProperty.call(data, name_)) {
                         value = data[name_];
                         // Resolve sub-names
                         for (var i = 1, l = names.length; i < l; i++) {
                             name_ = names[i];
-                            if (value && value.hasOwnProperty && value.hasOwnProperty(name_)) {
+                            if (value && hasOwnProperty.call(value, name_)) {
                                 value = value[name_];
                             }
                             else {
@@ -160,7 +159,7 @@ var Context = /** @class */ (function () {
                 for (; context; context = context.parent) {
                     data = context.data;
                     // Find out which context contains name
-                    if (data && data.hasOwnProperty && data.hasOwnProperty(name)) {
+                    if (data && hasOwnProperty.call(data, name)) {
                         value = data[name];
                         break;
                     }

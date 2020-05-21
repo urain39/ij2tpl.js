@@ -9,4 +9,5 @@ if (tpl.render({a: { a: function(context) {
 }}, b: 9}) === `[object Object]9`)
 	console.log(`${__filename}: PASS`);
 else
-	console.log(`${__filename}: FAIL`);
+	console.log(`${__filename}: FAIL`),
+	process.exit(1);
