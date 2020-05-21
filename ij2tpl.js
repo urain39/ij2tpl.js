@@ -109,7 +109,8 @@ var htmlEntityMap = {
     '/': '&#x2F;'
 };
 function escapeHTML(value) {
-    return String(value).replace(/[&<>"'`=/]/g, function (key) {
+    // eslint-disable-next-line no-useless-escape
+    return String(value).replace(/[&<>"'`=\/]/g, function (key) {
         return htmlEntityMap[key];
     });
 }

@@ -17,6 +17,10 @@ if (!String.prototype.trim) {
 	};
 }
 
+/* eslint-disable no-unused-vars */
+
+// XXX: ^^^ seems it is a bug of ESLint
+
 const enum TokenMember {
 	TYPE = 0,
 	VALUE,
@@ -34,6 +38,7 @@ const enum TokenType {
 	FORMAT,
 	INVALID
 }
+/* eslint-enable no-unused-vars */
 
 // See https://github.com/microsoft/TypeScript/pull/33050
 //     https://stackoverflow.com/questions/47842266/recursive-types-in-typescript
@@ -162,7 +167,8 @@ let htmlEntityMap: IMap = {
 };
 
 export function escapeHTML(value: any): string {
-	return String(value).replace(/[&<>"'`=/]/g, function(key: string): string {
+	// eslint-disable-next-line no-useless-escape
+	return String(value).replace(/[&<>"'`=\/]/g, function(key: string): string {
 		return htmlEntityMap[key];
 	});
 }
