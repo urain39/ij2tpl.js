@@ -1,5 +1,3 @@
-var IJ2TPL = require('../dist/ij2tpl.min');
-
 let source = `\
 {?names}
 	{.}
@@ -8,8 +6,4 @@ let source = `\
 
 let tpl = IJ2TPL.parse(source);
 
-if (tpl.render({names: ['uzilla', 'urain39']}) === '\tuzilla\n\turain39\n')
-	console.log(`${__filename}: PASS`);
-else
-	console.log(`${__filename}: FAIL`),
-	process.exit(1);
+assert.deepStrictEqual(tpl.render({names: ['uzilla', 'urain39']}), '\tuzilla\n\turain39\n');

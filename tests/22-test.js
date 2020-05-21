@@ -1,5 +1,3 @@
-var IJ2TPL = require('../dist/ij2tpl.min');
-
 // CR
 let source = `    {?name}\r\
 {#name}
@@ -13,8 +11,4 @@ var exists = false;
 for (const token of tpl.treeRoot)
 	if (token[1] === '') exists = true;
 
-if (!exists)
-	console.log(`${__filename}: PASS`);
-else
-	console.log(`${__filename}: FAIL`),
-	process.exit(1);
+assert.deepStrictEqual(exists, false);
