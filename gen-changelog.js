@@ -1,10 +1,10 @@
 var fs = require('fs');
 
 var IJ2TPL = require('./dist/ij2tpl.min');
-var Changes = require('./changes');
+var CHANGES = require('./changes');
 
 var template = fs.readFileSync('./templates/CHANGELOG.md.ij2');
 
 template = IJ2TPL.parse(template.toString());
 
-fs.writeFileSync('./CHANGELOG.md', template.render(Changes));
+fs.writeFileSync('./CHANGELOG.md', template.render(CHANGES));

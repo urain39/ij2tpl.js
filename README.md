@@ -7,7 +7,7 @@ Mustache-like Template Engine for Javascript(Only 3kB).
 
 **Usage:**
 ```js
-// import ij2tpl.js, for example nodejs:
+// Import ij2tpl.js, for example nodejs:
 const IJ2TPL = require('./dist/ij2tpl.min');
 
 // Parse a template source
@@ -57,7 +57,7 @@ Hello {#name}
 {/valid}
 ```
 
-**Notice** if-else statement still are re-working. It can be tokenized on v0.0.3, do not use it!
+**Notice** if-else statement still are re-working, do not use it!
 
 </details>
 

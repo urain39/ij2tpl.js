@@ -4,7 +4,7 @@ export const version: string = '0.0.3-dev';
 
 // Compatible for ES3-ES5
 if (!Array.isArray) {
-	const objectToString = Object.prototype.toString;
+	const objectToString = {}.toString;
 
 	Array.isArray = function(value: any): value is any[] {
 		return objectToString.call(value) === '[object Array]';
@@ -17,10 +17,15 @@ if (!String.prototype.trim) {
 	};
 }
 
+/* eslint-disable no-unused-vars */
+
+// XXX: ^^^ seems it is a bug of ESLint
+
 const enum TokenMember {
 	TYPE = 0,
 	VALUE,
 	BLOCK,
+	ELSE_BLOCK
 }
 
 const enum TokenType {
@@ -33,10 +38,11 @@ const enum TokenType {
 	FORMAT,
 	INVALID
 }
+/* eslint-enable no-unused-vars */
 
 // See https://github.com/microsoft/TypeScript/pull/33050
 //     https://stackoverflow.com/questions/47842266/recursive-types-in-typescript
-type TokenTuple<T> = [TokenType, string, T[]?];
+type TokenTuple<T> = [TokenType, string, T[]?, T[]?];
 interface IToken extends TokenTuple<IToken> {}
 
 interface IMap {
@@ -45,11 +51,11 @@ interface IMap {
 }
 
 let TokenTypeMap: IMap = {
-	'?': TokenType.IF,
-	'!': TokenType.NOT,
-	'*': TokenType.ELSE,
-	'/': TokenType.END,
-	'#': TokenType.RAW
+	'?':	TokenType.IF,
+	'!':	TokenType.NOT,
+	'*':	TokenType.ELSE,
+	'/':	TokenType.END,
+	'#':	TokenType.RAW
 };
 
 export function tokenize(source: string, prefix: string, suffix: string): IToken[] {
@@ -89,7 +95,7 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 
 		// Not found the '}'
 		if (i === -1)
-			throw new SyntaxError(`No match prefix '${prefix}'`);
+			throw new SyntaxError(`No matching prefix '${prefix}'`);
 
 		// Eat the text between the '{' and '}'
 		value = source.slice(j, i);
@@ -107,9 +113,6 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 		case '?':
 		case '!':
 		case '*':
-		// XXX: need replace when TypeScript support
-		// eslint-like ignore-syntax with given errors.
-		// @ts-ignore TS7029: Fallthrough case in switch
 		case '/':
 			// Remove section's indentations if exists
 			if (token[TokenMember.TYPE] === TokenType.TEXT) {
@@ -130,12 +133,13 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 					// Safe way for access a character in a string
 					i += source.charAt(i + 1) === '\n' ?
 						2 // CRLF
-					:
+						:
 						1 // CR
 					;
 					break;
 				}
 			}
+		// eslint-disable-line no-fallthrough
 		case '#':
 			value = value.slice(1).trim();
 			token = [TokenTypeMap[type_], value], tokens.push(token);
@@ -156,17 +160,20 @@ let htmlEntityMap: IMap = {
 	'<': '&lt;',
 	'>': '&gt;',
 	'"': '&quot;',
-	"'": '&#39;',
+	"'": '&#39;', // eslint-disable-line quotes
 	'`': '&#x60;',
 	'=': '&#x3D;',
 	'/': '&#x2F;'
 };
 
 export function escapeHTML(value: any): string {
+	// eslint-disable-next-line no-useless-escape
 	return String(value).replace(/[&<>"'`=\/]/g, function(key: string): string {
 		return htmlEntityMap[key];
 	});
 }
+
+const hasOwnProperty = {}.hasOwnProperty;
 
 export class Context {
 	private data: IMap;
@@ -188,7 +195,7 @@ export class Context {
 		cache = context.cache;
 
 		// Cached in context?
-		if (cache.hasOwnProperty(name)) {
+		if (hasOwnProperty.call(cache, name)) {
 			value = cache[name];
 		} else {
 			// No cached record found
@@ -203,17 +210,17 @@ export class Context {
 					data = context.data;
 
 					// Find out which context contains name
-					if (data && data.hasOwnProperty && data.hasOwnProperty(name_)) {
+					if (data && hasOwnProperty.call(data, name_)) {
 						value = (data as IMap)[name_];
 
 						// Resolve sub-names
 						for (let i = 1, l = names.length; i < l; i++) {
 							name_ = names[i];
 
-							if (value && value.hasOwnProperty && value.hasOwnProperty(name_)) {
+							if (value && hasOwnProperty.call(value, name_)) {
 								value = value[name_];
 							} else {
-								value = null // Reset value
+								value = null; // Reset value
 								break;
 							}
 						}
@@ -226,7 +233,7 @@ export class Context {
 					data = context.data;
 
 					// Find out which context contains name
-					if (data && data.hasOwnProperty && data.hasOwnProperty(name)) {
+					if (data && hasOwnProperty.call(data, name)) {
 						value = (data as IMap)[name];
 						break;
 					}
@@ -303,7 +310,7 @@ export class Renderer {
 					// append a stringified object to buffer, it is not safe!
 					buffer += typeof value === 'number' ?
 						value
-					:
+						:
 						escapeHTML(value)
 					;
 				break;
@@ -319,6 +326,15 @@ export class Renderer {
 		);
 	}
 }
+
+// See https://github.com/microsoft/TypeScript/issues/14682
+let TokenTypeReverseMap: IMap = {
+	[TokenType.IF]:	'?',
+	[TokenType.NOT]:	'!',
+	[TokenType.ELSE]:	'*',
+	[TokenType.END]:	'/',
+	[TokenType.RAW]:	'#'
+};
 
 function buildTree(tokens: IToken[]): IToken[] {
 	let section: IToken | undefined,
@@ -345,24 +361,28 @@ function buildTree(tokens: IToken[]): IToken[] {
 
 			// Check if section is not match
 			if (!section || token[TokenMember.VALUE] !== section[TokenMember.VALUE])
-				throw new SyntaxError(`Unexpected token '<type=${token[TokenMember.TYPE]}, value=${token[TokenMember.VALUE]}>'`);
+				throw new SyntaxError(`Unexpected token '<type=${
+					TokenTypeReverseMap[token[TokenMember.TYPE]]}, value=${token[TokenMember.VALUE]}>'`);
 
 			// Re-bind block to parent block
 			sections.length > 0 ?
 				collector = (sections[sections.length - 1] as IToken)[TokenMember.BLOCK] as IToken[]
-			:
+				:
 				collector = treeRoot
 			;
 			break;
 		// Text or Formatter
 		default:
 			collector.push(token);
+			break;
 		}
 	}
 
 	if (sections.length > 0) {
 		section = sections.pop() as IToken;
-		throw new SyntaxError(`No match section '<type=${section[TokenMember.TYPE]}, value=${section[TokenMember.VALUE]}>'`);
+
+		throw new SyntaxError(`No matching section '<type=${
+			TokenTypeReverseMap[section[TokenMember.TYPE]]}, value=${section[TokenMember.VALUE]}>'`);
 	}
 
 	return treeRoot;

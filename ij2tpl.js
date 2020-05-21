@@ -1,11 +1,12 @@
 "use strict";
 // Copyright (c) 2018-2020 urain39 <urain39[AT]qq[DOT]com>
+var _a;
 exports.__esModule = true;
 exports.parse = exports.Renderer = exports.Context = exports.escapeHTML = exports.tokenize = exports.version = void 0;
 exports.version = '0.0.3-dev';
 // Compatible for ES3-ES5
 if (!Array.isArray) {
-    var objectToString_1 = Object.prototype.toString;
+    var objectToString_1 = {}.toString;
     Array.isArray = function (value) {
         return objectToString_1.call(value) === '[object Array]';
     };
@@ -45,7 +46,7 @@ function tokenize(source, prefix, suffix) {
         i = source.indexOf(suffix, j);
         // Not found the '}'
         if (i === -1)
-            throw new SyntaxError("No match prefix '" + prefix + "'");
+            throw new SyntaxError("No matching prefix '" + prefix + "'");
         // Eat the text between the '{' and '}'
         value = source.slice(j, i);
         i += sl; // Skip the '}'
@@ -58,9 +59,6 @@ function tokenize(source, prefix, suffix) {
             case '?':
             case '!':
             case '*':
-            // XXX: need replace when TypeScript support
-            // eslint-like ignore-syntax with given errors.
-            // @ts-ignore TS7029: Fallthrough case in switch
             case '/':
                 // Remove section's indentations if exists
                 if (token[0 /* TYPE */] === 4 /* TEXT */) {
@@ -85,6 +83,7 @@ function tokenize(source, prefix, suffix) {
                             break;
                     }
                 }
+            // eslint-disable-line no-fallthrough
             case '#':
                 value = value.slice(1).trim();
                 token = [TokenTypeMap[type_], value], tokens.push(token);
@@ -110,11 +109,13 @@ var htmlEntityMap = {
     '/': '&#x2F;'
 };
 function escapeHTML(value) {
+    // eslint-disable-next-line no-useless-escape
     return String(value).replace(/[&<>"'`=\/]/g, function (key) {
         return htmlEntityMap[key];
     });
 }
 exports.escapeHTML = escapeHTML;
+var hasOwnProperty = {}.hasOwnProperty;
 var Context = /** @class */ (function () {
     function Context(data, parent) {
         this.data = data;
@@ -125,7 +126,7 @@ var Context = /** @class */ (function () {
         var data, cache, value = null, context = this;
         cache = context.cache;
         // Cached in context?
-        if (cache.hasOwnProperty(name)) {
+        if (hasOwnProperty.call(cache, name)) {
             value = cache[name];
         }
         else {
@@ -137,12 +138,12 @@ var Context = /** @class */ (function () {
                 for (; context; context = context.parent) {
                     data = context.data;
                     // Find out which context contains name
-                    if (data && data.hasOwnProperty && data.hasOwnProperty(name_)) {
+                    if (data && hasOwnProperty.call(data, name_)) {
                         value = data[name_];
                         // Resolve sub-names
                         for (var i = 1, l = names.length; i < l; i++) {
                             name_ = names[i];
-                            if (value && value.hasOwnProperty && value.hasOwnProperty(name_)) {
+                            if (value && hasOwnProperty.call(value, name_)) {
                                 value = value[name_];
                             }
                             else {
@@ -159,7 +160,7 @@ var Context = /** @class */ (function () {
                 for (; context; context = context.parent) {
                     data = context.data;
                     // Find out which context contains name
-                    if (data && data.hasOwnProperty && data.hasOwnProperty(name)) {
+                    if (data && hasOwnProperty.call(data, name)) {
                         value = data[name];
                         break;
                     }
@@ -231,6 +232,14 @@ var Renderer = /** @class */ (function () {
     return Renderer;
 }());
 exports.Renderer = Renderer;
+// See https://github.com/microsoft/TypeScript/issues/14682
+var TokenTypeReverseMap = (_a = {},
+    _a[0 /* IF */] = '?',
+    _a[1 /* NOT */] = '!',
+    _a[2 /* ELSE */] = '*',
+    _a[3 /* END */] = '/',
+    _a[5 /* RAW */] = '#',
+    _a);
 function buildTree(tokens) {
     var section, sections = [], treeRoot = [], collector = treeRoot;
     for (var _i = 0, tokens_1 = tokens; _i < tokens_1.length; _i++) {
@@ -252,7 +261,7 @@ function buildTree(tokens) {
                 section = sections.pop();
                 // Check if section is not match
                 if (!section || token[1 /* VALUE */] !== section[1 /* VALUE */])
-                    throw new SyntaxError("Unexpected token '<type=" + token[0 /* TYPE */] + ", value=" + token[1 /* VALUE */] + ">'");
+                    throw new SyntaxError("Unexpected token '<type=" + TokenTypeReverseMap[token[0 /* TYPE */]] + ", value=" + token[1 /* VALUE */] + ">'");
                 // Re-bind block to parent block
                 sections.length > 0 ?
                     collector = sections[sections.length - 1][2 /* BLOCK */]
@@ -262,11 +271,12 @@ function buildTree(tokens) {
             // Text or Formatter
             default:
                 collector.push(token);
+                break;
         }
     }
     if (sections.length > 0) {
         section = sections.pop();
-        throw new SyntaxError("No match section '<type=" + section[0 /* TYPE */] + ", value=" + section[1 /* VALUE */] + ">'");
+        throw new SyntaxError("No matching section '<type=" + TokenTypeReverseMap[section[0 /* TYPE */]] + ", value=" + section[1 /* VALUE */] + ">'");
     }
     return treeRoot;
 }

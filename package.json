@@ -1,11 +1,14 @@
 {
   "name": "ij2tpl",
-  "version": "0.0.3",
+  "version": "0.0.3-dirty",
   "description": "Mustache-like Template for Javascript.",
+  "bin": {
+    "ij2tpl": "./bin/ij2tpl.js"
+  },
   "main": "ij2tpl.js",
   "scripts": {
     "build": "tsc && browserify ij2tpl.js -s IJ2TPL -o dist/ij2tpl.umd.js && uglifyjs dist/ij2tpl.umd.js -m -o dist/ij2tpl.min.js",
-    "test": "find tests/ -type f -name '*test.js' | xargs -r -i node '{}'"
+    "test": "node test.js && node bin/ij2tpl.js templates/CHANGELOG.md.ij2 changes.json"
   },
   "repository": {
     "type": "git",
@@ -23,5 +26,13 @@
     "url": "https://github.com/urain39/ij2tpl.js/issues"
   },
   "homepage": "https://github.com/urain39/ij2tpl.js#readme",
-  "dependencies": {}
+  "dependencies": {},
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^2.34.0",
+    "@typescript-eslint/parser": "^2.34.0",
+    "browserify": "^16.5.1",
+    "eslint": "^7.0.0",
+    "typescript": "^3.9.3",
+    "uglify-js": "^3.9.3"
+  }
 }
