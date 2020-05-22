@@ -3,7 +3,7 @@
 var _a;
 exports.__esModule = true;
 exports.parse = exports.Renderer = exports.Context = exports.escapeHTML = exports.tokenize = exports.version = void 0;
-exports.version = '0.0.3-dev';
+exports.version = '0.1.0-dev';
 // Compatible for ES3-ES5
 if (!Array.isArray) {
     var objectToString_1 = {}.toString;
@@ -188,20 +188,35 @@ var Renderer = /** @class */ (function () {
             switch (token[0 /* TYPE */]) {
                 case 0 /* IF */:
                     value = context.resolve(token[1 /* VALUE */]);
-                    if (!value)
-                        continue;
-                    else if (Array.isArray(value))
-                        for (var _a = 0, value_1 = value; _a < value_1.length; _a++) {
-                            var value_ = value_1[_a];
-                            buffer += this.renderTree(token[2 /* BLOCK */], new Context(value_, context));
-                        }
-                    else
-                        buffer += this.renderTree(token[2 /* BLOCK */], new Context(value, context));
+                    if (value) {
+                        if (Array.isArray(value))
+                            for (var _a = 0, value_1 = value; _a < value_1.length; _a++) {
+                                var value_ = value_1[_a];
+                                buffer += this.renderTree(token[2 /* BLOCK */], new Context(value_, context));
+                            }
+                        else
+                            buffer += this.renderTree(token[2 /* BLOCK */], new Context(value, context));
+                    }
                     break;
                 case 1 /* NOT */:
                     value = context.resolve(token[1 /* VALUE */]);
                     if (!value || Array.isArray(value) && value.length < 1)
                         buffer += this.renderTree(token[2 /* BLOCK */], context);
+                    break;
+                case 2 /* ELSE */:
+                    value = context.resolve(token[1 /* VALUE */]);
+                    if (value) {
+                        if (Array.isArray(value))
+                            for (var _b = 0, value_2 = value; _b < value_2.length; _b++) {
+                                var value_ = value_2[_b];
+                                buffer += this.renderTree(token[2 /* BLOCK */], new Context(value_, context));
+                            }
+                        else
+                            buffer += this.renderTree(token[2 /* BLOCK */], new Context(value, context));
+                    }
+                    else {
+                        buffer += this.renderTree(token[3 /* ELSE_BLOCK */], context);
+                    }
                     break;
                 case 4 /* TEXT */:
                     buffer += token[1 /* VALUE */];
@@ -256,17 +271,39 @@ function buildTree(tokens) {
                 // Initialize section block
                 collector = section[2 /* BLOCK */] = [];
                 break;
+            // Switch Section block
+            case 2 /* ELSE */:
+                section = sections.length > 0 ?
+                    sections[sections.length - 1]
+                    :
+                        void 0 // Reset
+                ;
+                // Check current(top) section is valid?
+                if (!section || section[0 /* TYPE */] !== 0 /* IF */ || token[1 /* VALUE */] !== section[1 /* VALUE */])
+                    throw new SyntaxError("Unexpected token '<type=" + TokenTypeReverseMap[token[0 /* TYPE */]] + ", value=" + token[1 /* VALUE */] + ">'");
+                // Switch the block to else-block
+                collector = section[3 /* ELSE_BLOCK */] = [];
+                break;
             // Leave a section
             case 3 /* END */:
                 section = sections.pop();
                 // Check if section is not match
                 if (!section || token[1 /* VALUE */] !== section[1 /* VALUE */])
                     throw new SyntaxError("Unexpected token '<type=" + TokenTypeReverseMap[token[0 /* TYPE */]] + ", value=" + token[1 /* VALUE */] + ">'");
+                // Change type for which section contains else-block
+                if (Array.isArray(section[3 /* ELSE_BLOCK */]) && section[3 /* ELSE_BLOCK */].length > 0)
+                    section[0 /* TYPE */] = 2 /* ELSE */;
                 // Re-bind block to parent block
-                sections.length > 0 ?
-                    collector = sections[sections.length - 1][2 /* BLOCK */]
-                    :
-                        collector = treeRoot;
+                if (sections.length > 0)
+                    // Is parent section has initialized else-block?
+                    collector = ((section = sections[sections.length - 1], Array.isArray(section[3 /* ELSE_BLOCK */])) ?
+                        // Yes, then parent block is else-block.
+                        section[3 /* ELSE_BLOCK */]
+                        :
+                            // No, then parent block is (if-)block.
+                            section[2 /* BLOCK */]);
+                else
+                    collector = treeRoot;
                 break;
             // Text or Formatter
             default:

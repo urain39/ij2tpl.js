@@ -19,14 +19,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 exports.__esModule = true;
-exports.IJ2BaseLoader = exports.escapeString = void 0;
+exports.IJ2BaseLoader = void 0;
 var fs = __importStar(require("fs"));
 var path = __importStar(require("path"));
-// XXX: help me to make it better!
-function escapeString(string_) {
-    return JSON.stringify(string_);
-}
-exports.escapeString = escapeString;
 var IJ2BaseLoader = /** @class */ (function () {
     function IJ2BaseLoader(basePath) {
         if (basePath === void 0) { basePath = '.'; }
@@ -36,7 +31,7 @@ var IJ2BaseLoader = /** @class */ (function () {
         if (!path.isAbsolute(path_))
             path_ = path.resolve(path.join(this.basePath, path_));
         var source = fs.readFileSync(path_, 'utf-8');
-        return escapeString(source);
+        return source;
     };
     return IJ2BaseLoader;
 }());
