@@ -403,7 +403,7 @@ function buildTree(tokens: IToken[]): IToken[] {
 					TokenTypeReverseMap[token[TokenMember.TYPE]]}, value=${token[TokenMember.VALUE]}>'`);
 
 			// Change type of which section contains else block
-			if ((section as IToken)[TokenMember.ELSE_BLOCK] instanceof Array && (section[TokenMember.ELSE_BLOCK] as IToken[]).length > 0)
+			if (Array.isArray((section as IToken)[TokenMember.ELSE_BLOCK]) && (section[TokenMember.ELSE_BLOCK] as IToken[]).length > 0)
 				section[TokenMember.TYPE] = TokenType.ELSE;
 
 			// Re-bind block to parent block

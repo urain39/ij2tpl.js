@@ -290,7 +290,7 @@ function buildTree(tokens) {
                 if (!section || token[1 /* VALUE */] !== section[1 /* VALUE */])
                     throw new SyntaxError("Unexpected token '<type=" + TokenTypeReverseMap[token[0 /* TYPE */]] + ", value=" + token[1 /* VALUE */] + ">'");
                 // Change type of which section contains else block
-                if (section[3 /* ELSE_BLOCK */] instanceof Array && section[3 /* ELSE_BLOCK */].length > 0)
+                if (Array.isArray(section[3 /* ELSE_BLOCK */]) && section[3 /* ELSE_BLOCK */].length > 0)
                     section[0 /* TYPE */] = 2 /* ELSE */;
                 // Re-bind block to parent block
                 if (sections.length > 0)
