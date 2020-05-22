@@ -19,7 +19,7 @@ if (!String.prototype.trim) {
 
 /* eslint-disable no-unused-vars */
 
-// XXX: ^^^ seems it is a bug of ESLint
+// XXX: ^^^ it seems that is a bug of ESLint
 
 const enum TokenMember {
 	TYPE = 0,

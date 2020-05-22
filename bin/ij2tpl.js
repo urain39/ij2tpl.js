@@ -7,7 +7,7 @@ const fs = require('fs'),
 function help() {
 	process.stdout.write(`\
 Usage:
-	${PACKAGE.name || 'ij2tpl'} <infile> <datafile>
+	${PACKAGE.name} <infile> <datafile>
 
 Version:
 	${PACKAGE.version}
@@ -28,7 +28,7 @@ try{
 	process.stdout.write(IJ2TPL.parse(
 		fs.readFileSync(infile).toString()
 	).render(JSON.parse(
-		fs.readFileSync(datafile).toString()
+		fs.readFileSync(datafile, 'utf-8')
 	)));
 } catch (error) {
 	console.error(error);
