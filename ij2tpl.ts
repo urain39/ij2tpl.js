@@ -1,6 +1,6 @@
 // Copyright (c) 2018-2020 urain39 <urain39[AT]qq[DOT]com>
 
-export const version: string = '0.0.3-dev';
+export const version: string = '0.1.0-dev';
 
 // Compatible for ES3-ES5
 if (!Array.isArray) {
@@ -268,19 +268,19 @@ export class Renderer {
 			case TokenType.IF:
 				value = context.resolve(token[TokenMember.VALUE]);
 
-				if (!value)
-					continue;
-				else if (Array.isArray(value))
-					for (const value_ of value)
+				if (value) {
+					if (Array.isArray(value))
+						for (const value_ of value)
+							buffer += this.renderTree(
+								token[TokenMember.BLOCK] as IToken[],
+								new Context(value_, context)
+							);
+					else
 						buffer += this.renderTree(
 							token[TokenMember.BLOCK] as IToken[],
-							new Context(value_, context)
+							new Context(value, context)
 						);
-				else
-					buffer += this.renderTree(
-						token[TokenMember.BLOCK] as IToken[],
-						new Context(value, context)
-					);
+				}
 				break;
 			case TokenType.NOT:
 				value = context.resolve(token[TokenMember.VALUE]);
@@ -290,6 +290,28 @@ export class Renderer {
 						token[TokenMember.BLOCK] as IToken[],
 						context
 					);
+				break;
+			case TokenType.ELSE:
+				value = context.resolve(token[TokenMember.VALUE]);
+
+				if (value) {
+					if (Array.isArray(value))
+						for (const value_ of value)
+							buffer += this.renderTree(
+								token[TokenMember.BLOCK] as IToken[],
+								new Context(value_, context)
+							);
+					else
+						buffer += this.renderTree(
+							token[TokenMember.BLOCK] as IToken[],
+							new Context(value, context)
+						);
+				} else {
+					buffer += this.renderTree(
+						token[TokenMember.BLOCK] as IToken[],
+						context
+					);
+				}
 				break;
 			case TokenType.TEXT:
 				buffer += token[TokenMember.VALUE];
@@ -355,6 +377,22 @@ function buildTree(tokens: IToken[]): IToken[] {
 			// Initialize section block
 			collector = section[TokenMember.BLOCK] = [];
 			break;
+		// Switch Section block
+		case TokenType.ELSE:
+			section = sections.length > 0 ?
+				sections[sections.length - 1]
+				:
+				void 0
+			;
+
+			// Check current(top) section is valid?
+			if (!section || section[TokenMember.TYPE] !== TokenType.IF || token[TokenMember.VALUE] !== section[TokenMember.VALUE])
+				throw new SyntaxError(`Unexpected token '<type=${
+					TokenTypeReverseMap[token[TokenMember.TYPE]]}, value=${token[TokenMember.VALUE]}>'`);
+
+			// Switch the block to else block
+			collector = section[TokenMember.ELSE_BLOCK] = [];
+			break;
 		// Leave a section
 		case TokenType.END:
 			section = sections.pop();
@@ -364,12 +402,19 @@ function buildTree(tokens: IToken[]): IToken[] {
 				throw new SyntaxError(`Unexpected token '<type=${
 					TokenTypeReverseMap[token[TokenMember.TYPE]]}, value=${token[TokenMember.VALUE]}>'`);
 
+			// Change type of which section contains else block
+			if ((section as IToken)[TokenMember.ELSE_BLOCK] instanceof Array && (section[TokenMember.ELSE_BLOCK] as IToken[]).length > 0)
+				section[TokenMember.TYPE] = TokenType.ELSE;
+
 			// Re-bind block to parent block
-			sections.length > 0 ?
-				collector = (sections[sections.length - 1] as IToken)[TokenMember.BLOCK] as IToken[]
-				:
-				collector = treeRoot
-			;
+			if (sections.length > 0)
+				collector = ((section = (sections[sections.length - 1] as IToken), Array.isArray(section[TokenMember.ELSE_BLOCK])) ?
+					section[TokenMember.ELSE_BLOCK]
+					:
+					section[TokenMember.BLOCK]) as IToken[]
+				;
+			else
+				collector = treeRoot;
 			break;
 		// Text or Formatter
 		default:

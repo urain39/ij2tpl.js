@@ -1,4 +1,7 @@
-./ij2tpl.js
-./loader/base-loader.js
-./node_modules/
-./tests/
+build/
+dist/
+ij2tpl.js
+load/base-loader.js
+node_modules/
+tests/
+templates/
