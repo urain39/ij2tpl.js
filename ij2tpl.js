@@ -103,7 +103,7 @@ function escapeHTML(value) {
         return htmlEntityMap[key];
     });
 }
-export var escape = escapeHTML; // We don't wanna user use a long name function to call
+export var escape = escapeHTML; // We don't wanna user use a long name to call function
 var hasOwnProperty = {}.hasOwnProperty;
 var Context = /** @class */ (function () {
     function Context(data, parent) {

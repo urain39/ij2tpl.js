@@ -164,7 +164,7 @@ function escapeHTML(value: any): string {
 	});
 }
 
-export const escape = escapeHTML; // We don't wanna user use a long name function to call
+export const escape = escapeHTML; // We don't wanna user use a long name to call function
 
 const hasOwnProperty = {}.hasOwnProperty;
 
