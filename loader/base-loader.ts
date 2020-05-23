@@ -1,12 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-// XXX: help me to make it better!
-
-export function escapeString(string_: string): string {
-	return JSON.stringify(string_);
-}
-
 export class IJ2BaseLoader {
 	private basePath: string;
 
@@ -20,6 +14,6 @@ export class IJ2BaseLoader {
 
 		let source: string = fs.readFileSync(path_, 'utf-8');
 
-		return escapeString(source);
+		return source;
 	}
 }

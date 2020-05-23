@@ -7,7 +7,7 @@
   },
   "main": "ij2tpl.js",
   "scripts": {
-    "build": "tsc && browserify ij2tpl.js -s IJ2TPL -o dist/ij2tpl.umd.js && uglifyjs dist/ij2tpl.umd.js -m -o dist/ij2tpl.min.js",
+    "build": "eslint && node gen-changelog.js && tsc && rollup ij2tpl.js -f umd -n IJ2TPL -o dist/ij2tpl.umd.js && uglifyjs dist/ij2tpl.umd.js -m -o dist/ij2tpl.min.js",
     "test": "node test.js && node bin/ij2tpl.js templates/CHANGELOG.md.ij2 changes.json"
   },
   "repository": {
@@ -31,8 +31,8 @@
     "@types/node": "^14.0.5",
     "@typescript-eslint/eslint-plugin": "^2.34.0",
     "@typescript-eslint/parser": "^2.34.0",
-    "browserify": "^16.5.1",
     "eslint": "^7.0.0",
+    "rollup": "^2.10.7",
     "typescript": "^3.9.3",
     "uglify-js": "^3.9.3"
   }
