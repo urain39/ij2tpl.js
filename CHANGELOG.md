@@ -26,6 +26,7 @@ CHANGELOG
 ### v0.1.0(2020-06-15?)
 - Re-Supported If-Else Section
 - **Changed** &#x60;IJ2TPL.escapeHTML&#x60; -&gt; &#x60;IJ2TPL.escape&#x60;
+- Fixed check on **empty array**(different with mustache.js)
 - ...
 
 **status**: *DEVELOPING*

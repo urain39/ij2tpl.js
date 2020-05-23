@@ -259,15 +259,18 @@ export class Renderer {
 
 	public renderTree(treeRoot: IToken[], context: Context): string {
 		let value: any,
-			buffer: string = '';
+			buffer: string = '',
+			isArray_: boolean = false;
 
 		for (const token of treeRoot) {
 			switch (token[TokenMember.TYPE]) {
 			case TokenType.IF:
 				value = context.resolve(token[TokenMember.VALUE]);
+				isArray_ = isArray(value);
 
-				if (value) {
-					if (isArray(value))
+				// Fix check on empty array
+				if (isArray_ ? value.length > 0 : value) {
+					if (isArray_)
 						for (const value_ of value)
 							buffer += this.renderTree(
 								token[TokenMember.BLOCK] as IToken[],
@@ -282,8 +285,9 @@ export class Renderer {
 				break;
 			case TokenType.NOT:
 				value = context.resolve(token[TokenMember.VALUE]);
+				isArray_ = isArray(value);
 
-				if (!value || isArray(value) && value.length < 1)
+				if (isArray_ ? value.length < 1 : !value)
 					buffer += this.renderTree(
 						token[TokenMember.BLOCK] as IToken[],
 						context
@@ -291,9 +295,10 @@ export class Renderer {
 				break;
 			case TokenType.ELSE:
 				value = context.resolve(token[TokenMember.VALUE]);
+				isArray_ = isArray(value);
 
-				if (value) {
-					if (isArray(value))
+				if (isArray_ ? value.length > 0 : value) {
+					if (isArray_)
 						for (const value_ of value)
 							buffer += this.renderTree(
 								token[TokenMember.BLOCK] as IToken[],

@@ -174,14 +174,16 @@ var Renderer = /** @class */ (function () {
         this.treeRoot = treeRoot;
     }
     Renderer.prototype.renderTree = function (treeRoot, context) {
-        var value, buffer = '';
+        var value, buffer = '', isArray_ = false;
         for (var _i = 0, treeRoot_1 = treeRoot; _i < treeRoot_1.length; _i++) {
             var token = treeRoot_1[_i];
             switch (token[0 /* TYPE */]) {
                 case 0 /* IF */:
                     value = context.resolve(token[1 /* VALUE */]);
-                    if (value) {
-                        if (isArray(value))
+                    isArray_ = isArray(value);
+                    // Fix check on empty array
+                    if (isArray_ ? value.length > 0 : value) {
+                        if (isArray_)
                             for (var _a = 0, value_1 = value; _a < value_1.length; _a++) {
                                 var value_ = value_1[_a];
                                 buffer += this.renderTree(token[2 /* BLOCK */], new Context(value_, context));
@@ -192,13 +194,15 @@ var Renderer = /** @class */ (function () {
                     break;
                 case 1 /* NOT */:
                     value = context.resolve(token[1 /* VALUE */]);
-                    if (!value || isArray(value) && value.length < 1)
+                    isArray_ = isArray(value);
+                    if (isArray_ ? value.length < 1 : !value)
                         buffer += this.renderTree(token[2 /* BLOCK */], context);
                     break;
                 case 2 /* ELSE */:
                     value = context.resolve(token[1 /* VALUE */]);
-                    if (value) {
-                        if (isArray(value))
+                    isArray_ = isArray(value);
+                    if (isArray_ ? value.length > 0 : value) {
+                        if (isArray_)
                             for (var _b = 0, value_2 = value; _b < value_2.length; _b++) {
                                 var value_ = value_2[_b];
                                 buffer += this.renderTree(token[2 /* BLOCK */], new Context(value_, context));
