@@ -1,9 +1,6 @@
-"use strict";
 // Copyright (c) 2018-2020 urain39 <urain39[AT]qq[DOT]com>
 var _a;
-exports.__esModule = true;
-exports.parse = exports.Renderer = exports.Context = exports.escape = exports.tokenize = exports.version = void 0;
-exports.version = '0.1.0-dev';
+export var version = '0.1.0-dev';
 if (!String.prototype.trim) {
     String.prototype.trim = function () {
         return this.replace(/^[\s\xA0\uFEFF]+|[\s\xA0\uFEFF]+$/g, '');
@@ -16,7 +13,7 @@ var TokenTypeMap = {
     '/': 3 /* END */,
     '#': 5 /* RAW */
 };
-function tokenize(source, prefix, suffix) {
+export function tokenize(source, prefix, suffix) {
     var type_, value, token = [7 /* INVALID */, '^'], tokens = [];
     for (var i = 0, j = 0, l = source.length, pl = prefix.length, sl = suffix.length; i < l;) {
         // Match '{'
@@ -90,7 +87,6 @@ function tokenize(source, prefix, suffix) {
     }
     return tokens;
 }
-exports.tokenize = tokenize;
 var htmlEntityMap = {
     '&': '&amp;',
     '<': '&lt;',
@@ -107,7 +103,7 @@ function escapeHTML(value) {
         return htmlEntityMap[key];
     });
 }
-exports.escape = escapeHTML; // We don't wanna user use a long name function to call
+export var escape = escapeHTML; // We don't wanna user use a long name function to call
 var hasOwnProperty = {}.hasOwnProperty;
 var Context = /** @class */ (function () {
     function Context(data, parent) {
@@ -169,7 +165,7 @@ var Context = /** @class */ (function () {
     };
     return Context;
 }());
-exports.Context = Context;
+export { Context };
 var toString = {}.toString, isArray = Array.isArray || function (value) {
     return toString.call(value) === '[object Array]';
 };
@@ -242,7 +238,7 @@ var Renderer = /** @class */ (function () {
     };
     return Renderer;
 }());
-exports.Renderer = Renderer;
+export { Renderer };
 // See https://github.com/microsoft/TypeScript/issues/14682
 var TokenTypeReverseMap = (_a = {},
     _a[0 /* IF */] = '?',
@@ -313,10 +309,9 @@ function buildTree(tokens) {
     }
     return treeRoot;
 }
-function parse(source, prefix, suffix) {
+export function parse(source, prefix, suffix) {
     if (prefix === void 0) { prefix = '{'; }
     if (suffix === void 0) { suffix = '}'; }
     var treeRoot = buildTree(tokenize(source, prefix, suffix));
     return new Renderer(treeRoot);
 }
-exports.parse = parse;
