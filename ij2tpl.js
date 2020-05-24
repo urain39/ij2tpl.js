@@ -167,9 +167,13 @@ var Context = /** @class */ (function () {
     return Context;
 }());
 export { Context };
-var toString = {}.toString, isArray = Array.isArray || function (value) {
-    return toString.call(value) === '[object Array]';
-};
+var isArray = Array.isArray;
+if (!isArray) {
+    var toString_1 = {}.toString;
+    isArray = function (value) {
+        return toString_1.call(value) === '[object Array]';
+    };
+}
 var Renderer = /** @class */ (function () {
     function Renderer(treeRoot) {
         this.treeRoot = treeRoot;
@@ -196,7 +200,7 @@ var Renderer = /** @class */ (function () {
                 case 1 /* NOT */:
                     value = context.resolve(token[1 /* VALUE */]);
                     isArray_ = isArray(value);
-                    if (isArray_ ? value.length < 1 : !value)
+                    if (!(isArray_ ? value.length > 0 : value))
                         buffer += this.renderTree(token[2 /* BLOCK */], context);
                     break;
                 case 2 /* ELSE */:

@@ -246,10 +246,15 @@ export class Context {
 	}
 }
 
-const toString = {}.toString,
-	isArray = Array.isArray || function(value: any): value is any[] {
+let isArray = Array.isArray;
+
+if (!isArray) {
+	const toString = {}.toString;
+
+	isArray = function(value: any): value is any[] {
 		return toString.call(value) === '[object Array]';
 	};
+}
 
 export class Renderer {
 	private treeRoot: IToken[];
@@ -288,7 +293,7 @@ export class Renderer {
 				value = context.resolve(token[TokenMember.VALUE]);
 				isArray_ = isArray(value);
 
-				if (isArray_ ? value.length < 1 : !value)
+				if (!(isArray_ ? value.length > 0 : value))
 					buffer += this.renderTree(
 						token[TokenMember.BLOCK] as IToken[],
 						context

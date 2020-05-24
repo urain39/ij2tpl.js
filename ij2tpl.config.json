@@ -1,0 +1,14 @@
+{
+	"version": [0, 1, 0],
+	"parseOptions": {
+		"prefix": "{",
+		"suffix": "}"
+	},
+	"renderOptions": {
+		"escape": {
+			"enable": false,
+			"regexp": "",
+			"escapeMap": {}
+		}
+	}
+}
