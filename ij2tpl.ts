@@ -269,7 +269,7 @@ export class Renderer {
 				value = context.resolve(token[TokenMember.VALUE]);
 				isArray_ = isArray(value);
 
-				// Fix check on empty array
+				// We can only know true or false after we sure it is array or not
 				if (isArray_ ? value.length > 0 : value) {
 					if (isArray_)
 						for (const value_ of value)

@@ -182,7 +182,7 @@ var Renderer = /** @class */ (function () {
                 case 0 /* IF */:
                     value = context.resolve(token[1 /* VALUE */]);
                     isArray_ = isArray(value);
-                    // Fix check on empty array
+                    // We can only know true or false after we sure it is array or not
                     if (isArray_ ? value.length > 0 : value) {
                         if (isArray_)
                             for (var _a = 0, value_1 = value; _a < value_1.length; _a++) {
