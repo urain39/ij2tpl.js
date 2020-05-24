@@ -46,8 +46,7 @@ renderer.render({name: 'IJ2TPL'}); // -> "Hello, IJ2TPL!"
 Hello {#name}
 ```
 
-<details>
-<summary><del><b>If-Else Section(Re-Working)</b></del></summary>
+**If-Else Section**
 
 ```html
 {?valid}
@@ -56,11 +55,6 @@ Hello {#name}
 	Oops, something's wrong?
 {/valid}
 ```
-
-**Notice** if-else statement still are re-working, do not use it!
-
-</details>
-
 
 **Function type(Formatter)**
 ```js

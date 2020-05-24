@@ -147,19 +147,20 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 }
 
 let htmlEntityMap: IMap = {
-	'&': '&amp;',
-	'<': '&lt;',
-	'>': '&gt;',
 	'"': '&quot;',
+	'&': '&amp;',
 	"'": '&#39;', // eslint-disable-line quotes
-	'`': '&#x60;',
+	'/': '&#x2F;',
+	'<': '&lt;',
 	'=': '&#x3D;',
-	'/': '&#x2F;'
+	'>': '&gt;',
+	'`': '&#x60;'
 };
 
+// See https://github.com/janl/mustache.js/pull/530
 function escapeHTML(value: any): string {
 	// eslint-disable-next-line no-useless-escape
-	return String(value).replace(/[&<>"'`=\/]/g, function(key: string): string {
+	return String(value).replace(/["&'\/<=>`]/g, function(key: string): string {
 		return htmlEntityMap[key];
 	});
 }
@@ -247,8 +248,8 @@ export class Context {
 
 const toString = {}.toString,
 	isArray = Array.isArray || function(value: any): value is any[] {
-	return toString.call(value) === '[object Array]';
-};
+		return toString.call(value) === '[object Array]';
+	};
 
 export class Renderer {
 	private treeRoot: IToken[];

@@ -88,18 +88,19 @@ export function tokenize(source, prefix, suffix) {
     return tokens;
 }
 var htmlEntityMap = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
     '"': '&quot;',
+    '&': '&amp;',
     "'": '&#39;',
-    '`': '&#x60;',
+    '/': '&#x2F;',
+    '<': '&lt;',
     '=': '&#x3D;',
-    '/': '&#x2F;'
+    '>': '&gt;',
+    '`': '&#x60;'
 };
+// See https://github.com/janl/mustache.js/pull/530
 function escapeHTML(value) {
     // eslint-disable-next-line no-useless-escape
-    return String(value).replace(/[&<>"'`=\/]/g, function (key) {
+    return String(value).replace(/["&'\/<=>`]/g, function (key) {
         return htmlEntityMap[key];
     });
 }
