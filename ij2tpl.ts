@@ -147,24 +147,25 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 }
 
 let htmlEntityMap: IMap = {
-	'&': '&amp;',
-	'<': '&lt;',
-	'>': '&gt;',
 	'"': '&quot;',
+	'&': '&amp;',
 	"'": '&#39;', // eslint-disable-line quotes
-	'`': '&#x60;',
+	'/': '&#x2F;',
+	'<': '&lt;',
 	'=': '&#x3D;',
-	'/': '&#x2F;'
+	'>': '&gt;',
+	'`': '&#x60;'
 };
 
+// See https://github.com/janl/mustache.js/pull/530
 function escapeHTML(value: any): string {
 	// eslint-disable-next-line no-useless-escape
-	return String(value).replace(/[&<>"'`=\/]/g, function(key: string): string {
+	return String(value).replace(/["&'\/<=>`]/g, function(key: string): string {
 		return htmlEntityMap[key];
 	});
 }
 
-export const escape = escapeHTML; // We don't wanna user use a long name function to call
+export const escape = escapeHTML; // We don't wanna user use a long name to call function
 
 const hasOwnProperty = {}.hasOwnProperty;
 
@@ -247,8 +248,8 @@ export class Context {
 
 const toString = {}.toString,
 	isArray = Array.isArray || function(value: any): value is any[] {
-	return toString.call(value) === '[object Array]';
-};
+		return toString.call(value) === '[object Array]';
+	};
 
 export class Renderer {
 	private treeRoot: IToken[];
@@ -259,15 +260,18 @@ export class Renderer {
 
 	public renderTree(treeRoot: IToken[], context: Context): string {
 		let value: any,
-			buffer: string = '';
+			buffer: string = '',
+			isArray_: boolean = false;
 
 		for (const token of treeRoot) {
 			switch (token[TokenMember.TYPE]) {
 			case TokenType.IF:
 				value = context.resolve(token[TokenMember.VALUE]);
+				isArray_ = isArray(value);
 
-				if (value) {
-					if (isArray(value))
+				// We can only know true or false after we sure it is array or not
+				if (isArray_ ? value.length > 0 : value) {
+					if (isArray_)
 						for (const value_ of value)
 							buffer += this.renderTree(
 								token[TokenMember.BLOCK] as IToken[],
@@ -282,8 +286,9 @@ export class Renderer {
 				break;
 			case TokenType.NOT:
 				value = context.resolve(token[TokenMember.VALUE]);
+				isArray_ = isArray(value);
 
-				if (!value || isArray(value) && value.length < 1)
+				if (isArray_ ? value.length < 1 : !value)
 					buffer += this.renderTree(
 						token[TokenMember.BLOCK] as IToken[],
 						context
@@ -291,9 +296,10 @@ export class Renderer {
 				break;
 			case TokenType.ELSE:
 				value = context.resolve(token[TokenMember.VALUE]);
+				isArray_ = isArray(value);
 
-				if (value) {
-					if (isArray(value))
+				if (isArray_ ? value.length > 0 : value) {
+					if (isArray_)
 						for (const value_ of value)
 							buffer += this.renderTree(
 								token[TokenMember.BLOCK] as IToken[],

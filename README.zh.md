@@ -46,8 +46,7 @@ renderer.render({name: 'IJ2TPL'}); // -> "你好, IJ2TPL!"
 你好 {#name}
 ```
 
-<details>
-<summary><del><b>If-Else 段落(重制中)</b></del></summary>
+**If-Else 段落**
 
 ```html
 {?valid}
@@ -56,11 +55,6 @@ renderer.render({name: 'IJ2TPL'}); // -> "你好, IJ2TPL!"
 	哎呀，好像出错了？
 {/valid}
 ```
-
-**注意** if-else 语法 仍在重制中，请勿使用！
-
-</details>
-
 
 **函数类型(格式化器)**
 ```js

@@ -1,4 +1,4 @@
 ./ij2tpl.js
-./loader/base-loader.js
+./loader/*.js
 ./node_modules/
-./tests/
+./tests/*.js
