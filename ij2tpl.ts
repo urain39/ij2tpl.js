@@ -51,10 +51,10 @@ const TokenTypeMap: IMap = {
 	'#':	TokenType.RAW
 };
 
-// NOTE: if we use `IndentTestRe` with capture-group directly, the `<string>.replace` method
+// NOTE: if we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
 //     will always generate a new string. So we need test it before replace it ;)
-const IndentTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/,
-	IndentWhiteSpaceRe = /[\t \xA0\uFEFF]+$/g;
+const IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/,
+	IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/g;
 
 export function tokenize(source: string, prefix: string, suffix: string): IToken[] {
 	let type_: string,
@@ -114,8 +114,8 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 		case '/':
 			// Remove section's indentations if exists
 			if (token[TokenMember.TYPE] === TokenType.TEXT) {
-				if (IndentTestRe.test(token[TokenMember.VALUE]))
-					token[TokenMember.VALUE] = token[TokenMember.VALUE].replace(IndentWhiteSpaceRe, '');
+				if (IndentedTestRe.test(token[TokenMember.VALUE]))
+					token[TokenMember.VALUE] = token[TokenMember.VALUE].replace(IndentedWhiteSpaceRe, '');
 
 				if(!token[TokenMember.VALUE])
 					tokens.pop(); // Drop the empty text ''
@@ -153,9 +153,9 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 	return tokens;
 }
 
-// eslint-disable-next-line
-const htmlSpecialCharRe = /["&'\/<=>`]/g,
-	htmlEntityMap: IMap = {
+// eslint-disable-next-line no-useless-escape
+const htmlSpecialRe = /["&'\/<=>`]/g,
+	htmlSpecialEntityMap: IMap = {
 		'"': '&quot;',
 		'&': '&amp;',
 		"'": '&#39;', // eslint-disable-line quotes
@@ -168,9 +168,8 @@ const htmlSpecialCharRe = /["&'\/<=>`]/g,
 
 // See https://github.com/janl/mustache.js/pull/530
 function escapeHTML(value: any): string {
-	// eslint-disable-next-line no-useless-escape
-	return String(value).replace(htmlSpecialCharRe, function(key: string): string {
-		return htmlEntityMap[key];
+	return String(value).replace(htmlSpecialRe, function(key: string): string {
+		return htmlSpecialEntityMap[key];
 	});
 }
 
@@ -455,7 +454,7 @@ function buildTree(tokens: IToken[]): IToken[] {
 }
 
 export function parse(source: string, prefix: string = '{', suffix: string = '}'): Renderer {
-	let treeRoot = buildTree(tokenize(
+	const treeRoot = buildTree(tokenize(
 		source, prefix, suffix
 	));
 

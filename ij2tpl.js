@@ -14,9 +14,9 @@ var TokenTypeMap = {
     '/': 3 /* END */,
     '#': 5 /* RAW */
 };
-// NOTE: if we use `IndentTestRe` with capture-group directly, the `<string>.replace` method
+// NOTE: if we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
 //     will always generate a new string. So we need test it before replace it ;)
-var IndentTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/, IndentWhiteSpaceRe = /[\t \xA0\uFEFF]+$/g;
+var IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/, IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/g;
 export function tokenize(source, prefix, suffix) {
     var type_, value, token = [7 /* INVALID */, '^'], tokens = [];
     for (var i = 0, j = 0, l = source.length, pl = prefix.length, sl = suffix.length; i < l;) {
@@ -56,8 +56,8 @@ export function tokenize(source, prefix, suffix) {
             case '/':
                 // Remove section's indentations if exists
                 if (token[0 /* TYPE */] === 4 /* TEXT */) {
-                    if (IndentTestRe.test(token[1 /* VALUE */]))
-                        token[1 /* VALUE */] = token[1 /* VALUE */].replace(IndentWhiteSpaceRe, '');
+                    if (IndentedTestRe.test(token[1 /* VALUE */]))
+                        token[1 /* VALUE */] = token[1 /* VALUE */].replace(IndentedWhiteSpaceRe, '');
                     if (!token[1 /* VALUE */])
                         tokens.pop(); // Drop the empty text ''
                 }
@@ -91,8 +91,8 @@ export function tokenize(source, prefix, suffix) {
     }
     return tokens;
 }
-// eslint-disable-next-line
-var htmlSpecialCharRe = /["&'\/<=>`]/g, htmlEntityMap = {
+// eslint-disable-next-line no-useless-escape
+var htmlSpecialRe = /["&'\/<=>`]/g, htmlSpecialEntityMap = {
     '"': '&quot;',
     '&': '&amp;',
     "'": '&#39;',
@@ -104,9 +104,8 @@ var htmlSpecialCharRe = /["&'\/<=>`]/g, htmlEntityMap = {
 };
 // See https://github.com/janl/mustache.js/pull/530
 function escapeHTML(value) {
-    // eslint-disable-next-line no-useless-escape
-    return String(value).replace(htmlSpecialCharRe, function (key) {
-        return htmlEntityMap[key];
+    return String(value).replace(htmlSpecialRe, function (key) {
+        return htmlSpecialEntityMap[key];
     });
 }
 export var escape = escapeHTML; // We don't wanna user use a long name to call function
