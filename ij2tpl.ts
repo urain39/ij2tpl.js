@@ -3,8 +3,10 @@
 export const version: string = '0.1.0-dev';
 
 if (!String.prototype.trim) {
+	const WhiteSpaceRe = /^[\s\xA0\uFEFF]+|[\s\xA0\uFEFF]+$/g;
+
 	String.prototype.trim = function(): string {
-		return this.replace(/^[\s\xA0\uFEFF]+|[\s\xA0\uFEFF]+$/g, '');
+		return this.replace(WhiteSpaceRe, '');
 	};
 }
 
@@ -22,7 +24,7 @@ const enum TokenMember {
 const enum TokenType {
 	IF = 0,	// '?'
 	NOT,	// '!'
-	ELSE,	// '*' (Re-working)
+	ELSE,	// '*'
 	END,	// '/'
 	TEXT,
 	RAW,	// '#'
@@ -41,13 +43,18 @@ interface IMap {
 	[index: number]: any;
 }
 
-let TokenTypeMap: IMap = {
+const TokenTypeMap: IMap = {
 	'?':	TokenType.IF,
 	'!':	TokenType.NOT,
 	'*':	TokenType.ELSE,
 	'/':	TokenType.END,
 	'#':	TokenType.RAW
 };
+
+// NOTE: if we use `IndentTestRe` with capture-group directly, the `<string>.replace` method
+//     will always generate a new string. So we need test it before replace it ;)
+const IndentTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/,
+	IndentWhiteSpaceRe = /[\t \xA0\uFEFF]+$/g;
 
 export function tokenize(source: string, prefix: string, suffix: string): IToken[] {
 	let type_: string,
@@ -107,8 +114,8 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 		case '/':
 			// Remove section's indentations if exists
 			if (token[TokenMember.TYPE] === TokenType.TEXT) {
-				if (/(?:^|[\n\r])[\t \xA0\uFEFF]+$/.test(token[TokenMember.VALUE]))
-					token[TokenMember.VALUE] = token[TokenMember.VALUE].replace(/[\t \xA0\uFEFF]+$/g, '');
+				if (IndentTestRe.test(token[TokenMember.VALUE]))
+					token[TokenMember.VALUE] = token[TokenMember.VALUE].replace(IndentWhiteSpaceRe, '');
 
 				if(!token[TokenMember.VALUE])
 					tokens.pop(); // Drop the empty text ''
@@ -146,21 +153,23 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 	return tokens;
 }
 
-let htmlEntityMap: IMap = {
-	'"': '&quot;',
-	'&': '&amp;',
-	"'": '&#39;', // eslint-disable-line quotes
-	'/': '&#x2F;',
-	'<': '&lt;',
-	'=': '&#x3D;',
-	'>': '&gt;',
-	'`': '&#x60;'
-};
+// eslint-disable-next-line
+const htmlSpecialCharRe = /["&'\/<=>`]/g,
+	htmlEntityMap: IMap = {
+		'"': '&quot;',
+		'&': '&amp;',
+		"'": '&#39;', // eslint-disable-line quotes
+		'/': '&#x2F;',
+		'<': '&lt;',
+		'=': '&#x3D;',
+		'>': '&gt;',
+		'`': '&#x60;'
+	};
 
 // See https://github.com/janl/mustache.js/pull/530
 function escapeHTML(value: any): string {
 	// eslint-disable-next-line no-useless-escape
-	return String(value).replace(/["&'\/<=>`]/g, function(key: string): string {
+	return String(value).replace(htmlSpecialCharRe, function(key: string): string {
 		return htmlEntityMap[key];
 	});
 }
@@ -293,7 +302,7 @@ export class Renderer {
 				value = context.resolve(token[TokenMember.VALUE]);
 				isArray_ = isArray(value);
 
-				if (!(isArray_ ? value.length > 0 : value))
+				if (isArray_ ? value.length < 1 : !value)
 					buffer += this.renderTree(
 						token[TokenMember.BLOCK] as IToken[],
 						context
@@ -338,7 +347,7 @@ export class Renderer {
 
 				if (value != null)
 					// NOTE: `<object>.toString` will be called when we try to
-					// append a stringified object to buffer, it is not safe!
+					//     append a stringified object to buffer, it is not safe!
 					buffer += typeof value === 'number' ?
 						value
 						:
@@ -359,7 +368,7 @@ export class Renderer {
 }
 
 // See https://github.com/microsoft/TypeScript/issues/14682
-let TokenTypeReverseMap: IMap = {
+const TokenTypeReverseMap: IMap = {
 	[TokenType.IF]:	'?',
 	[TokenType.NOT]:	'!',
 	[TokenType.ELSE]:	'*',

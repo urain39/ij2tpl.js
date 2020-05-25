@@ -2,8 +2,9 @@
 var _a;
 export var version = '0.1.0-dev';
 if (!String.prototype.trim) {
+    var WhiteSpaceRe_1 = /^[\s\xA0\uFEFF]+|[\s\xA0\uFEFF]+$/g;
     String.prototype.trim = function () {
-        return this.replace(/^[\s\xA0\uFEFF]+|[\s\xA0\uFEFF]+$/g, '');
+        return this.replace(WhiteSpaceRe_1, '');
     };
 }
 var TokenTypeMap = {
@@ -13,6 +14,9 @@ var TokenTypeMap = {
     '/': 3 /* END */,
     '#': 5 /* RAW */
 };
+// NOTE: if we use `IndentTestRe` with capture-group directly, the `<string>.replace` method
+//     will always generate a new string. So we need test it before replace it ;)
+var IndentTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/, IndentWhiteSpaceRe = /[\t \xA0\uFEFF]+$/g;
 export function tokenize(source, prefix, suffix) {
     var type_, value, token = [7 /* INVALID */, '^'], tokens = [];
     for (var i = 0, j = 0, l = source.length, pl = prefix.length, sl = suffix.length; i < l;) {
@@ -52,8 +56,8 @@ export function tokenize(source, prefix, suffix) {
             case '/':
                 // Remove section's indentations if exists
                 if (token[0 /* TYPE */] === 4 /* TEXT */) {
-                    if (/(?:^|[\n\r])[\t \xA0\uFEFF]+$/.test(token[1 /* VALUE */]))
-                        token[1 /* VALUE */] = token[1 /* VALUE */].replace(/[\t \xA0\uFEFF]+$/g, '');
+                    if (IndentTestRe.test(token[1 /* VALUE */]))
+                        token[1 /* VALUE */] = token[1 /* VALUE */].replace(IndentWhiteSpaceRe, '');
                     if (!token[1 /* VALUE */])
                         tokens.pop(); // Drop the empty text ''
                 }
@@ -87,7 +91,8 @@ export function tokenize(source, prefix, suffix) {
     }
     return tokens;
 }
-var htmlEntityMap = {
+// eslint-disable-next-line
+var htmlSpecialCharRe = /["&'\/<=>`]/g, htmlEntityMap = {
     '"': '&quot;',
     '&': '&amp;',
     "'": '&#39;',
@@ -100,7 +105,7 @@ var htmlEntityMap = {
 // See https://github.com/janl/mustache.js/pull/530
 function escapeHTML(value) {
     // eslint-disable-next-line no-useless-escape
-    return String(value).replace(/["&'\/<=>`]/g, function (key) {
+    return String(value).replace(htmlSpecialCharRe, function (key) {
         return htmlEntityMap[key];
     });
 }
@@ -200,7 +205,7 @@ var Renderer = /** @class */ (function () {
                 case 1 /* NOT */:
                     value = context.resolve(token[1 /* VALUE */]);
                     isArray_ = isArray(value);
-                    if (!(isArray_ ? value.length > 0 : value))
+                    if (isArray_ ? value.length < 1 : !value)
                         buffer += this.renderTree(token[2 /* BLOCK */], context);
                     break;
                 case 2 /* ELSE */:
@@ -232,7 +237,7 @@ var Renderer = /** @class */ (function () {
                     value = context.resolve(token[1 /* VALUE */]);
                     if (value != null)
                         // NOTE: `<object>.toString` will be called when we try to
-                        // append a stringified object to buffer, it is not safe!
+                        //     append a stringified object to buffer, it is not safe!
                         buffer += typeof value === 'number' ?
                             value
                             :
