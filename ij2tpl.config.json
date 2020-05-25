@@ -7,7 +7,7 @@
 	"renderOptions": {
 		"escape": {
 			"enable": false,
-			"RegExp": "",
+			"regExp": "",
 			"entityMap": {}
 		}
 	}
