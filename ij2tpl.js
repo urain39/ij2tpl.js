@@ -13,13 +13,14 @@ var TokenTypeMap = {
     '*': 2 /* ELSE */,
     '/': 3 /* END */,
     '#': 5 /* RAW */,
-    '-': 7 /* INVALID */
+    '-': 7 /* COMMENT */
 };
 // NOTE: if we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
 //     will always generate a new string. So we need test it before replace it ;)
 var IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/, IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/g;
 export function tokenize(source, prefix, suffix) {
-    var type_, value, token = [7 /* INVALID */, '^'], tokens = [];
+    var type_, value, token = [7 /* COMMENT */, ''], // Initialized for loop
+    tokens = [];
     for (var i = 0, j = 0, l = source.length, pl = prefix.length, sl = suffix.length; i < l;) {
         // Match '{'
         j = source.indexOf(prefix, i);

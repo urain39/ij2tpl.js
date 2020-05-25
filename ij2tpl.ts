@@ -29,7 +29,7 @@ const enum TokenType {
 	TEXT,
 	RAW,	// '#'
 	FORMAT,
-	INVALID
+	COMMENT
 }
 /* eslint-enable no-unused-vars */
 
@@ -49,7 +49,7 @@ const TokenTypeMap: IMap = {
 	'*':	TokenType.ELSE,
 	'/':	TokenType.END,
 	'#':	TokenType.RAW,
-	'-':	TokenType.INVALID
+	'-':	TokenType.COMMENT
 };
 
 // NOTE: if we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
@@ -60,7 +60,7 @@ const IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/,
 export function tokenize(source: string, prefix: string, suffix: string): IToken[] {
 	let type_: string,
 		value: string,
-		token: IToken = [TokenType.INVALID, '^'],
+		token: IToken = [TokenType.COMMENT, ''], // Initialized for loop
 		tokens: IToken[] = [];
 
 	for (let i = 0, j = 0,
