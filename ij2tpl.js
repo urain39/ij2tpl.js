@@ -12,7 +12,8 @@ var TokenTypeMap = {
     '!': 1 /* NOT */,
     '*': 2 /* ELSE */,
     '/': 3 /* END */,
-    '#': 5 /* RAW */
+    '#': 5 /* RAW */,
+    '-': 7 /* INVALID */
 };
 // NOTE: if we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
 //     will always generate a new string. So we need test it before replace it ;)
@@ -54,7 +55,9 @@ export function tokenize(source, prefix, suffix) {
             case '!':
             case '*':
             case '/':
-                // Remove section's indentations if exists
+            case '-': // comment
+                // FIXME: we don't want to save comments!
+                // Remove section(or comment)'s indentation if exists
                 if (token[0 /* TYPE */] === 4 /* TEXT */) {
                     if (IndentedTestRe.test(token[1 /* VALUE */]))
                         token[1 /* VALUE */] = token[1 /* VALUE */].replace(IndentedWhiteSpaceRe, '');
@@ -81,8 +84,6 @@ export function tokenize(source, prefix, suffix) {
             case '#':
                 value = value.slice(1).trim();
                 token = [TokenTypeMap[type_], value], tokens.push(token);
-                break;
-            case '-': // comment
                 break;
             default:
                 token = [6 /* FORMAT */, value], tokens.push(token);

@@ -26,6 +26,8 @@ renderer.render({name: 'IJ2TPL'}); // -> "Hello, IJ2TPL!"
 {-- Error! }--}
 ```
 
+**NOTICE：** DO NOT use comment on same line, it doesn't looks like what you want!
+
 **If Section**
 ```html
 {?valid}

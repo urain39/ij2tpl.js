@@ -11,7 +11,7 @@ CHANGELOG
 **status**: *DEPRECATED*
 
 ### v0.0.2(2019-12-08)
-- Fixed &#x60;Context.resolve&#x60; bug
+- Fixed `Context.resolve` bug
 
 **status**: *OUTDATED*
 
@@ -25,7 +25,7 @@ CHANGELOG
 
 ### v0.1.0(2020-06-15?)
 - Re-Supported If-Else Section
-- **Changed** &#x60;IJ2TPL.escapeHTML&#x60; -&gt; &#x60;IJ2TPL.escape&#x60;
+- **Changed** `IJ2TPL.escapeHTML` -> `IJ2TPL.escape`
 - Fixed check on **empty array**(different with mustache.js)
 - ...
 

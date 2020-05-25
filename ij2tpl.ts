@@ -48,7 +48,8 @@ const TokenTypeMap: IMap = {
 	'!':	TokenType.NOT,
 	'*':	TokenType.ELSE,
 	'/':	TokenType.END,
-	'#':	TokenType.RAW
+	'#':	TokenType.RAW,
+	'-':	TokenType.INVALID
 };
 
 // NOTE: if we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
@@ -112,7 +113,10 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 		case '!':
 		case '*':
 		case '/':
-			// Remove section's indentations if exists
+		case '-': // comment
+			// FIXME: we don't want to save comments!
+
+			// Remove section(or comment)'s indentation if exists
 			if (token[TokenMember.TYPE] === TokenType.TEXT) {
 				if (IndentedTestRe.test(token[TokenMember.VALUE]))
 					token[TokenMember.VALUE] = token[TokenMember.VALUE].replace(IndentedWhiteSpaceRe, '');
@@ -140,9 +144,7 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 		// eslint-disable-line no-fallthrough
 		case '#':
 			value = value.slice(1).trim();
-			token = [TokenTypeMap[type_], value], tokens.push(token);
-			break;
-		case '-': // comment
+			token = [(TokenTypeMap[type_] as TokenType), value], tokens.push(token);
 			break;
 		default:
 			token = [TokenType.FORMAT, value], tokens.push(token);
