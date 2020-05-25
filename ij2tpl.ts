@@ -21,13 +21,22 @@ const enum TokenMember {
 	ELSE_BLOCK
 }
 
+const enum TokenString {
+	IF =	'?',
+	NOT =	'!',
+	ELSE =	'*',
+	END =	'/',
+	RAW =	'#',
+	COMMENT = '-'
+}
+
 const enum TokenType {
-	IF = 0,	// '?'
-	NOT,	// '!'
-	ELSE,	// '*'
-	END,	// '/'
+	IF = 0,
+	NOT,
+	ELSE,
+	END,
 	TEXT,
-	RAW,	// '#'
+	RAW,
 	FORMAT,
 	COMMENT
 }
@@ -43,13 +52,14 @@ interface IMap {
 	[index: number]: any;
 }
 
+// See https://github.com/microsoft/TypeScript/issues/14682
 const TokenTypeMap: IMap = {
-	'?':	TokenType.IF,
-	'!':	TokenType.NOT,
-	'*':	TokenType.ELSE,
-	'/':	TokenType.END,
-	'#':	TokenType.RAW,
-	'-':	TokenType.COMMENT
+	[TokenString.IF]:	TokenType.IF,
+	[TokenString.NOT]:	TokenType.NOT,
+	[TokenString.ELSE]:	TokenType.ELSE,
+	[TokenString.END]:	TokenType.END,
+	[TokenString.RAW]:	TokenType.RAW,
+	[TokenString.COMMENT]:	TokenType.COMMENT
 };
 
 // NOTE: if we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
@@ -109,13 +119,11 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 		type_ = value[0];
 
 		switch (type_) {
-		case '?':
-		case '!':
-		case '*':
-		case '/':
-		case '-': // comment
-			// FIXME: we don't want to save comments!
-
+		case TokenString.IF:
+		case TokenString.NOT:
+		case TokenString.ELSE:
+		case TokenString.END:
+		case TokenString.COMMENT:
 			// Remove section(or comment)'s indentation if exists
 			if (token[TokenMember.TYPE] === TokenType.TEXT) {
 				if (IndentedTestRe.test(token[TokenMember.VALUE]))
@@ -142,9 +150,12 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 				}
 			}
 		// eslint-disable-line no-fallthrough
-		case '#':
-			value = value.slice(1).trim();
-			token = [(TokenTypeMap[type_] as TokenType), value], tokens.push(token);
+		case TokenString.RAW:
+			// XXX: we don't want to save comments!
+			if (type_ !== TokenString.COMMENT) {
+				value = value.slice(1).trim();
+				token = [(TokenTypeMap[type_] as TokenType), value], tokens.push(token);
+			}
 			break;
 		default:
 			token = [TokenType.FORMAT, value], tokens.push(token);
@@ -368,13 +379,12 @@ export class Renderer {
 	}
 }
 
-// See https://github.com/microsoft/TypeScript/issues/14682
 const TokenTypeReverseMap: IMap = {
-	[TokenType.IF]:	'?',
-	[TokenType.NOT]:	'!',
-	[TokenType.ELSE]:	'*',
-	[TokenType.END]:	'/',
-	[TokenType.RAW]:	'#'
+	[TokenType.IF]:	TokenString.IF,
+	[TokenType.NOT]:	TokenString.NOT,
+	[TokenType.ELSE]:	TokenString.ELSE,
+	[TokenType.END]:	TokenString.END,
+	[TokenType.RAW]:	TokenString.RAW
 };
 
 function buildTree(tokens: IToken[]): IToken[] {

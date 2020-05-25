@@ -1,5 +1,5 @@
 // Copyright (c) 2018-2020 urain39 <urain39[AT]qq[DOT]com>
-var _a;
+var _a, _b;
 export var version = '0.1.0-dev';
 if (!String.prototype.trim) {
     var WhiteSpaceRe_1 = /^[\s\xA0\uFEFF]+|[\s\xA0\uFEFF]+$/g;
@@ -7,14 +7,15 @@ if (!String.prototype.trim) {
         return this.replace(WhiteSpaceRe_1, '');
     };
 }
-var TokenTypeMap = {
-    '?': 0 /* IF */,
-    '!': 1 /* NOT */,
-    '*': 2 /* ELSE */,
-    '/': 3 /* END */,
-    '#': 5 /* RAW */,
-    '-': 7 /* COMMENT */
-};
+// See https://github.com/microsoft/TypeScript/issues/14682
+var TokenTypeMap = (_a = {},
+    _a["?" /* IF */] = 0 /* IF */,
+    _a["!" /* NOT */] = 1 /* NOT */,
+    _a["*" /* ELSE */] = 2 /* ELSE */,
+    _a["/" /* END */] = 3 /* END */,
+    _a["#" /* RAW */] = 5 /* RAW */,
+    _a["-" /* COMMENT */] = 7 /* COMMENT */,
+    _a);
 // NOTE: if we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
 //     will always generate a new string. So we need test it before replace it ;)
 var IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/, IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/g;
@@ -52,12 +53,11 @@ export function tokenize(source, prefix, suffix) {
         value = value.trim();
         type_ = value[0];
         switch (type_) {
-            case '?':
-            case '!':
-            case '*':
-            case '/':
-            case '-': // comment
-                // FIXME: we don't want to save comments!
+            case "?" /* IF */:
+            case "!" /* NOT */:
+            case "*" /* ELSE */:
+            case "/" /* END */:
+            case "-" /* COMMENT */:
                 // Remove section(or comment)'s indentation if exists
                 if (token[0 /* TYPE */] === 4 /* TEXT */) {
                     if (IndentedTestRe.test(token[1 /* VALUE */]))
@@ -82,9 +82,12 @@ export function tokenize(source, prefix, suffix) {
                     }
                 }
             // eslint-disable-line no-fallthrough
-            case '#':
-                value = value.slice(1).trim();
-                token = [TokenTypeMap[type_], value], tokens.push(token);
+            case "#" /* RAW */:
+                // XXX: we don't want to save comments!
+                if (type_ !== "-" /* COMMENT */) {
+                    value = value.slice(1).trim();
+                    token = [TokenTypeMap[type_], value], tokens.push(token);
+                }
                 break;
             default:
                 token = [6 /* FORMAT */, value], tokens.push(token);
@@ -254,14 +257,13 @@ var Renderer = /** @class */ (function () {
     return Renderer;
 }());
 export { Renderer };
-// See https://github.com/microsoft/TypeScript/issues/14682
-var TokenTypeReverseMap = (_a = {},
-    _a[0 /* IF */] = '?',
-    _a[1 /* NOT */] = '!',
-    _a[2 /* ELSE */] = '*',
-    _a[3 /* END */] = '/',
-    _a[5 /* RAW */] = '#',
-    _a);
+var TokenTypeReverseMap = (_b = {},
+    _b[0 /* IF */] = "?" /* IF */,
+    _b[1 /* NOT */] = "!" /* NOT */,
+    _b[2 /* ELSE */] = "*" /* ELSE */,
+    _b[3 /* END */] = "/" /* END */,
+    _b[5 /* RAW */] = "#" /* RAW */,
+    _b);
 function buildTree(tokens) {
     var section, sections = [], treeRoot = [], collector = treeRoot;
     for (var _i = 0, tokens_1 = tokens; _i < tokens_1.length; _i++) {
