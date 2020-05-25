@@ -12,33 +12,29 @@
 			<li>
 			{?show}
 				name: {name}(length: {name.length})
-			{/show}
-			{!show}
+			{*show}
 				name: {name}(hidden)(length: {name.length})
 			{/show}
 			</li>
-			{/users}
-			{!users}
+			{*users}
 			<li>&lt;No user found&gt;</li>
 			{/users}
-			{?messages.length}
-				{?messages}
+			{?messages}
 				<p>{.}</p>
-				{/messages}
-			{/messages.length}
+			{/messages}
 		</ul>
 		{/valid}
 		</script>
 		<script>
 			(function () {
 				window.onload = function(event) {
-					function Q(selector, element) {
+					function QSA(selector, element) {
 						return (element instanceof HTMLElement ? element : document)
 							.querySelectorAll(selector);
 					}
 
-					var el = Q('#content')[0],
-						tpl = Q('#content-tpl')[0];
+					var el = QSA('#content')[0],
+						tpl = QSA('#content-tpl')[0];
 
 					try {
 						tpl = IJ2TPL.parse(tpl.innerHTML);

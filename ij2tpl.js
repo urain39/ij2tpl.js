@@ -2,8 +2,9 @@
 var _a;
 export var version = '0.1.0-dev';
 if (!String.prototype.trim) {
+    var WhiteSpaceRe_1 = /^[\s\xA0\uFEFF]+|[\s\xA0\uFEFF]+$/g;
     String.prototype.trim = function () {
-        return this.replace(/^[\s\xA0\uFEFF]+|[\s\xA0\uFEFF]+$/g, '');
+        return this.replace(WhiteSpaceRe_1, '');
     };
 }
 var TokenTypeMap = {
@@ -11,10 +12,15 @@ var TokenTypeMap = {
     '!': 1 /* NOT */,
     '*': 2 /* ELSE */,
     '/': 3 /* END */,
-    '#': 5 /* RAW */
+    '#': 5 /* RAW */,
+    '-': 7 /* COMMENT */
 };
+// NOTE: if we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
+//     will always generate a new string. So we need test it before replace it ;)
+var IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/, IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/g;
 export function tokenize(source, prefix, suffix) {
-    var type_, value, token = [7 /* INVALID */, '^'], tokens = [];
+    var type_, value, token = [7 /* COMMENT */, ''], // Initialized for loop
+    tokens = [];
     for (var i = 0, j = 0, l = source.length, pl = prefix.length, sl = suffix.length; i < l;) {
         // Match '{'
         j = source.indexOf(prefix, i);
@@ -50,10 +56,12 @@ export function tokenize(source, prefix, suffix) {
             case '!':
             case '*':
             case '/':
-                // Remove section's indentations if exists
+            case '-': // comment
+                // FIXME: we don't want to save comments!
+                // Remove section(or comment)'s indentation if exists
                 if (token[0 /* TYPE */] === 4 /* TEXT */) {
-                    if (/(?:^|[\n\r])[\t \xA0\uFEFF]+$/.test(token[1 /* VALUE */]))
-                        token[1 /* VALUE */] = token[1 /* VALUE */].replace(/[\t \xA0\uFEFF]+$/g, '');
+                    if (IndentedTestRe.test(token[1 /* VALUE */]))
+                        token[1 /* VALUE */] = token[1 /* VALUE */].replace(IndentedWhiteSpaceRe, '');
                     if (!token[1 /* VALUE */])
                         tokens.pop(); // Drop the empty text ''
                 }
@@ -78,8 +86,6 @@ export function tokenize(source, prefix, suffix) {
                 value = value.slice(1).trim();
                 token = [TokenTypeMap[type_], value], tokens.push(token);
                 break;
-            case '-': // comment
-                break;
             default:
                 token = [6 /* FORMAT */, value], tokens.push(token);
                 break;
@@ -87,7 +93,8 @@ export function tokenize(source, prefix, suffix) {
     }
     return tokens;
 }
-var htmlEntityMap = {
+// eslint-disable-next-line no-useless-escape
+var htmlSpecialRe = /["&'\/<=>`]/g, htmlSpecialEntityMap = {
     '"': '&quot;',
     '&': '&amp;',
     "'": '&#39;',
@@ -99,9 +106,8 @@ var htmlEntityMap = {
 };
 // See https://github.com/janl/mustache.js/pull/530
 function escapeHTML(value) {
-    // eslint-disable-next-line no-useless-escape
-    return String(value).replace(/["&'\/<=>`]/g, function (key) {
-        return htmlEntityMap[key];
+    return String(value).replace(htmlSpecialRe, function (key) {
+        return htmlSpecialEntityMap[key];
     });
 }
 export var escape = escapeHTML; // We don't wanna user use a long name to call function
@@ -167,9 +173,13 @@ var Context = /** @class */ (function () {
     return Context;
 }());
 export { Context };
-var toString = {}.toString, isArray = Array.isArray || function (value) {
-    return toString.call(value) === '[object Array]';
-};
+var isArray = Array.isArray;
+if (!isArray) {
+    var toString_1 = {}.toString;
+    isArray = function (value) {
+        return toString_1.call(value) === '[object Array]';
+    };
+}
 var Renderer = /** @class */ (function () {
     function Renderer(treeRoot) {
         this.treeRoot = treeRoot;
@@ -228,7 +238,7 @@ var Renderer = /** @class */ (function () {
                     value = context.resolve(token[1 /* VALUE */]);
                     if (value != null)
                         // NOTE: `<object>.toString` will be called when we try to
-                        // append a stringified object to buffer, it is not safe!
+                        //     append a stringified object to buffer, it is not safe!
                         buffer += typeof value === 'number' ?
                             value
                             :
