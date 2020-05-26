@@ -123,8 +123,7 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 		case TokenString.NOT:
 		case TokenString.ELSE:
 		case TokenString.END:
-		case TokenString.COMMENT:
-			// Remove section(or comment)'s indentation if exists
+			// Remove section's indentation if exists
 			if (token[TokenMember.TYPE] === TokenType.TEXT) {
 				if (IndentedTestRe.test(token[TokenMember.VALUE]))
 					token[TokenMember.VALUE] = token[TokenMember.VALUE].replace(IndentedWhiteSpaceRe, '');
@@ -140,23 +139,34 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 					i += 1; // LF
 					break;
 				case '\r':
-					// Safe way for access a character in a string
-					i += source.charAt(i + 1) === '\n' ?
-						2 // CRLF
+					// Have next character?
+					i += i + 1 < l ?
+						// Yes, next character is LF?
+						source[i + 1] === '\n' ?
+							2 // YES, newline is CRLF
+							:
+							1 // No, newline is CR
 						:
-						1 // CR
+						1 // No, newline is CR
 					;
 					break;
 				}
 			}
 		// eslint-disable-line no-fallthrough
 		case TokenString.RAW:
-			// XXX: we don't want to save comments!
-			if (type_ !== TokenString.COMMENT) {
-				value = value.slice(1).trim();
-				token = [(TokenTypeMap[type_] as TokenType), value], tokens.push(token);
-			}
+			value = value.slice(1).trim();
+			token = [TokenTypeMap[type_], value], tokens.push(token);
 			break;
+		case TokenString.COMMENT:
+			// Remove comment's indentation if exists
+			if (token[TokenMember.TYPE] === TokenType.TEXT) {
+				if (IndentedTestRe.test(token[TokenMember.VALUE]))
+					token[TokenMember.VALUE] = token[TokenMember.VALUE].replace(IndentedWhiteSpaceRe, '');
+
+				if(!token[TokenMember.VALUE])
+					tokens.pop(); // Drop the empty text ''
+			}
+			break; // Difference with section, we keep comments newline here.
 		default:
 			token = [TokenType.FORMAT, value], tokens.push(token);
 			break;
@@ -352,7 +362,6 @@ export class Renderer {
 				// Check if it is non-values(null and undefined)
 				if (value != null)
 					buffer += value;
-
 				break;
 			case TokenType.FORMAT:
 				value = context.resolve(token[TokenMember.VALUE]);

@@ -57,8 +57,7 @@ export function tokenize(source, prefix, suffix) {
             case "!" /* NOT */:
             case "*" /* ELSE */:
             case "/" /* END */:
-            case "-" /* COMMENT */:
-                // Remove section(or comment)'s indentation if exists
+                // Remove section's indentation if exists
                 if (token[0 /* TYPE */] === 4 /* TEXT */) {
                     if (IndentedTestRe.test(token[1 /* VALUE */]))
                         token[1 /* VALUE */] = token[1 /* VALUE */].replace(IndentedWhiteSpaceRe, '');
@@ -72,23 +71,33 @@ export function tokenize(source, prefix, suffix) {
                             i += 1; // LF
                             break;
                         case '\r':
-                            // Safe way for access a character in a string
-                            i += source.charAt(i + 1) === '\n' ?
-                                2 // CRLF
+                            // Have next character?
+                            i += i + 1 < l ?
+                                // Yes, next character is LF?
+                                source[i + 1] === '\n' ?
+                                    2 // YES, newline is CRLF
+                                    :
+                                        1 // No, newline is CR
                                 :
-                                    1 // CR
+                                    1 // No, newline is CR
                             ;
                             break;
                     }
                 }
             // eslint-disable-line no-fallthrough
             case "#" /* RAW */:
-                // XXX: we don't want to save comments!
-                if (type_ !== "-" /* COMMENT */) {
-                    value = value.slice(1).trim();
-                    token = [TokenTypeMap[type_], value], tokens.push(token);
-                }
+                value = value.slice(1).trim();
+                token = [TokenTypeMap[type_], value], tokens.push(token);
                 break;
+            case "-" /* COMMENT */:
+                // Remove comment's indentation if exists
+                if (token[0 /* TYPE */] === 4 /* TEXT */) {
+                    if (IndentedTestRe.test(token[1 /* VALUE */]))
+                        token[1 /* VALUE */] = token[1 /* VALUE */].replace(IndentedWhiteSpaceRe, '');
+                    if (!token[1 /* VALUE */])
+                        tokens.pop(); // Drop the empty text ''
+                }
+                break; // Difference with section, we keep comments newline here.
             default:
                 token = [6 /* FORMAT */, value], tokens.push(token);
                 break;
