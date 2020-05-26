@@ -166,7 +166,7 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 				if(!token[TokenMember.VALUE])
 					tokens.pop(); // Drop the empty text ''
 			}
-			break; // Difference with section, we keep comments newline here.
+			break; // Difference with section, we keep comments newline here
 		default:
 			token = [TokenType.FORMAT, value], tokens.push(token);
 			break;
@@ -448,10 +448,10 @@ function buildTree(tokens: IToken[]): IToken[] {
 			if (sections.length > 0)
 				// Is parent section has initialized else-block?
 				collector = ((section = (sections[sections.length - 1] as IToken), isArray(section[TokenMember.ELSE_BLOCK])) ?
-					// Yes, then parent block is else-block.
+					// Yes, then parent block is else-block
 					section[TokenMember.ELSE_BLOCK]
 					:
-					// No, then parent block is (if-)block.
+					// No, then parent block is (if-)block
 					section[TokenMember.BLOCK]) as IToken[]
 				;
 			else

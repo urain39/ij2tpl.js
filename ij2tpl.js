@@ -97,7 +97,7 @@ export function tokenize(source, prefix, suffix) {
                     if (!token[1 /* VALUE */])
                         tokens.pop(); // Drop the empty text ''
                 }
-                break; // Difference with section, we keep comments newline here.
+                break; // Difference with section, we keep comments newline here
             default:
                 token = [6 /* FORMAT */, value], tokens.push(token);
                 break;
@@ -315,10 +315,10 @@ function buildTree(tokens) {
                 if (sections.length > 0)
                     // Is parent section has initialized else-block?
                     collector = ((section = sections[sections.length - 1], isArray(section[3 /* ELSE_BLOCK */])) ?
-                        // Yes, then parent block is else-block.
+                        // Yes, then parent block is else-block
                         section[3 /* ELSE_BLOCK */]
                         :
-                            // No, then parent block is (if-)block.
+                            // No, then parent block is (if-)block
                             section[2 /* BLOCK */]);
                 else
                     collector = treeRoot;
