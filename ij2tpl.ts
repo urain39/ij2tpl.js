@@ -143,11 +143,11 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 					i += i + 1 < l ?
 						// Yes, next character is LF?
 						source[i + 1] === '\n' ?
-							2 // YES, newline is CRLF
+							2 // Yes, then newline is CRLF
 							:
-							1 // No, newline is CR
+							1 // No, then newline is CR
 						:
-						1 // No, newline is CR
+						1 // No, then newline is CR
 					;
 					break;
 				}
