@@ -176,8 +176,8 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 	return tokens;
 }
 
-// eslint-disable-next-line no-useless-escape
-const htmlSpecialRe = /["&'\/<=>`]/g,
+// See https://github.com/janl/mustache.js/pull/530
+const htmlSpecialRe = /["&'\/<=>`]/g, // eslint-disable-line no-useless-escape
 	htmlSpecialEntityMap: IMap = {
 		'"': '&quot;',
 		'&': '&amp;',
@@ -189,7 +189,6 @@ const htmlSpecialRe = /["&'\/<=>`]/g,
 		'`': '&#x60;'
 	};
 
-// See https://github.com/janl/mustache.js/pull/530
 function escapeHTML(value: any): string {
 	return String(value).replace(htmlSpecialRe, function(key: string): string {
 		return htmlSpecialEntityMap[key];
@@ -393,7 +392,6 @@ const TokenTypeReverseMap: IMap = {
 	[TokenType.NOT]:	TokenString.NOT,
 	[TokenType.ELSE]:	TokenString.ELSE,
 	[TokenType.END]:	TokenString.END,
-	[TokenType.RAW]:	TokenString.RAW
 };
 
 function buildTree(tokens: IToken[]): IToken[] {
