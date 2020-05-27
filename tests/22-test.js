@@ -11,4 +11,4 @@ var exists = false;
 for (const token of tpl.treeRoot)
 	if (token[1] === '') exists = true;
 
-assert.deepStrictEqual(exists, false);
+expected(exists, false);

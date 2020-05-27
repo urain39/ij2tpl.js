@@ -3,4 +3,4 @@ let source = ` 	{-- Comment test --}
 
 let tpl = IJ2TPL.parse(source);
 
-assert.deepStrictEqual(tpl.render({a: { b: { c: { d: { e: { f: 9 }}}}}}), '\n9');
+expected(tpl.render({a: { b: { c: { d: { e: { f: 9 }}}}}}), '\n9');

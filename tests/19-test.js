@@ -6,4 +6,4 @@ let source = `{?name}
 
 let tpl = IJ2TPL.parse(source);
 
-assert.deepStrictEqual(tpl.render({name: '<b>urain39</b>'}), '<b>urain39</b>\n');
+expected(tpl.render({name: '<b>urain39</b>'}), '<b>urain39</b>\n');
