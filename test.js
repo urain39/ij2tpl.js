@@ -16,7 +16,7 @@ fs.readdirSync(TESTDIR).forEach(function(filename) {
 		try {
 			vm.runInNewContext(fs
 				.readFileSync(filename)
-			, { assert, IJ2TPL });
+			, { expected: assert.deepStrictEqual, IJ2TPL });
 		} catch (error) {
 			console.log(filename + ': Error!');
 			console.error(error);

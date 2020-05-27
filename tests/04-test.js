@@ -9,5 +9,5 @@ let source = `{
 
 let tpl = IJ2TPL.parse(source);
 
-assert.deepStrictEqual(tpl.render([]), '#F')
-assert.deepStrictEqual(tpl.render([0]), '#T')
+expected(tpl.render([]), '#F')
+expected(tpl.render([0]), '#T')
