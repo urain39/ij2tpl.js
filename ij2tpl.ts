@@ -93,7 +93,7 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 		if (value)
 			token = [TokenType.TEXT, value], tokens.push(token);
 
-		// Match '}'
+		// Match the '}'
 		i = source.indexOf(suffix, j);
 
 		// Not found the '}'
@@ -149,7 +149,9 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 		// eslint-disable-line no-fallthrough
 		case TokenString.RAW:
 			value = stripWhiteSpace(value.slice(1));
-			token = [TokenTypeMap[type_], value], tokens.push(token);
+
+			if (value) // Empty section are NOT allowed!
+				token = [TokenTypeMap[type_], value], tokens.push(token);
 			break;
 		case TokenString.COMMENT:
 			// Remove comment's indentation if exists

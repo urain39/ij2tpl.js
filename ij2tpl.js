@@ -34,7 +34,7 @@ export function tokenize(source, prefix, suffix) {
         // Don't eat the empty text ''
         if (value)
             token = [4 /* TEXT */, value], tokens.push(token);
-        // Match '}'
+        // Match the '}'
         i = source.indexOf(suffix, j);
         // Not found the '}'
         if (i === -1)
@@ -82,7 +82,8 @@ export function tokenize(source, prefix, suffix) {
             // eslint-disable-line no-fallthrough
             case "#" /* RAW */:
                 value = stripWhiteSpace(value.slice(1));
-                token = [TokenTypeMap[type_], value], tokens.push(token);
+                if (value) // Empty section are NOT allowed!
+                    token = [TokenTypeMap[type_], value], tokens.push(token);
                 break;
             case "-" /* COMMENT */:
                 // Remove comment's indentation if exists
