@@ -8,12 +8,12 @@ CHANGELOG
 ### v0.0.1(2019-11-25)
 - First release of IJ2TPL.js
 
-**status**: *DEPRECATED*
+status: **DEPRECATED**
 
 ### v0.0.2(2019-12-08)
 - Fixed `Context.resolve` bug
 
-**status**: *OUTDATED*
+status: **OUTDATED**
 
 ### v0.0.3(2020-05-20)
 - Supported function values
@@ -21,7 +21,7 @@ CHANGELOG
 - Fixed #36 (instanceof Array is not safe) (#39)
 - Added more optimizations...
 
-**status**: *RELEASED*
+status: **RELEASED**
 
 ### v0.1.0(2020-06-15?)
 - Re-Supported If-Else Section
@@ -29,5 +29,5 @@ CHANGELOG
 - Fixed check on **empty array**(difference with mustache.js)
 - ...
 
-**status**: *DEVELOPING*
+status: **DEVELOPING**
 

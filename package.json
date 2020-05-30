@@ -5,7 +5,7 @@
   "bin": {
     "ij2tpl": "./bin/ij2tpl.js"
   },
-  "main": "ij2tpl.js",
+  "main": "./dist/ij2tpl.min.js",
   "scripts": {
     "build": "node gen-changelog.js && tsc && rollup ij2tpl.js -f umd -n IJ2TPL -o dist/ij2tpl.umd.js && uglifyjs dist/ij2tpl.umd.js -m -o dist/ij2tpl.min.js",
     "lint": "eslint --ext .ts . gen-changelog.js",
