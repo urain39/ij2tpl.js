@@ -1,12 +1,6 @@
 // Copyright (c) 2018-2020 urain39 <urain39[AT]qq[DOT]com>
 var _a, _b;
 export var version = '0.1.0-dev';
-if (!String.prototype.trim) {
-    var WhiteSpaceRe_1 = /^[\s\xA0\uFEFF]+|[\s\xA0\uFEFF]+$/g;
-    String.prototype.trim = function () {
-        return this.replace(WhiteSpaceRe_1, '');
-    };
-}
 // See https://github.com/microsoft/TypeScript/issues/14682
 var TokenTypeMap = (_a = {},
     _a["?" /* IF */] = 0 /* IF */,
@@ -18,7 +12,7 @@ var TokenTypeMap = (_a = {},
     _a);
 // NOTE: if we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
 //     will always generate a new string. So we need test it before replace it ;)
-var IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/, IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/g;
+var WhiteSpaceRe = /^[\s\xA0\uFEFF]+|[\s\xA0\uFEFF]+$/g, stripWhiteSpace = function (string_) { return string_.replace(WhiteSpaceRe, ''); }, IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/, IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/g;
 export function tokenize(source, prefix, suffix) {
     var type_, value, token = [7 /* COMMENT */, ''], // Initialized for loop
     tokens = [];
@@ -47,10 +41,10 @@ export function tokenize(source, prefix, suffix) {
         // Eat the text between the '{' and '}'
         value = source.slice(j, i);
         i += sl; // Skip the '}'
+        value = stripWhiteSpace(value);
         // Skip the empty token, such as '{}'
         if (!value)
             continue;
-        value = value.trim();
         type_ = value[0];
         switch (type_) {
             case "?" /* IF */:
@@ -86,7 +80,7 @@ export function tokenize(source, prefix, suffix) {
                 }
             // eslint-disable-line no-fallthrough
             case "#" /* RAW */:
-                value = value.slice(1).trim();
+                value = stripWhiteSpace(value.slice(1));
                 token = [TokenTypeMap[type_], value], tokens.push(token);
                 break;
             case "-" /* COMMENT */:
@@ -116,13 +110,8 @@ htmlSpecialEntityMap = {
     '=': '&#x3D;',
     '>': '&gt;',
     '`': '&#x60;'
-};
-function escapeHTML(value) {
-    return String(value).replace(htmlSpecialRe, function (key) {
-        return htmlSpecialEntityMap[key];
-    });
-}
-export var escape = escapeHTML; // We don't wanna user use a long name to call function
+}, escapeHTML = function (value) { return String(value).replace(htmlSpecialRe, function (key) { return htmlSpecialEntityMap[key]; }); };
+export var escape = escapeHTML; // Escape for HTML by default
 var hasOwnProperty = {}.hasOwnProperty;
 var Context = /** @class */ (function () {
     function Context(data, parent) {
