@@ -10,9 +10,10 @@ var TokenTypeMap = (_a = {},
     _a["#" /* RAW */] = 5 /* RAW */,
     _a["-" /* COMMENT */] = 7 /* COMMENT */,
     _a);
+var WhiteSpaceRe = /^[\s\xA0\uFEFF]+|[\s\xA0\uFEFF]+$/g, stripWhiteSpace = function (string_) { return string_.replace(WhiteSpaceRe, ''); }, 
 // NOTE: if we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
 //     will always generate a new string. So we need test it before replace it ;)
-var WhiteSpaceRe = /^[\s\xA0\uFEFF]+|[\s\xA0\uFEFF]+$/g, stripWhiteSpace = function (string_) { return string_.replace(WhiteSpaceRe, ''); }, IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/, IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/g;
+IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/, IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/g;
 export function tokenize(source, prefix, suffix) {
     var type_, value, token = [7 /* COMMENT */, ''], // Initialized for loop
     tokens = [];

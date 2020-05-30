@@ -54,10 +54,10 @@ const TokenTypeMap: IMap = {
 	[TokenString.COMMENT]:	TokenType.COMMENT
 };
 
-// NOTE: if we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
-//     will always generate a new string. So we need test it before replace it ;)
 const WhiteSpaceRe = /^[\s\xA0\uFEFF]+|[\s\xA0\uFEFF]+$/g,
 	stripWhiteSpace = (string_: string) => string_.replace(WhiteSpaceRe, ''),
+	// NOTE: if we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
+	//     will always generate a new string. So we need test it before replace it ;)
 	IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/,
 	IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/g;
 
