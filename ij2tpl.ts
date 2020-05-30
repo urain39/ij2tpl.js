@@ -2,14 +2,6 @@
 
 export const version: string = '0.1.0-dev';
 
-if (!String.prototype.trim) {
-	const WhiteSpaceRe = /^[\s\xA0\uFEFF]+|[\s\xA0\uFEFF]+$/g;
-
-	String.prototype.trim = function(): string {
-		return this.replace(WhiteSpaceRe, '');
-	};
-}
-
 /* eslint-disable no-unused-vars */
 
 // XXX: ^^^ it seems that is a bug of ESLint
@@ -64,8 +56,10 @@ const TokenTypeMap: IMap = {
 
 // NOTE: if we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
 //     will always generate a new string. So we need test it before replace it ;)
-const IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/,
-	IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/g;
+const WhiteSpaceRe = /^[\s\xA0\uFEFF]+|[\s\xA0\uFEFF]+$/g,
+	IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/,
+	IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/g,
+	stripWhiteSpace = (string_: string) => string_.replace(WhiteSpaceRe, '');
 
 export function tokenize(source: string, prefix: string, suffix: string): IToken[] {
 	let type_: string,
@@ -110,11 +104,11 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 		value = source.slice(j, i);
 		i += sl; // Skip the '}'
 
+		value = stripWhiteSpace(value);
+
 		// Skip the empty token, such as '{}'
 		if (!value)
 			continue;
-
-		value = value.trim();
 
 		type_ = value[0];
 
@@ -154,7 +148,7 @@ export function tokenize(source: string, prefix: string, suffix: string): IToken
 			}
 		// eslint-disable-line no-fallthrough
 		case TokenString.RAW:
-			value = value.slice(1).trim();
+			value = stripWhiteSpace(value.slice(1));
 			token = [TokenTypeMap[type_], value], tokens.push(token);
 			break;
 		case TokenString.COMMENT:
@@ -187,15 +181,14 @@ const htmlSpecialRe = /["&'\/<=>`]/g, // eslint-disable-line no-useless-escape
 		'=': '&#x3D;',
 		'>': '&gt;',
 		'`': '&#x60;'
+	},
+	escapeHTML = (value: any) => {
+		return String(value).replace(htmlSpecialRe, function(key: string): string {
+			return htmlSpecialEntityMap[key];
+		});
 	};
 
-function escapeHTML(value: any): string {
-	return String(value).replace(htmlSpecialRe, function(key: string): string {
-		return htmlSpecialEntityMap[key];
-	});
-}
-
-export const escape = escapeHTML; // We don't wanna user use a long name to call function
+export const escape = escapeHTML; // We don't want user use a long name to call function
 
 const hasOwnProperty = {}.hasOwnProperty;
 
