@@ -3,7 +3,6 @@
 export const version: string = '0.1.0-dev';
 
 /* eslint-disable no-unused-vars */
-
 // XXX: ^^^ it seems that is a bug of ESLint
 
 const enum TokenMember {
@@ -212,8 +211,8 @@ export class Context {
 		// Cached in context?
 		if (hasOwnProperty.call(cache, name)) {
 			value = cache[name];
-		} else {
-			// No cached record found
+		} else { // No cached record found
+			// Have properties?
 			if (name.indexOf('.') > 0) {
 				let name_: string,
 					names: string[] = name.split('.');

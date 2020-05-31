@@ -26,7 +26,7 @@ var infile = process.argv[2],
 
 try{
 	process.stdout.write(IJ2TPL.parse(
-		fs.readFileSync(infile).toString()
+		fs.readFileSync(infile, 'utf-8')
 	).render(JSON.parse(
 		fs.readFileSync(datafile, 'utf-8')
 	)));

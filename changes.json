@@ -1,18 +1,13 @@
 [
 	{
-		"date": "2019-11-25",
-		"version": "v0.0.1",
-		"status": "DEPRECATED",
+		"date": "2020-06-15?",
+		"version": "v0.1.0",
+		"status": "DEVELOPING",
 		"changes": [
-			"First release of IJ2TPL.js"
-		]
-	},
-	{
-		"date": "2019-12-08",
-		"version": "v0.0.2",
-		"status": "OUTDATED",
-		"changes": [
-			"Fixed `Context.resolve` bug"
+			"Re-Supported If-Else Section",
+			"**Changed** `IJ2TPL.escapeHTML` -> `IJ2TPL.escape`",
+			"Fixed check on **empty array**(difference with mustache.js)",
+			"..."
 		]
 	},
 	{
@@ -27,14 +22,19 @@
 		]
 	},
 	{
-		"date": "2020-06-15?",
-		"version": "v0.1.0",
-		"status": "DEVELOPING",
+		"date": "2019-12-08",
+		"version": "v0.0.2",
+		"status": "OUTDATED",
 		"changes": [
-			"Re-Supported If-Else Section",
-			"**Changed** `IJ2TPL.escapeHTML` -> `IJ2TPL.escape`",
-			"Fixed check on **empty array**(difference with mustache.js)",
-			"..."
+			"Fixed `Context.resolve` bug"
+		]
+	},
+	{
+		"date": "2019-11-25",
+		"version": "v0.0.1",
+		"status": "DEPRECATED",
+		"changes": [
+			"First release of IJ2TPL.js"
 		]
 	}
 ]

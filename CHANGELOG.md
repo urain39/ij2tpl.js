@@ -5,15 +5,13 @@
 CHANGELOG
 ==========
 
-### v0.0.1(2019-11-25)
-- First release of IJ2TPL.js
+### v0.1.0(2020-06-15?)
+- Re-Supported If-Else Section
+- **Changed** `IJ2TPL.escapeHTML` -> `IJ2TPL.escape`
+- Fixed check on **empty array**(difference with mustache.js)
+- ...
 
-status: **DEPRECATED**
-
-### v0.0.2(2019-12-08)
-- Fixed `Context.resolve` bug
-
-status: **OUTDATED**
+status: **DEVELOPING**
 
 ### v0.0.3(2020-05-20)
 - Supported function values
@@ -23,11 +21,13 @@ status: **OUTDATED**
 
 status: **RELEASED**
 
-### v0.1.0(2020-06-15?)
-- Re-Supported If-Else Section
-- **Changed** `IJ2TPL.escapeHTML` -> `IJ2TPL.escape`
-- Fixed check on **empty array**(difference with mustache.js)
-- ...
+### v0.0.2(2019-12-08)
+- Fixed `Context.resolve` bug
 
-status: **DEVELOPING**
+status: **OUTDATED**
+
+### v0.0.1(2019-11-25)
+- First release of IJ2TPL.js
+
+status: **DEPRECATED**
 
