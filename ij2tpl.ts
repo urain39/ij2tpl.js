@@ -3,7 +3,6 @@
 export const version: string = '0.1.0-dev';
 
 /* eslint-disable no-unused-vars */
-
 // XXX: ^^^ it seems that is a bug of ESLint
 
 const enum TokenMember {
