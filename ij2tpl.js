@@ -128,8 +128,8 @@ var Context = /** @class */ (function () {
         if (hasOwnProperty.call(cache, name)) {
             value = cache[name];
         }
-        else {
-            // No cached record found
+        else { // No cached record found
+            // Have properties?
             if (name.indexOf('.') > 0) {
                 var name_ = void 0, names = name.split('.');
                 name_ = names[0];

@@ -212,8 +212,8 @@ export class Context {
 		// Cached in context?
 		if (hasOwnProperty.call(cache, name)) {
 			value = cache[name];
-		} else {
-			// No cached record found
+		} else { // No cached record found
+			// Have properties?
 			if (name.indexOf('.') > 0) {
 				let name_: string,
 					names: string[] = name.split('.');
