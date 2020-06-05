@@ -212,6 +212,7 @@ var Renderer = /** @class */ (function () {
                     if (isArray_ ? value.length < 1 : !value)
                         buffer += this.renderTree(token[2 /* BLOCK */], context);
                     break;
+                // XXX: I don't know why it is still slow
                 case 2 /* ELSE */:
                     value = context.resolve(token[1 /* VALUE */]);
                     isArray_ = isArray(value);
