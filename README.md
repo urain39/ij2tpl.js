@@ -79,6 +79,22 @@ function humanReadableSize(context) {
 Downloaded {humanReadableSize}
 ```
 
+**Line Begin Mark(LBM)**
+```html
+{-- Due to our `tokenize` implementation, you can use a
+	empty comment at the end of indentation to indicate
+	you want to strip indentation for a signe-line.
+
+	See https://github.com/urain39/ij2tpl.js/issues/70
+	--}
+
+{-- For example: --}
+Hello World
+	{-}Hello Wolrd
+
+{-- The above two hello-world are same. }
+```
+
 **Custom Prefix and Suffix(aka Delimiter or Tags)**
 ```js
 IJ2TPL.parse('Hello <%name%>', '<%', '%>');

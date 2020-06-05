@@ -5,13 +5,6 @@ export const version: string = '0.1.0-dev';
 /* eslint-disable no-unused-vars */
 // XXX: ^^^ it seems that is a bug of ESLint
 
-const enum TokenMember {
-	TYPE = 0,
-	VALUE,
-	BLOCK,
-	ELSE_BLOCK
-}
-
 const enum TokenString {
 	IF =	'?',
 	NOT =	'!',
@@ -30,6 +23,13 @@ const enum TokenType {
 	RAW,
 	FORMAT,
 	COMMENT
+}
+
+const enum TokenMember {
+	TYPE = 0,
+	VALUE,
+	BLOCK,
+	ELSE_BLOCK
 }
 /* eslint-enable no-unused-vars */
 
@@ -319,6 +319,7 @@ export class Renderer {
 						context
 					);
 				break;
+			// XXX: I don't know why it is still slow
 			case TokenType.ELSE:
 				value = context.resolve(token[TokenMember.VALUE]);
 				isArray_ = isArray(value);

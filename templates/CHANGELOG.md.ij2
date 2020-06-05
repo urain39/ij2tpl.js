@@ -7,12 +7,12 @@ CHANGELOG
 
 {?.}
 	{?version}
-		{-^}### {version}({date})
+		{-}### {version}({date})
 		{?changes}
-			{-^}- {#.}
+			{-}- {#.}
 		{/changes}
 
-		{-^}status: **{status}**
+		{-}status: **{status}**
 
 	{/version}
 {/.}

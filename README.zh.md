@@ -79,6 +79,21 @@ function humanReadableSize(context) {
 已下载 {humanReadableSize}
 ```
 
+**行起始标记(LBM)**
+```html
+{-- 因为我们的 `tokenize` 实现，你可以在某个缩进的末尾使用
+	一个空注释表示你想要在这一行中去除缩进。
+
+	参考 https://github.com/urain39/ij2tpl.js/issues/70
+	--}
+
+{-- 示例： --}
+Hello World
+	{-}Hello Wolrd
+
+{-- 上面的两个 hello-world 是相同的。 }
+```
+
 **定制 Prefix 与 Suffix(又叫做分隔符)**
 ```js
 IJ2TPL.parse('Hello <%name%>', '<%', '%>');
