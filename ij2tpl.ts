@@ -291,7 +291,7 @@ export class Renderer {
 			buffer: string = '',
 			isArray_: boolean = false;
 
-		for (let token of treeRoot) {
+		for (const token of treeRoot) {
 			switch (token[TokenMember.TYPE]) {
 			case TokenType.IF:
 				section = token as Section;
@@ -384,7 +384,6 @@ export class Renderer {
 	}
 }
 
-// XXX: due to TypeScript Compiler's bug, we can't use `TokenType` directly here
 const TokenTypeReverseMap: IMap<string> = {
 	[TokenType.IF]:	TokenString.IF,
 	[TokenType.NOT]:	TokenString.NOT,

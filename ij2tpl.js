@@ -261,7 +261,6 @@ var Renderer = /** @class */ (function () {
     return Renderer;
 }());
 export { Renderer };
-// XXX: due to TypeScript Compiler's bug, we can't use `TokenType` directly here
 var TokenTypeReverseMap = (_b = {},
     _b[0 /* IF */] = "?" /* IF */,
     _b[1 /* NOT */] = "!" /* NOT */,
