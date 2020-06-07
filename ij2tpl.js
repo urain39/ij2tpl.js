@@ -146,7 +146,7 @@ var Context = /** @class */ (function () {
                                 value = value[name_];
                             }
                             else {
-                                value = null; // Reset value
+                                value = null; // Reset
                                 break;
                             }
                         }
@@ -212,7 +212,7 @@ var Renderer = /** @class */ (function () {
                     if (isArray_ ? value.length < 1 : !value)
                         buffer += this.renderTree(token[2 /* BLOCK */], context);
                     break;
-                // XXX: I don't know why it is still slow
+                // FIXME: I don't know why it is still slow
                 case 2 /* ELSE */:
                     value = context.resolve(token[1 /* VALUE */]);
                     isArray_ = isArray(value);
@@ -258,6 +258,7 @@ var Renderer = /** @class */ (function () {
     return Renderer;
 }());
 export { Renderer };
+// XXX: due to tsc bug, we can't use `TokenType` directly
 var TokenTypeReverseMap = (_b = {},
     _b[0 /* IF */] = "?" /* IF */,
     _b[1 /* NOT */] = "!" /* NOT */,
@@ -285,7 +286,7 @@ function buildTree(tokens) {
                 section = sections.length > 0 ?
                     sections[sections.length - 1]
                     :
-                        void 0 // Reset
+                        void 0x95E2 // Reset
                 ;
                 // Check current(or top) section is valid?
                 if (!section || section[0 /* TYPE */] !== 0 /* IF */ || token[1 /* VALUE */] !== section[1 /* VALUE */])
