@@ -9,7 +9,7 @@
   "scripts": {
     "build": "node gen-changelog.js && tsc && rollup ij2tpl.js -f umd -n IJ2TPL -o dist/ij2tpl.umd.js && uglifyjs dist/ij2tpl.umd.js -m -o dist/ij2tpl.min.js",
     "lint": "eslint --ext .ts . gen-changelog.js",
-    "test": "node test.js && node bin/ij2tpl.js templates/CHANGELOG.md.ij2 changes.json"
+    "test": "node test.js && node bin/ij2tpl.js _templates/CHANGELOG.md.ij2 changes.json"
   },
   "repository": {
     "type": "git",

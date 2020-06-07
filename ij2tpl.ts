@@ -35,26 +35,15 @@ const enum TokenMember {
 
 // See https://github.com/microsoft/TypeScript/pull/33050
 //     https://stackoverflow.com/questions/47842266/recursive-types-in-typescript
-type IfSectionTuple<T> = [TokenType, string, T[]];
-interface IfSection extends IfSectionTuple<IfSection> {}
+type SectionTuple<T> = [TokenType, string, T[], T[]];
+interface Section extends SectionTuple<Section> {}
 
-type NotSection = IfSection; // Same as If-Section
-
-type IfElseSectionTuple<T> = [TokenType, string, T[]];
-interface IfElseSection extends IfElseSectionTuple<IfElseSection> {}
-
-type Section = IfSection | NotSection | IfElseSection;
-
-type SafeFormatter = [TokenType, string];
-
-type RawFormatter = SafeFormatter; // Same as Safe-Formatter
-
-type Formatter = SafeFormatter | RawFormatter;
+type Formatter = [TokenType, string];
 
 type Token = Section | Formatter;
 
 // See TS1023, an index type must be `string` or `number`
-interface IMap<V> { [key: string]: V; [index: number]: V; }
+interface IMap</* K, */ V> { [key: string]: V; [index: number]: V; }
 
 // See https://github.com/microsoft/TypeScript/issues/14682
 const TokenTypeMap: IMap<TokenType> = {
@@ -238,7 +227,7 @@ export class Context {
 
 					// Find out which context contains name
 					if (data && hasOwnProperty.call(data, name_)) {
-						value = (data as IMap<any>)[name_];
+						value = data[name_];
 
 						// Resolve sub-names
 						for (let i = 1, l = names.length; i < l; i++) {
@@ -261,7 +250,7 @@ export class Context {
 
 					// Find out which context contains name
 					if (data && hasOwnProperty.call(data, name)) {
-						value = (data as IMap<any>)[name];
+						value = data[name];
 						break;
 					}
 				}
@@ -298,12 +287,14 @@ export class Renderer {
 
 	public renderTree(treeRoot: Token[], context: Context): string {
 		let value: any,
+			section: Section,
 			buffer: string = '',
 			isArray_: boolean = false;
 
-		for (const token of treeRoot) {
+		for (let token of treeRoot) {
 			switch (token[TokenMember.TYPE]) {
 			case TokenType.IF:
+				section = token as Section;
 				value = context.resolve(token[TokenMember.VALUE]);
 				isArray_ = isArray(value);
 
@@ -312,28 +303,30 @@ export class Renderer {
 					if (isArray_)
 						for (const value_ of value)
 							buffer += this.renderTree(
-								token[TokenMember.BLOCK] as Token[],
+								section[TokenMember.BLOCK],
 								new Context(value_, context)
 							);
 					else
 						buffer += this.renderTree(
-							token[TokenMember.BLOCK] as Token[],
+							section[TokenMember.BLOCK],
 							new Context(value, context)
 						);
 				}
 				break;
 			case TokenType.NOT:
+				section = token as Section;
 				value = context.resolve(token[TokenMember.VALUE]);
 				isArray_ = isArray(value);
 
 				if (isArray_ ? value.length < 1 : !value)
 					buffer += this.renderTree(
-						token[TokenMember.BLOCK] as Token[],
+						section[TokenMember.BLOCK],
 						context
 					);
 				break;
 			// FIXME: I don't know why it is still slow
 			case TokenType.ELSE:
+				section = token as Section;
 				value = context.resolve(token[TokenMember.VALUE]);
 				isArray_ = isArray(value);
 
@@ -341,17 +334,17 @@ export class Renderer {
 					if (isArray_)
 						for (const value_ of value)
 							buffer += this.renderTree(
-								token[TokenMember.BLOCK] as Token[],
+								section[TokenMember.BLOCK],
 								new Context(value_, context)
 							);
 					else
 						buffer += this.renderTree(
-							token[TokenMember.BLOCK] as Token[],
+							section[TokenMember.BLOCK],
 							new Context(value, context)
 						);
 				} else {
 					buffer += this.renderTree(
-						token[TokenMember.ELSE_BLOCK] as Token[],
+						section[TokenMember.ELSE_BLOCK],
 						context
 					);
 				}
@@ -391,7 +384,7 @@ export class Renderer {
 	}
 }
 
-// XXX: due to tsc bug, we can't use `TokenType` directly
+// XXX: due to TypeScript Compiler's bug, we can't use `TokenType` directly here
 const TokenTypeReverseMap: IMap<string> = {
 	[TokenType.IF]:	TokenString.IF,
 	[TokenType.NOT]:	TokenString.NOT,
@@ -400,8 +393,8 @@ const TokenTypeReverseMap: IMap<string> = {
 };
 
 function buildTree(tokens: Token[]): Token[] {
-	let section: Token | undefined,
-		sections: Token[] = [],
+	let section: Section | undefined,
+		sections: Section[] = [],
 		treeRoot: Token[] = [],
 		collector: Token[] = treeRoot;
 
@@ -412,7 +405,7 @@ function buildTree(tokens: Token[]): Token[] {
 		case TokenType.NOT:
 			// Current block saves token
 			collector.push(token);
-			section = token;
+			section = token as Section;
 			// Stack saves section
 			sections.push(section);
 			// Initialize section block
@@ -420,13 +413,14 @@ function buildTree(tokens: Token[]): Token[] {
 			break;
 		// Switch section block
 		case TokenType.ELSE:
+			// Get current(aka top) section
 			section = sections.length > 0 ?
 				sections[sections.length - 1]
 				:
 				void 0x95E2 // Reset
 			;
 
-			// Check current(or top) section is valid?
+			// Check current(aka top) section is valid?
 			if (!section || section[TokenMember.TYPE] !== TokenType.IF || token[TokenMember.VALUE] !== section[TokenMember.VALUE])
 				throw new SyntaxError(`Unexpected token '<type=${
 					TokenTypeReverseMap[token[TokenMember.TYPE]]}, value=${token[TokenMember.VALUE]}>'`);
@@ -444,18 +438,18 @@ function buildTree(tokens: Token[]): Token[] {
 					TokenTypeReverseMap[token[TokenMember.TYPE]]}, value=${token[TokenMember.VALUE]}>'`);
 
 			// Change type for which section contains non-empty else-block
-			if (isArray((section as Token)[TokenMember.ELSE_BLOCK]) && (section[TokenMember.ELSE_BLOCK] as Token[]).length > 0)
+			if (isArray(section[TokenMember.ELSE_BLOCK]) && section[TokenMember.ELSE_BLOCK].length > 0)
 				section[TokenMember.TYPE] = TokenType.ELSE;
 
 			// Re-bind block to parent block
 			if (sections.length > 0)
 				// Is parent section has initialized else-block?
-				collector = ((section = (sections[sections.length - 1] as Token), isArray(section[TokenMember.ELSE_BLOCK])) ?
+				collector = ((section = sections[sections.length - 1], isArray(section[TokenMember.ELSE_BLOCK])) ?
 					// Yes, then parent block is else-block
 					section[TokenMember.ELSE_BLOCK]
 					:
 					// No, then parent block is (if-)block
-					section[TokenMember.BLOCK]) as Token[]
+					section[TokenMember.BLOCK])
 				;
 			else
 				collector = treeRoot;
@@ -468,7 +462,7 @@ function buildTree(tokens: Token[]): Token[] {
 	}
 
 	if (sections.length > 0) {
-		section = sections.pop() as Token;
+		section = sections.pop() as Section;
 
 		throw new SyntaxError(`No matching section '<type=${
 			TokenTypeReverseMap[section[TokenMember.TYPE]]}, value=${section[TokenMember.VALUE]}>'`);
