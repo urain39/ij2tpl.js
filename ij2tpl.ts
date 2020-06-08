@@ -386,7 +386,7 @@ export class Renderer {
 	}
 }
 
-const TokenTypeReverseMap: IMap<string> = {
+const TokenTypeReverseMap: IMap<TokenString> = {
 	[TokenType.IF]:	TokenString.IF,
 	[TokenType.NOT]:	TokenString.NOT,
 	[TokenType.ELSE]:	TokenString.ELSE,
