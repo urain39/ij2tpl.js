@@ -146,7 +146,7 @@ var Context = /** @class */ (function () {
                                 value = value[name_];
                             }
                             else {
-                                value = null; // Reset value
+                                value = null; // Reset
                                 break;
                             }
                         }
@@ -188,11 +188,12 @@ var Renderer = /** @class */ (function () {
         this.treeRoot = treeRoot;
     }
     Renderer.prototype.renderTree = function (treeRoot, context) {
-        var value, buffer = '', isArray_ = false;
+        var value, section, buffer = '', isArray_ = false;
         for (var _i = 0, treeRoot_1 = treeRoot; _i < treeRoot_1.length; _i++) {
             var token = treeRoot_1[_i];
             switch (token[0 /* TYPE */]) {
                 case 0 /* IF */:
+                    section = token;
                     value = context.resolve(token[1 /* VALUE */]);
                     isArray_ = isArray(value);
                     // We can only know true or false after we sure it is array or not
@@ -200,33 +201,35 @@ var Renderer = /** @class */ (function () {
                         if (isArray_)
                             for (var _a = 0, value_1 = value; _a < value_1.length; _a++) {
                                 var value_ = value_1[_a];
-                                buffer += this.renderTree(token[2 /* BLOCK */], new Context(value_, context));
+                                buffer += this.renderTree(section[2 /* BLOCK */], new Context(value_, context));
                             }
                         else
-                            buffer += this.renderTree(token[2 /* BLOCK */], new Context(value, context));
+                            buffer += this.renderTree(section[2 /* BLOCK */], new Context(value, context));
                     }
                     break;
                 case 1 /* NOT */:
+                    section = token;
                     value = context.resolve(token[1 /* VALUE */]);
                     isArray_ = isArray(value);
                     if (isArray_ ? value.length < 1 : !value)
-                        buffer += this.renderTree(token[2 /* BLOCK */], context);
+                        buffer += this.renderTree(section[2 /* BLOCK */], context);
                     break;
-                // XXX: I don't know why it is still slow
+                // FIXME: I don't know why it is still slow
                 case 2 /* ELSE */:
+                    section = token;
                     value = context.resolve(token[1 /* VALUE */]);
                     isArray_ = isArray(value);
                     if (isArray_ ? value.length > 0 : value) {
                         if (isArray_)
                             for (var _b = 0, value_2 = value; _b < value_2.length; _b++) {
                                 var value_ = value_2[_b];
-                                buffer += this.renderTree(token[2 /* BLOCK */], new Context(value_, context));
+                                buffer += this.renderTree(section[2 /* BLOCK */], new Context(value_, context));
                             }
                         else
-                            buffer += this.renderTree(token[2 /* BLOCK */], new Context(value, context));
+                            buffer += this.renderTree(section[2 /* BLOCK */], new Context(value, context));
                     }
                     else {
-                        buffer += this.renderTree(token[3 /* ELSE_BLOCK */], context);
+                        buffer += this.renderTree(section[3 /* ELSE_BLOCK */], context);
                     }
                     break;
                 case 4 /* TEXT */:
@@ -282,12 +285,13 @@ function buildTree(tokens) {
                 break;
             // Switch section block
             case 2 /* ELSE */:
+                // Get current(aka top) section
                 section = sections.length > 0 ?
                     sections[sections.length - 1]
                     :
-                        void 0 // Reset
+                        void 0x95E2 // Reset
                 ;
-                // Check current(or top) section is valid?
+                // Check current(aka top) section is valid?
                 if (!section || section[0 /* TYPE */] !== 0 /* IF */ || token[1 /* VALUE */] !== section[1 /* VALUE */])
                     throw new SyntaxError("Unexpected token '<type=" + TokenTypeReverseMap[token[0 /* TYPE */]] + ", value=" + token[1 /* VALUE */] + ">'");
                 // Switch the block to else-block
