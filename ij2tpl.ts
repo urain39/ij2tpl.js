@@ -37,6 +37,7 @@ const enum TokenMember {
 //     https://stackoverflow.com/questions/47842266/recursive-types-in-typescript
 type SectionTuple<T> = [TokenType, string, T[], T[]];
 // ^^^ Single-block Section can compatible with double-block Sections
+
 interface Section extends SectionTuple<Section> {}
 
 type Formatter = [TokenType, string];
