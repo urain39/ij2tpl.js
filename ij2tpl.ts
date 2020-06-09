@@ -42,7 +42,7 @@ interface Section extends SectionTuple<Section> {}
 
 type Formatter = [TokenType, string];
 
-// NOTE: a `Token` always can fall back to a Formatter-like Tuple
+// A `Token` always can fall back to a Formatter-like Tuple
 type Token = Section | Formatter;
 
 // See TS1023, an index type must be `string` or `number`
@@ -152,7 +152,7 @@ export function tokenize(source: string, prefix: string, suffix: string): Token[
 			}
 		// eslint-disable-line no-fallthrough
 		case TokenString.RAW:
-			value = stripWhiteSpace(value.slice(1));
+			value = stripWhiteSpace(value.slice(1)); // Left trim
 
 			if (value) // Empty section are NOT allowed!
 				token = [TokenTypeMap[type_], value], tokens.push(token);
@@ -410,19 +410,19 @@ function buildTree(tokens: Token[]): Token[] {
 			section = token as Section;
 			// Stack saves section
 			sections.push(section);
-			// Initialize section block
+			// Initialize and switch to section's block
 			collector = section[TokenMember.BLOCK] = [];
 			break;
-		// Switch section block
+		// Switch to section's else-block
 		case TokenType.ELSE:
-			// Get current(aka top) section
+			// Get entered section
 			section = sections.length > 0 ?
 				sections[sections.length - 1]
 				:
 				void 0x95E2 // Reset
 			;
 
-			// Check current(aka top) section is valid?
+			// Check current token is valid?
 			if (!section || section[TokenMember.TYPE] !== TokenType.IF || token[TokenMember.VALUE] !== section[TokenMember.VALUE])
 				throw new SyntaxError(`Unexpected token '<type=${
 					TokenTypeReverseMap[token[TokenMember.TYPE]]}, value=${token[TokenMember.VALUE]}>'`);
@@ -434,7 +434,6 @@ function buildTree(tokens: Token[]): Token[] {
 		case TokenType.END:
 			section = sections.pop();
 
-			// Check if section is not match
 			if (!section || token[TokenMember.VALUE] !== section[TokenMember.VALUE])
 				throw new SyntaxError(`Unexpected token '<type=${
 					TokenTypeReverseMap[token[TokenMember.TYPE]]}, value=${token[TokenMember.VALUE]}>'`);

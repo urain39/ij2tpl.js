@@ -1,5 +1,5 @@
 # IJ2TPL.js
-A Mustache-like Template Engine written in TypeScript(Only 3kB).
+A Mustache-like Template Engine written in TypeScript(Only 3kB after uglifying).
 
 > Faster than Mustache.js(at least not slower)!
 
