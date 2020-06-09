@@ -81,7 +81,7 @@ export function tokenize(source, prefix, suffix) {
                 }
             // eslint-disable-line no-fallthrough
             case "#" /* RAW */:
-                value = stripWhiteSpace(value.slice(1));
+                value = stripWhiteSpace(value.slice(1)); // Left trim
                 if (value) // Empty section are NOT allowed!
                     token = [TokenTypeMap[type_], value], tokens.push(token);
                 break;
@@ -280,18 +280,18 @@ function buildTree(tokens) {
                 section = token;
                 // Stack saves section
                 sections.push(section);
-                // Initialize section block
+                // Initialize and switch to section's block
                 collector = section[2 /* BLOCK */] = [];
                 break;
-            // Switch section block
+            // Switch to section's else-block
             case 2 /* ELSE */:
-                // Get current(aka top) section
+                // Get entered section
                 section = sections.length > 0 ?
                     sections[sections.length - 1]
                     :
                         void 0x95E2 // Reset
                 ;
-                // Check current(aka top) section is valid?
+                // Check current token is valid?
                 if (!section || section[0 /* TYPE */] !== 0 /* IF */ || token[1 /* VALUE */] !== section[1 /* VALUE */])
                     throw new SyntaxError("Unexpected token '<type=" + TokenTypeReverseMap[token[0 /* TYPE */]] + ", value=" + token[1 /* VALUE */] + ">'");
                 // Switch the block to else-block
@@ -300,7 +300,6 @@ function buildTree(tokens) {
             // Leave a section
             case 3 /* END */:
                 section = sections.pop();
-                // Check if section is not match
                 if (!section || token[1 /* VALUE */] !== section[1 /* VALUE */])
                     throw new SyntaxError("Unexpected token '<type=" + TokenTypeReverseMap[token[0 /* TYPE */]] + ", value=" + token[1 /* VALUE */] + ">'");
                 // Change type for which section contains non-empty else-block
