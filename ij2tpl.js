@@ -13,7 +13,17 @@ var TokenTypeMap = (_a = {},
 var WhiteSpaceRe = /^[\s\xA0\uFEFF]+|[\s\xA0\uFEFF]+$/g, stripWhiteSpace = function (string_) { return string_.replace(WhiteSpaceRe, ''); }, 
 // NOTE: if we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
 //     will always generate a new string. So we need test it before replace it ;)
-IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/, IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/g;
+IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/, IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/g, 
+// To compress the source, we have extracted some of the same code
+stripIndentation = function (token, tokens) {
+    // Remove comment's indentation if exists
+    if (token[0 /* TYPE */] === 4 /* TEXT */) {
+        if (IndentedTestRe.test(token[1 /* VALUE */]))
+            token[1 /* VALUE */] = token[1 /* VALUE */].replace(IndentedWhiteSpaceRe, '');
+        if (!token[1 /* VALUE */])
+            tokens.pop(); // Drop the empty text ''
+    }
+};
 export function tokenize(source, prefix, suffix) {
     var type_, value, token = [7 /* COMMENT */, ''], // Initialized for loop
     tokens = [];
@@ -52,13 +62,7 @@ export function tokenize(source, prefix, suffix) {
             case "!" /* NOT */:
             case "*" /* ELSE */:
             case "/" /* END */:
-                // Remove section's indentation if exists
-                if (token[0 /* TYPE */] === 4 /* TEXT */) {
-                    if (IndentedTestRe.test(token[1 /* VALUE */]))
-                        token[1 /* VALUE */] = token[1 /* VALUE */].replace(IndentedWhiteSpaceRe, '');
-                    if (!token[1 /* VALUE */])
-                        tokens.pop(); // Drop the empty text ''
-                }
+                stripIndentation(token, tokens);
                 // Skip section's newline if exists
                 if (i < l) {
                     switch (source[i]) {
@@ -82,17 +86,11 @@ export function tokenize(source, prefix, suffix) {
             // eslint-disable-line no-fallthrough
             case "#" /* RAW */:
                 value = stripWhiteSpace(value.slice(1)); // Left trim
-                if (value) // Empty section are NOT allowed!
+                if (value) // Empty token are NOT allowed!
                     token = [TokenTypeMap[type_], value], tokens.push(token);
                 break;
             case "-" /* COMMENT */:
-                // Remove comment's indentation if exists
-                if (token[0 /* TYPE */] === 4 /* TEXT */) {
-                    if (IndentedTestRe.test(token[1 /* VALUE */]))
-                        token[1 /* VALUE */] = token[1 /* VALUE */].replace(IndentedWhiteSpaceRe, '');
-                    if (!token[1 /* VALUE */])
-                        tokens.pop(); // Drop the empty text ''
-                }
+                stripIndentation(token, tokens);
                 break; // Difference with section, we keep comments newline here
             default:
                 token = [6 /* FORMAT */, value], tokens.push(token);
@@ -194,7 +192,7 @@ var Renderer = /** @class */ (function () {
             switch (token[0 /* TYPE */]) {
                 case 0 /* IF */:
                     section = token;
-                    value = context.resolve(token[1 /* VALUE */]);
+                    value = context.resolve(section[1 /* VALUE */]);
                     isArray_ = isArray(value);
                     // We can only know true or false after we sure it is array or not
                     if (isArray_ ? value.length > 0 : value) {
@@ -209,7 +207,7 @@ var Renderer = /** @class */ (function () {
                     break;
                 case 1 /* NOT */:
                     section = token;
-                    value = context.resolve(token[1 /* VALUE */]);
+                    value = context.resolve(section[1 /* VALUE */]);
                     isArray_ = isArray(value);
                     if (isArray_ ? value.length < 1 : !value)
                         buffer += this.renderTree(section[2 /* BLOCK */], context);
@@ -217,7 +215,7 @@ var Renderer = /** @class */ (function () {
                 // FIXME: I don't know why it is still slow
                 case 2 /* ELSE */:
                     section = token;
-                    value = context.resolve(token[1 /* VALUE */]);
+                    value = context.resolve(section[1 /* VALUE */]);
                     isArray_ = isArray(value);
                     if (isArray_ ? value.length > 0 : value) {
                         if (isArray_)
