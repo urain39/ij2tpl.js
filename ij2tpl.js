@@ -212,7 +212,7 @@ var Renderer = /** @class */ (function () {
                     if (isArray_ ? value.length < 1 : !value)
                         buffer += this.renderTree(section[2 /* BLOCK */], context);
                     break;
-                // FIXME: I don't know why it is still slow
+                // XXX: it may be slower than If-Section + Not-Section(about 1 ops/sec)
                 case 2 /* ELSE */:
                     section = token;
                     value = context.resolve(section[1 /* VALUE */]);

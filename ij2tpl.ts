@@ -324,7 +324,7 @@ export class Renderer {
 						context
 					);
 				break;
-			// FIXME: I don't know why it is still slow
+			// XXX: it may be slower than If-Section + Not-Section(about 1 ops/sec)
 			case TokenType.ELSE:
 				section = token as Section;
 				value = context.resolve(section[TokenMember.VALUE]);
