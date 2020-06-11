@@ -64,9 +64,9 @@ const WhiteSpaceRe = /^[\s\xA0\uFEFF]+|[\s\xA0\uFEFF]+$/g,
 	//     will always generate a new string. So we need test it before replace it ;)
 	IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/,
 	IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/g,
-	// To compress the source, we have extracted some of the same code
+	// To compress the source, we extracted some of the same code
 	stripIndentation = (token: Token, tokens: Token[]): void => {
-		// Remove comment's indentation if exists
+		// Remove token's indentation if exists
 		if (token[TokenMember.TYPE] === TokenType.TEXT) {
 			if (IndentedTestRe.test(token[TokenMember.VALUE]))
 				token[TokenMember.VALUE] = token[TokenMember.VALUE].replace(IndentedWhiteSpaceRe, '');

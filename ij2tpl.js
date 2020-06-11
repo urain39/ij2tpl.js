@@ -14,9 +14,9 @@ var WhiteSpaceRe = /^[\s\xA0\uFEFF]+|[\s\xA0\uFEFF]+$/g, stripWhiteSpace = funct
 // NOTE: if we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
 //     will always generate a new string. So we need test it before replace it ;)
 IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/, IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/g, 
-// To compress the source, we have extracted some of the same code
+// To compress the source, we extracted some of the same code
 stripIndentation = function (token, tokens) {
-    // Remove comment's indentation if exists
+    // Remove token's indentation if exists
     if (token[0 /* TYPE */] === 4 /* TEXT */) {
         if (IndentedTestRe.test(token[1 /* VALUE */]))
             token[1 /* VALUE */] = token[1 /* VALUE */].replace(IndentedWhiteSpaceRe, '');
