@@ -59,11 +59,22 @@ const TokenTypeMap: IMap<TokenType> = {
 };
 
 const WhiteSpaceRe = /^[\s\xA0\uFEFF]+|[\s\xA0\uFEFF]+$/g,
-	stripWhiteSpace = (string_: string) => string_.replace(WhiteSpaceRe, ''),
+	stripWhiteSpace = (string_: string): string => string_.replace(WhiteSpaceRe, ''),
 	// NOTE: if we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
 	//     will always generate a new string. So we need test it before replace it ;)
 	IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/,
-	IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/g;
+	IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/g,
+	// To compress the source, we extracted some of the same code
+	stripIndentation = (token: Token, tokens: Token[]): void => {
+		// Remove token's indentation if exists
+		if (token[TokenMember.TYPE] === TokenType.TEXT) {
+			if (IndentedTestRe.test(token[TokenMember.VALUE]))
+				token[TokenMember.VALUE] = token[TokenMember.VALUE].replace(IndentedWhiteSpaceRe, '');
+
+			if(!token[TokenMember.VALUE])
+				tokens.pop(); // Drop the empty text ''
+		}
+	};
 
 export function tokenize(source: string, prefix: string, suffix: string): Token[] {
 	let type_: string,
@@ -121,14 +132,7 @@ export function tokenize(source: string, prefix: string, suffix: string): Token[
 		case TokenString.NOT:
 		case TokenString.ELSE:
 		case TokenString.END:
-			// Remove section's indentation if exists
-			if (token[TokenMember.TYPE] === TokenType.TEXT) {
-				if (IndentedTestRe.test(token[TokenMember.VALUE]))
-					token[TokenMember.VALUE] = token[TokenMember.VALUE].replace(IndentedWhiteSpaceRe, '');
-
-				if(!token[TokenMember.VALUE])
-					tokens.pop(); // Drop the empty text ''
-			}
+			stripIndentation(token, tokens);
 
 			// Skip section's newline if exists
 			if (i < l) {
@@ -154,18 +158,11 @@ export function tokenize(source: string, prefix: string, suffix: string): Token[
 		case TokenString.RAW:
 			value = stripWhiteSpace(value.slice(1)); // Left trim
 
-			if (value) // Empty section are NOT allowed!
+			if (value) // Empty token are NOT allowed!
 				token = [TokenTypeMap[type_], value], tokens.push(token);
 			break;
 		case TokenString.COMMENT:
-			// Remove comment's indentation if exists
-			if (token[TokenMember.TYPE] === TokenType.TEXT) {
-				if (IndentedTestRe.test(token[TokenMember.VALUE]))
-					token[TokenMember.VALUE] = token[TokenMember.VALUE].replace(IndentedWhiteSpaceRe, '');
-
-				if(!token[TokenMember.VALUE])
-					tokens.pop(); // Drop the empty text ''
-			}
+			stripIndentation(token, tokens);
 			break; // Difference with section, we keep comments newline here
 		default:
 			token = [TokenType.FORMAT, value], tokens.push(token);
@@ -188,7 +185,7 @@ const htmlSpecialRe = /["&'\/<=>`]/g, // eslint-disable-line no-useless-escape
 		'>': '&gt;',
 		'`': '&#x60;'
 	},
-	escapeHTML = (value: any) => String(value).replace(htmlSpecialRe, (key: string) => htmlSpecialEntityMap[key]);
+	escapeHTML = (value: any): string => String(value).replace(htmlSpecialRe, (key: string): string => htmlSpecialEntityMap[key]);
 
 export const escape = escapeHTML; // Escape for HTML by default
 
@@ -298,7 +295,7 @@ export class Renderer {
 			switch (token[TokenMember.TYPE]) {
 			case TokenType.IF:
 				section = token as Section;
-				value = context.resolve(token[TokenMember.VALUE]);
+				value = context.resolve(section[TokenMember.VALUE]);
 				isArray_ = isArray(value);
 
 				// We can only know true or false after we sure it is array or not
@@ -318,7 +315,7 @@ export class Renderer {
 				break;
 			case TokenType.NOT:
 				section = token as Section;
-				value = context.resolve(token[TokenMember.VALUE]);
+				value = context.resolve(section[TokenMember.VALUE]);
 				isArray_ = isArray(value);
 
 				if (isArray_ ? value.length < 1 : !value)
@@ -330,7 +327,7 @@ export class Renderer {
 			// FIXME: I don't know why it is still slow
 			case TokenType.ELSE:
 				section = token as Section;
-				value = context.resolve(token[TokenMember.VALUE]);
+				value = context.resolve(section[TokenMember.VALUE]);
 				isArray_ = isArray(value);
 
 				if (isArray_ ? value.length > 0 : value) {

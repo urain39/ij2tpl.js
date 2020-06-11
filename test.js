@@ -20,6 +20,7 @@ fs.readdirSync(TESTDIR).forEach(function(filename) {
 		} catch (error) {
 			console.log(filename + ': Error!');
 			console.error(error);
+			throw error // re-throw
 		}
 	}
 });
