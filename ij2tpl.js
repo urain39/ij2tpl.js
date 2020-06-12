@@ -184,13 +184,13 @@ if (!isArray) {
     };
 }
 var Renderer = /** @class */ (function () {
-    function Renderer(root) {
-        this.root = root;
+    function Renderer(treeRoot) {
+        this.treeRoot = treeRoot;
     }
-    Renderer.prototype.renderTree = function (root, context, partialMap) {
+    Renderer.prototype.renderTree = function (treeRoot, context, partialMap) {
         var value, section, buffer = '', isArray_ = false;
-        for (var _i = 0, root_1 = root; _i < root_1.length; _i++) {
-            var token = root_1[_i];
+        for (var _i = 0, treeRoot_1 = treeRoot; _i < treeRoot_1.length; _i++) {
+            var token = treeRoot_1[_i];
             switch (token[0 /* TYPE */]) {
                 case 0 /* IF */:
                     section = token;
@@ -253,7 +253,7 @@ var Renderer = /** @class */ (function () {
                     break;
                 case 8 /* PARTIAL */:
                     if (partialMap && hasOwnProperty.call(partialMap, token[1 /* VALUE */]))
-                        buffer += this.renderTree(partialMap[token[1 /* VALUE */]].root, context, partialMap);
+                        buffer += this.renderTree(partialMap[token[1 /* VALUE */]].treeRoot, context, partialMap);
                     else
                         throw new Error("Cannot resolve partial template '" + token[1 /* VALUE */] + "'");
             }
@@ -261,7 +261,7 @@ var Renderer = /** @class */ (function () {
         return buffer;
     };
     Renderer.prototype.render = function (data, partialMap) {
-        return this.renderTree(this.root, new Context(data, null), partialMap);
+        return this.renderTree(this.treeRoot, new Context(data, null), partialMap);
     };
     return Renderer;
 }());
@@ -273,7 +273,7 @@ var TokenTypeReverseMap = (_b = {},
     _b[3 /* END */] = "/" /* END */,
     _b);
 function buildTree(tokens) {
-    var section, sections = [], root = [], collector = root;
+    var section, sections = [], treeRoot = [], collector = treeRoot;
     for (var _i = 0, tokens_1 = tokens; _i < tokens_1.length; _i++) {
         var token = tokens_1[_i];
         switch (token[0 /* TYPE */]) {
@@ -320,7 +320,7 @@ function buildTree(tokens) {
                             // No, then parent block is (if-)block
                             section[2 /* BLOCK */]);
                 else
-                    collector = root;
+                    collector = treeRoot;
                 break;
             // Text or Formatter
             default:
@@ -332,11 +332,11 @@ function buildTree(tokens) {
         section = sections.pop();
         throw new Error("No matching section '<type=" + TokenTypeReverseMap[section[0 /* TYPE */]] + ", value=" + section[1 /* VALUE */] + ">'");
     }
-    return root;
+    return treeRoot;
 }
 export function parse(source, prefix, suffix) {
     if (prefix === void 0) { prefix = '{'; }
     if (suffix === void 0) { suffix = '}'; }
-    var root = buildTree(tokenize(source, prefix, suffix));
-    return new Renderer(root);
+    var treeRoot = buildTree(tokenize(source, prefix, suffix));
+    return new Renderer(treeRoot);
 }

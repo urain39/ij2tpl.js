@@ -286,19 +286,19 @@ if (!isArray) {
 }
 
 export class Renderer {
-	public root: Token[];
+	public treeRoot: Token[];
 
-	public constructor(root: Token[]) {
-		this.root = root;
+	public constructor(treeRoot: Token[]) {
+		this.treeRoot = treeRoot;
 	}
 
-	public renderTree(root: Token[], context: Context, partialMap?: IMap<Renderer>): string {
+	public renderTree(treeRoot: Token[], context: Context, partialMap?: IMap<Renderer>): string {
 		let value: any,
 			section: Section,
 			buffer: string = '',
 			isArray_: boolean = false;
 
-		for (const token of root) {
+		for (const token of treeRoot) {
 			switch (token[TokenMember.TYPE]) {
 			case TokenType.IF:
 				section = token as Section;
@@ -386,7 +386,7 @@ export class Renderer {
 				break;
 			case TokenType.PARTIAL:
 				if (partialMap && hasOwnProperty.call(partialMap, token[TokenMember.VALUE]))
-					buffer += this.renderTree(partialMap[token[TokenMember.VALUE]].root, context, partialMap);
+					buffer += this.renderTree(partialMap[token[TokenMember.VALUE]].treeRoot, context, partialMap);
 				else
 					throw new Error(`Cannot resolve partial template '${token[TokenMember.VALUE]}'`);
 			}
@@ -397,7 +397,7 @@ export class Renderer {
 
 	public render(data: IMap<any>, partialMap?: IMap<Renderer>): string {
 		return this.renderTree(
-			this.root, new Context(data, null), partialMap
+			this.treeRoot, new Context(data, null), partialMap
 		);
 	}
 }
@@ -412,8 +412,8 @@ const TokenTypeReverseMap: IMap<TokenString> = {
 function buildTree(tokens: Token[]): Token[] {
 	let section: Section | undefined,
 		sections: Section[] = [],
-		root: Token[] = [],
-		collector: Token[] = root;
+		treeRoot: Token[] = [],
+		collector: Token[] = treeRoot;
 
 	for (const token of tokens) {
 		switch (token[TokenMember.TYPE]) {
@@ -468,7 +468,7 @@ function buildTree(tokens: Token[]): Token[] {
 					section[TokenMember.BLOCK])
 				;
 			else
-				collector = root;
+				collector = treeRoot;
 			break;
 		// Text or Formatter
 		default:
@@ -484,13 +484,13 @@ function buildTree(tokens: Token[]): Token[] {
 			TokenTypeReverseMap[section[TokenMember.TYPE]]}, value=${section[TokenMember.VALUE]}>'`);
 	}
 
-	return root;
+	return treeRoot;
 }
 
 export function parse(source: string, prefix: string = '{', suffix: string = '}'): Renderer {
-	const root = buildTree(tokenize(
+	const treeRoot = buildTree(tokenize(
 		source, prefix, suffix
 	));
 
-	return new Renderer(root);
+	return new Renderer(treeRoot);
 }
