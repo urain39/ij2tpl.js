@@ -102,7 +102,7 @@ IJ2TPL.parse('Hello <%name%>', '<%', '%>');
 
 **Not Implemented Yet:**
 - ~~Function type(Supported on v0.0.2-dev)~~
-- Sub-template(aka Partial Section)
+- ~~Sub-template(aka Partial Section)~~
 - Format Pipe(aka Filter)
 
-Last update: 2020-05-18
+Last update: 2020-06-12

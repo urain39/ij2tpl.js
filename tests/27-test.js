@@ -1,5 +1,5 @@
-let source = `{? \r\n\t}`;
+let source = `{}`;
 
 let tpl = IJ2TPL.parse(source);
 
-expected(tpl.treeRoot.length, 0);
+expected(tpl.root.length, 0);

@@ -11,7 +11,9 @@ const enum TokenString {
 	ELSE =	'*',
 	END =	'/',
 	RAW =	'#',
-	COMMENT = '-'
+	COMMENT = '-',
+	// After v0.0.4
+	PARTIAL = '@'
 }
 
 const enum TokenType {
@@ -22,7 +24,7 @@ const enum TokenType {
 	TEXT,
 	RAW,
 	FORMAT,
-	COMMENT
+	PARTIAL
 }
 
 const enum TokenMember {
@@ -30,6 +32,7 @@ const enum TokenMember {
 	VALUE,
 	BLOCK,
 	ELSE_BLOCK
+	// TODO: FILTERS
 }
 /* eslint-enable no-unused-vars */
 
@@ -55,7 +58,7 @@ const TokenTypeMap: IMap<TokenType> = {
 	[TokenString.ELSE]:	TokenType.ELSE,
 	[TokenString.END]:	TokenType.END,
 	[TokenString.RAW]:	TokenType.RAW,
-	[TokenString.COMMENT]:	TokenType.COMMENT
+	[TokenString.PARTIAL]:	TokenType.PARTIAL
 };
 
 const WhiteSpaceRe = /^[\s\xA0\uFEFF]+|[\s\xA0\uFEFF]+$/g,
@@ -79,7 +82,7 @@ const WhiteSpaceRe = /^[\s\xA0\uFEFF]+|[\s\xA0\uFEFF]+$/g,
 export function tokenize(source: string, prefix: string, suffix: string): Token[] {
 	let type_: string,
 		value: string,
-		token: Token = [TokenType.COMMENT, ''], // Initialized for loop
+		token: Token = [TokenType.IF, ''], // Initialized for backward check
 		tokens: Token[] = [];
 
 	for (let i = 0, j = 0,
@@ -113,17 +116,24 @@ export function tokenize(source: string, prefix: string, suffix: string): Token[
 
 		// Not found the '}'
 		if (i === -1)
-			throw new SyntaxError(`No matching prefix '${prefix}'`);
+			throw new Error(`No matching prefix '${prefix}' or empty token`);
+
+		// We don't want to call `source.slice` for comments
+		if (source[j] === TokenString.COMMENT) {
+			stripIndentation(token, tokens);
+			i += sl; // Skip the '}'
+
+			continue; // Skip the comment
+		}
 
 		// Eat the text between the '{' and '}'
 		value = source.slice(j, i);
-		i += sl; // Skip the '}'
+		i += sl;
 
 		value = stripWhiteSpace(value);
 
-		// Skip the empty token, such as '{}'
 		if (!value)
-			continue;
+			continue; // Skip the empty token, such as '{}'
 
 		type_ = value[0];
 
@@ -156,14 +166,10 @@ export function tokenize(source: string, prefix: string, suffix: string): Token[
 			}
 		// eslint-disable-line no-fallthrough
 		case TokenString.RAW:
+		case TokenString.PARTIAL:
 			value = stripWhiteSpace(value.slice(1)); // Left trim
-
-			if (value) // Empty token are NOT allowed!
-				token = [TokenTypeMap[type_], value], tokens.push(token);
+			token = [TokenTypeMap[type_], value], tokens.push(token);
 			break;
-		case TokenString.COMMENT:
-			stripIndentation(token, tokens);
-			break; // Difference with section, we keep comments newline here
 		default:
 			token = [TokenType.FORMAT, value], tokens.push(token);
 			break;
@@ -192,9 +198,9 @@ export const escape = escapeHTML; // Escape for HTML by default
 const hasOwnProperty = {}.hasOwnProperty;
 
 export class Context {
-	private data: IMap<any>;
-	private cache: IMap<any>;
-	private parent: Context | null;
+	public data: IMap<any>;
+	public cache: IMap<any>;
+	public parent: Context | null;
 
 	public constructor(data: IMap<any>, parent: Context | null) {
 		this.data = data;
@@ -279,19 +285,19 @@ if (!isArray) {
 }
 
 export class Renderer {
-	private treeRoot: Token[];
+	public root: Token[];
 
-	public constructor(treeRoot: Token[]) {
-		this.treeRoot = treeRoot;
+	public constructor(root: Token[]) {
+		this.root = root;
 	}
 
-	public renderTree(treeRoot: Token[], context: Context): string {
+	public renderTree(root: Token[], context: Context, partialMap?: IMap<Renderer>): string {
 		let value: any,
 			section: Section,
 			buffer: string = '',
 			isArray_: boolean = false;
 
-		for (const token of treeRoot) {
+		for (const token of root) {
 			switch (token[TokenMember.TYPE]) {
 			case TokenType.IF:
 				section = token as Section;
@@ -304,12 +310,14 @@ export class Renderer {
 						for (const value_ of value)
 							buffer += this.renderTree(
 								section[TokenMember.BLOCK],
-								new Context(value_, context)
+								new Context(value_, context),
+								partialMap
 							);
 					else
 						buffer += this.renderTree(
 							section[TokenMember.BLOCK],
-							new Context(value, context)
+							new Context(value, context),
+							partialMap
 						);
 				}
 				break;
@@ -321,7 +329,8 @@ export class Renderer {
 				if (isArray_ ? value.length < 1 : !value)
 					buffer += this.renderTree(
 						section[TokenMember.BLOCK],
-						context
+						context,
+						partialMap
 					);
 				break;
 			// XXX: it may be slower than If-Section + Not-Section(about 1 ops/sec)
@@ -335,17 +344,20 @@ export class Renderer {
 						for (const value_ of value)
 							buffer += this.renderTree(
 								section[TokenMember.BLOCK],
-								new Context(value_, context)
+								new Context(value_, context),
+								partialMap
 							);
 					else
 						buffer += this.renderTree(
 							section[TokenMember.BLOCK],
-							new Context(value, context)
+							new Context(value, context),
+							partialMap
 						);
 				} else {
 					buffer += this.renderTree(
 						section[TokenMember.ELSE_BLOCK],
-						context
+						context,
+						partialMap
 					);
 				}
 				break;
@@ -371,15 +383,20 @@ export class Renderer {
 						escapeHTML(value)
 					;
 				break;
+			case TokenType.PARTIAL:
+				if (partialMap && hasOwnProperty.call(partialMap, token[TokenMember.VALUE]))
+					buffer += this.renderTree(partialMap[token[TokenMember.VALUE]].root, context, partialMap);
+				else
+					throw Error(`Cannot resolve partial template ${token[TokenMember.VALUE]}!`);
 			}
 		}
 
 		return buffer;
 	}
 
-	public render(data: IMap<any>): string {
+	public render(data: IMap<any>, partialMap?: IMap<Renderer>): string {
 		return this.renderTree(
-			this.treeRoot, new Context(data, null)
+			this.root, new Context(data, null), partialMap
 		);
 	}
 }
@@ -394,8 +411,8 @@ const TokenTypeReverseMap: IMap<TokenString> = {
 function buildTree(tokens: Token[]): Token[] {
 	let section: Section | undefined,
 		sections: Section[] = [],
-		treeRoot: Token[] = [],
-		collector: Token[] = treeRoot;
+		root: Token[] = [],
+		collector: Token[] = root;
 
 	for (const token of tokens) {
 		switch (token[TokenMember.TYPE]) {
@@ -421,7 +438,7 @@ function buildTree(tokens: Token[]): Token[] {
 
 			// Check current token is valid?
 			if (!section || section[TokenMember.TYPE] !== TokenType.IF || token[TokenMember.VALUE] !== section[TokenMember.VALUE])
-				throw new SyntaxError(`Unexpected token '<type=${
+				throw new Error(`Unexpected token '<type=${
 					TokenTypeReverseMap[token[TokenMember.TYPE]]}, value=${token[TokenMember.VALUE]}>'`);
 
 			// Switch the block to else-block
@@ -432,7 +449,7 @@ function buildTree(tokens: Token[]): Token[] {
 			section = sections.pop();
 
 			if (!section || token[TokenMember.VALUE] !== section[TokenMember.VALUE])
-				throw new SyntaxError(`Unexpected token '<type=${
+				throw new Error(`Unexpected token '<type=${
 					TokenTypeReverseMap[token[TokenMember.TYPE]]}, value=${token[TokenMember.VALUE]}>'`);
 
 			// Change type for which section contains non-empty else-block
@@ -450,7 +467,7 @@ function buildTree(tokens: Token[]): Token[] {
 					section[TokenMember.BLOCK])
 				;
 			else
-				collector = treeRoot;
+				collector = root;
 			break;
 		// Text or Formatter
 		default:
@@ -462,17 +479,17 @@ function buildTree(tokens: Token[]): Token[] {
 	if (sections.length > 0) {
 		section = sections.pop() as Section;
 
-		throw new SyntaxError(`No matching section '<type=${
+		throw new Error(`No matching section '<type=${
 			TokenTypeReverseMap[section[TokenMember.TYPE]]}, value=${section[TokenMember.VALUE]}>'`);
 	}
 
-	return treeRoot;
+	return root;
 }
 
 export function parse(source: string, prefix: string = '{', suffix: string = '}'): Renderer {
-	const treeRoot = buildTree(tokenize(
+	const root = buildTree(tokenize(
 		source, prefix, suffix
 	));
 
-	return new Renderer(treeRoot);
+	return new Renderer(root);
 }

@@ -9,6 +9,8 @@ CHANGELOG
 - Re-Supported If-Else Section
 - **Changed** `IJ2TPL.escapeHTML` -> `IJ2TPL.escape`
 - Fixed check on **empty array**(difference with mustache.js)
+- Supported partial template
+- Optimized tokenize for comments
 - ...
 
 status: **DEVELOPING**
