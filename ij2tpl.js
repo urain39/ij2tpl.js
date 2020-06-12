@@ -8,7 +8,7 @@ var TokenTypeMap = (_a = {},
     _a["*" /* ELSE */] = 2 /* ELSE */,
     _a["/" /* END */] = 3 /* END */,
     _a["#" /* RAW */] = 5 /* RAW */,
-    _a["-" /* COMMENT */] = 7 /* COMMENT */,
+    _a["@" /* PARTIAL */] = 8 /* PARTIAL */,
     _a);
 var WhiteSpaceRe = /^[\s\xA0\uFEFF]+|[\s\xA0\uFEFF]+$/g, stripWhiteSpace = function (string_) { return string_.replace(WhiteSpaceRe, ''); }, 
 // NOTE: if we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
@@ -25,7 +25,7 @@ stripIndentation = function (token, tokens) {
     }
 };
 export function tokenize(source, prefix, suffix) {
-    var type_, value, token = [7 /* COMMENT */, ''], // Initialized for loop
+    var type_, value, token = [7 /* COMMENT */, ''], // Initialized for backward check
     tokens = [];
     for (var i = 0, j = 0, l = source.length, pl = prefix.length, sl = suffix.length; i < l;) {
         // Match '{'
@@ -48,14 +48,19 @@ export function tokenize(source, prefix, suffix) {
         i = source.indexOf(suffix, j);
         // Not found the '}'
         if (i === -1)
-            throw new SyntaxError("No matching prefix '" + prefix + "'");
+            throw new Error("No matching prefix '" + prefix + "'");
+        // We don't want to call `source.slice` for comments
+        if (source[j] === "-" /* COMMENT */) {
+            stripIndentation(token, tokens);
+            i += sl; // Skip the '}'
+            continue; // Skip the comment
+        }
         // Eat the text between the '{' and '}'
         value = source.slice(j, i);
-        i += sl; // Skip the '}'
+        i += sl;
         value = stripWhiteSpace(value);
-        // Skip the empty token, such as '{}'
         if (!value)
-            continue;
+            continue; // Skip the empty token, such as '{}'
         type_ = value[0];
         switch (type_) {
             case "?" /* IF */:
@@ -85,13 +90,10 @@ export function tokenize(source, prefix, suffix) {
                 }
             // eslint-disable-line no-fallthrough
             case "#" /* RAW */:
+            case "@" /* PARTIAL */:
                 value = stripWhiteSpace(value.slice(1)); // Left trim
-                if (value) // Empty token are NOT allowed!
-                    token = [TokenTypeMap[type_], value], tokens.push(token);
+                token = [TokenTypeMap[type_], value], tokens.push(token);
                 break;
-            case "-" /* COMMENT */:
-                stripIndentation(token, tokens);
-                break; // Difference with section, we keep comments newline here
             default:
                 token = [6 /* FORMAT */, value], tokens.push(token);
                 break;
@@ -185,7 +187,7 @@ var Renderer = /** @class */ (function () {
     function Renderer(treeRoot) {
         this.treeRoot = treeRoot;
     }
-    Renderer.prototype.renderTree = function (treeRoot, context) {
+    Renderer.prototype.renderTree = function (treeRoot, context, partialMap) {
         var value, section, buffer = '', isArray_ = false;
         for (var _i = 0, treeRoot_1 = treeRoot; _i < treeRoot_1.length; _i++) {
             var token = treeRoot_1[_i];
@@ -199,10 +201,10 @@ var Renderer = /** @class */ (function () {
                         if (isArray_)
                             for (var _a = 0, value_1 = value; _a < value_1.length; _a++) {
                                 var value_ = value_1[_a];
-                                buffer += this.renderTree(section[2 /* BLOCK */], new Context(value_, context));
+                                buffer += this.renderTree(section[2 /* BLOCK */], new Context(value_, context), partialMap);
                             }
                         else
-                            buffer += this.renderTree(section[2 /* BLOCK */], new Context(value, context));
+                            buffer += this.renderTree(section[2 /* BLOCK */], new Context(value, context), partialMap);
                     }
                     break;
                 case 1 /* NOT */:
@@ -210,9 +212,9 @@ var Renderer = /** @class */ (function () {
                     value = context.resolve(section[1 /* VALUE */]);
                     isArray_ = isArray(value);
                     if (isArray_ ? value.length < 1 : !value)
-                        buffer += this.renderTree(section[2 /* BLOCK */], context);
+                        buffer += this.renderTree(section[2 /* BLOCK */], context, partialMap);
                     break;
-                // FIXME: I don't know why it is still slow
+                // XXX: it may be slower than If-Section + Not-Section(about 1 ops/sec)
                 case 2 /* ELSE */:
                     section = token;
                     value = context.resolve(section[1 /* VALUE */]);
@@ -221,13 +223,13 @@ var Renderer = /** @class */ (function () {
                         if (isArray_)
                             for (var _b = 0, value_2 = value; _b < value_2.length; _b++) {
                                 var value_ = value_2[_b];
-                                buffer += this.renderTree(section[2 /* BLOCK */], new Context(value_, context));
+                                buffer += this.renderTree(section[2 /* BLOCK */], new Context(value_, context), partialMap);
                             }
                         else
-                            buffer += this.renderTree(section[2 /* BLOCK */], new Context(value, context));
+                            buffer += this.renderTree(section[2 /* BLOCK */], new Context(value, context), partialMap);
                     }
                     else {
-                        buffer += this.renderTree(section[3 /* ELSE_BLOCK */], context);
+                        buffer += this.renderTree(section[3 /* ELSE_BLOCK */], context, partialMap);
                     }
                     break;
                 case 4 /* TEXT */:
@@ -249,12 +251,17 @@ var Renderer = /** @class */ (function () {
                             :
                                 escapeHTML(value);
                     break;
+                case 8 /* PARTIAL */:
+                    if (partialMap && hasOwnProperty.call(partialMap, token[1 /* VALUE */]))
+                        buffer += this.renderTree(partialMap[token[1 /* VALUE */]].treeRoot, context, partialMap);
+                    else
+                        throw new Error("Cannot resolve partial template '" + token[1 /* VALUE */] + "'");
             }
         }
         return buffer;
     };
-    Renderer.prototype.render = function (data) {
-        return this.renderTree(this.treeRoot, new Context(data, null));
+    Renderer.prototype.render = function (data, partialMap) {
+        return this.renderTree(this.treeRoot, new Context(data, null), partialMap);
     };
     return Renderer;
 }());
@@ -291,7 +298,7 @@ function buildTree(tokens) {
                 ;
                 // Check current token is valid?
                 if (!section || section[0 /* TYPE */] !== 0 /* IF */ || token[1 /* VALUE */] !== section[1 /* VALUE */])
-                    throw new SyntaxError("Unexpected token '<type=" + TokenTypeReverseMap[token[0 /* TYPE */]] + ", value=" + token[1 /* VALUE */] + ">'");
+                    throw new Error("Unexpected token '<type=" + TokenTypeReverseMap[token[0 /* TYPE */]] + ", value=" + token[1 /* VALUE */] + ">'");
                 // Switch the block to else-block
                 collector = section[3 /* ELSE_BLOCK */] = [];
                 break;
@@ -299,7 +306,7 @@ function buildTree(tokens) {
             case 3 /* END */:
                 section = sections.pop();
                 if (!section || token[1 /* VALUE */] !== section[1 /* VALUE */])
-                    throw new SyntaxError("Unexpected token '<type=" + TokenTypeReverseMap[token[0 /* TYPE */]] + ", value=" + token[1 /* VALUE */] + ">'");
+                    throw new Error("Unexpected token '<type=" + TokenTypeReverseMap[token[0 /* TYPE */]] + ", value=" + token[1 /* VALUE */] + ">'");
                 // Change type for which section contains non-empty else-block
                 if (isArray(section[3 /* ELSE_BLOCK */]) && section[3 /* ELSE_BLOCK */].length > 0)
                     section[0 /* TYPE */] = 2 /* ELSE */;
@@ -323,7 +330,7 @@ function buildTree(tokens) {
     }
     if (sections.length > 0) {
         section = sections.pop();
-        throw new SyntaxError("No matching section '<type=" + TokenTypeReverseMap[section[0 /* TYPE */]] + ", value=" + section[1 /* VALUE */] + ">'");
+        throw new Error("No matching section '<type=" + TokenTypeReverseMap[section[0 /* TYPE */]] + ", value=" + section[1 /* VALUE */] + ">'");
     }
     return treeRoot;
 }

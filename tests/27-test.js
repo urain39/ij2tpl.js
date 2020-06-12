@@ -1,4 +1,4 @@
-let source = `{? \r\n\t}`;
+let source = `{}`;
 
 let tpl = IJ2TPL.parse(source);
 
