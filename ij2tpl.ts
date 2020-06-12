@@ -11,9 +11,9 @@ const enum TokenString {
 	ELSE =	'*',
 	END =	'/',
 	RAW =	'#',
-	COMMENT = '-',
+	COMMENT =	'-',
 	// After v0.0.4
-	PARTIAL = '@'
+	PARTIAL =	'@'
 }
 
 const enum TokenType {
