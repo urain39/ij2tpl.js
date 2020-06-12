@@ -255,7 +255,7 @@ var Renderer = /** @class */ (function () {
                     if (partialMap && hasOwnProperty.call(partialMap, token[1 /* VALUE */]))
                         buffer += this.renderTree(partialMap[token[1 /* VALUE */]].root, context, partialMap);
                     else
-                        throw Error("Cannot resolve partial template " + token[1 /* VALUE */]);
+                        throw new Error("Cannot resolve partial template '" + token[1 /* VALUE */] + "'");
             }
         }
         return buffer;

@@ -388,7 +388,7 @@ export class Renderer {
 				if (partialMap && hasOwnProperty.call(partialMap, token[TokenMember.VALUE]))
 					buffer += this.renderTree(partialMap[token[TokenMember.VALUE]].root, context, partialMap);
 				else
-					throw Error(`Cannot resolve partial template ${token[TokenMember.VALUE]}`);
+					throw new Error(`Cannot resolve partial template '${token[TokenMember.VALUE]}'`);
 			}
 		}
 
