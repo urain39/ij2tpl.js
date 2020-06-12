@@ -8,7 +8,7 @@ var TokenTypeMap = (_a = {},
     _a["*" /* ELSE */] = 2 /* ELSE */,
     _a["/" /* END */] = 3 /* END */,
     _a["#" /* RAW */] = 5 /* RAW */,
-    _a["@" /* PARTIAL */] = 7 /* PARTIAL */,
+    _a["@" /* PARTIAL */] = 8 /* PARTIAL */,
     _a);
 var WhiteSpaceRe = /^[\s\xA0\uFEFF]+|[\s\xA0\uFEFF]+$/g, stripWhiteSpace = function (string_) { return string_.replace(WhiteSpaceRe, ''); }, 
 // NOTE: if we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
@@ -25,7 +25,7 @@ stripIndentation = function (token, tokens) {
     }
 };
 export function tokenize(source, prefix, suffix) {
-    var type_, value, token = [0 /* IF */, ''], // Initialized for backward check
+    var type_, value, token = [7 /* COMMENT */, ''], // Initialized for backward check
     tokens = [];
     for (var i = 0, j = 0, l = source.length, pl = prefix.length, sl = suffix.length; i < l;) {
         // Match '{'
@@ -48,7 +48,7 @@ export function tokenize(source, prefix, suffix) {
         i = source.indexOf(suffix, j);
         // Not found the '}'
         if (i === -1)
-            throw new Error("No matching prefix '" + prefix + "' or empty token");
+            throw new Error("No matching prefix '" + prefix + "'");
         // We don't want to call `source.slice` for comments
         if (source[j] === "-" /* COMMENT */) {
             stripIndentation(token, tokens);
@@ -251,11 +251,11 @@ var Renderer = /** @class */ (function () {
                             :
                                 escapeHTML(value);
                     break;
-                case 7 /* PARTIAL */:
+                case 8 /* PARTIAL */:
                     if (partialMap && hasOwnProperty.call(partialMap, token[1 /* VALUE */]))
                         buffer += this.renderTree(partialMap[token[1 /* VALUE */]].root, context, partialMap);
                     else
-                        throw Error("Cannot resolve partial template " + token[1 /* VALUE */] + "!");
+                        throw Error("Cannot resolve partial template " + token[1 /* VALUE */]);
             }
         }
         return buffer;

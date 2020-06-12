@@ -24,6 +24,7 @@ const enum TokenType {
 	TEXT,
 	RAW,
 	FORMAT,
+	COMMENT,
 	PARTIAL
 }
 
@@ -82,7 +83,7 @@ const WhiteSpaceRe = /^[\s\xA0\uFEFF]+|[\s\xA0\uFEFF]+$/g,
 export function tokenize(source: string, prefix: string, suffix: string): Token[] {
 	let type_: string,
 		value: string,
-		token: Token = [TokenType.IF, ''], // Initialized for backward check
+		token: Token = [TokenType.COMMENT, ''], // Initialized for backward check
 		tokens: Token[] = [];
 
 	for (let i = 0, j = 0,
@@ -116,7 +117,7 @@ export function tokenize(source: string, prefix: string, suffix: string): Token[
 
 		// Not found the '}'
 		if (i === -1)
-			throw new Error(`No matching prefix '${prefix}' or empty token`);
+			throw new Error(`No matching prefix '${prefix}'`);
 
 		// We don't want to call `source.slice` for comments
 		if (source[j] === TokenString.COMMENT) {
@@ -387,7 +388,7 @@ export class Renderer {
 				if (partialMap && hasOwnProperty.call(partialMap, token[TokenMember.VALUE]))
 					buffer += this.renderTree(partialMap[token[TokenMember.VALUE]].root, context, partialMap);
 				else
-					throw Error(`Cannot resolve partial template ${token[TokenMember.VALUE]}!`);
+					throw Error(`Cannot resolve partial template ${token[TokenMember.VALUE]}`);
 			}
 		}
 
