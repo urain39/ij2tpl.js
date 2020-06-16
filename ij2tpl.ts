@@ -12,7 +12,6 @@ const enum TokenString {
 	END =	'/',
 	RAW =	'#',
 	COMMENT =	'-',
-	// After v0.0.4
 	PARTIAL =	'@'
 }
 
@@ -33,7 +32,6 @@ const enum TokenMember {
 	VALUE,
 	BLOCK,
 	ELSE_BLOCK
-	// TODO: FILTERS
 }
 /* eslint-enable no-unused-vars */
 
@@ -44,10 +42,22 @@ type SectionTuple<T> = [TokenType, string, T[], T[]];
 
 interface Section extends SectionTuple<Section> {}
 
-type Formatter = [TokenType, string];
+type Text = [TokenType, string];
+
+const enum NameMember {
+	NAME,
+	NAMES,
+	FILTERS
+}
+
+type Filter = (value: any) => any;
+
+type Name = [string, string[], Filter[]];
+
+type Formatter = [TokenType, Name];
 
 // A `Token` always can fall back to a Formatter-like Tuple
-type Token = Section | Formatter;
+type Token = Section | Text | Formatter;
 
 // See TS1023, an index type must be `string` or `number`
 interface IMap</* K, */ V> { [key: string]: V; [index: number]: V; }
@@ -229,7 +239,7 @@ export class Context {
 				name_ = names[0];
 
 				// Try to look up the (first)name in data
-				for (; context; context = context.parent) {
+				do {
 					data = context.data;
 
 					// Find out which context contains name
@@ -249,10 +259,12 @@ export class Context {
 						}
 						break;
 					}
-				}
+
+					context = context.parent;
+				} while (context);
 			} else {
 				// Try to look up the name in data
-				for (; context; context = context.parent) {
+				do {
 					data = context.data;
 
 					// Find out which context contains name
@@ -260,7 +272,9 @@ export class Context {
 						value = data[name];
 						break;
 					}
-				}
+
+					context = context.parent;
+				} while (context);
 			}
 
 			// Support for function
