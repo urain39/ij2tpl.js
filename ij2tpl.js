@@ -1,6 +1,12 @@
-// Copyright (c) 2018-2020 urain39 <urain39[AT]qq[DOT]com>
+/**
+ * Copyright (c) 2018-2020 urain39 <urain39[AT]qq[DOT]com>
+ */
 var _a, _b;
 export var version = '0.1.0-dev';
+var filterMap = {};
+export function setFilterMap(filterMap_) {
+    filterMap = filterMap_;
+}
 // See https://github.com/microsoft/TypeScript/issues/14682
 var TokenTypeMap = (_a = {},
     _a["?" /* IF */] = 0 /* IF */,
@@ -10,14 +16,15 @@ var TokenTypeMap = (_a = {},
     _a["#" /* RAW */] = 5 /* RAW */,
     _a["@" /* PARTIAL */] = 8 /* PARTIAL */,
     _a);
-var WhiteSpaceRe = /^[\s\xA0\uFEFF]+|[\s\xA0\uFEFF]+$/g, stripWhiteSpace = function (string_) { return string_.replace(WhiteSpaceRe, ''); }, 
+var WhiteSpaceRe = /^[\s\xA0\uFEFF]+|[\s\xA0\uFEFF]+$/, stripWhiteSpace = function (string_) { return string_.replace(WhiteSpaceRe, ''); }, 
 // NOTE: if we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
 //     will always generate a new string. So we need test it before replace it ;)
-IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/, IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/g, 
+IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/, IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/, 
 // To compress the source, we extracted some of the same code
 stripIndentation = function (token, tokens) {
     // Remove token's indentation if exists
     if (token[0 /* TYPE */] === 4 /* TEXT */) {
+        token = token;
         if (IndentedTestRe.test(token[1 /* VALUE */]))
             token[1 /* VALUE */] = token[1 /* VALUE */].replace(IndentedWhiteSpaceRe, '');
         if (!token[1 /* VALUE */])
@@ -67,6 +74,7 @@ export function tokenize(source, prefix, suffix) {
             case "!" /* NOT */:
             case "*" /* ELSE */:
             case "/" /* END */:
+            case "@" /* PARTIAL */:
                 stripIndentation(token, tokens);
                 // Skip section's newline if exists
                 if (i < l) {
@@ -90,7 +98,6 @@ export function tokenize(source, prefix, suffix) {
                 }
             // eslint-disable-line no-fallthrough
             case "#" /* RAW */:
-            case "@" /* PARTIAL */:
                 value = stripWhiteSpace(value.slice(1)); // Left trim
                 token = [TokenTypeMap[type_], value], tokens.push(token);
                 break;
@@ -102,7 +109,7 @@ export function tokenize(source, prefix, suffix) {
     return tokens;
 }
 // See https://github.com/janl/mustache.js/pull/530
-var htmlSpecialRe = /["&'\/<=>`]/g, // eslint-disable-line no-useless-escape
+var htmlSpecialRe = /["&'\/<=>`]/, // eslint-disable-line no-useless-escape
 htmlSpecialEntityMap = {
     '"': '&quot;',
     '&': '&amp;',
@@ -125,16 +132,16 @@ var Context = /** @class */ (function () {
         var data, cache, value = null, context = this;
         cache = context.cache;
         // Cached in context?
-        if (hasOwnProperty.call(cache, name)) {
-            value = cache[name];
+        if (hasOwnProperty.call(cache, name[0 /* NAME */])) {
+            value = cache[name[0 /* NAME */]];
         }
         else { // No cached record found
             // Have properties?
-            if (name.indexOf('.') > 0) {
-                var name_ = void 0, names = name.split('.');
+            if (name[1 /* NAMES */]) {
+                var name_ = void 0, names = name[1 /* NAMES */];
                 name_ = names[0];
                 // Try to look up the (first)name in data
-                for (; context; context = context.parent) {
+                do {
                     data = context.data;
                     // Find out which context contains name
                     if (data && hasOwnProperty.call(data, name_)) {
@@ -152,24 +159,37 @@ var Context = /** @class */ (function () {
                         }
                         break;
                     }
-                }
+                    context = context.parent;
+                } while (context);
             }
             else {
                 // Try to look up the name in data
-                for (; context; context = context.parent) {
+                do {
                     data = context.data;
                     // Find out which context contains name
-                    if (data && hasOwnProperty.call(data, name)) {
-                        value = data[name];
+                    if (data && hasOwnProperty.call(data, name[0 /* NAME */])) {
+                        value = data[name[0 /* NAME */]];
                         break;
                     }
-                }
+                    context = context.parent;
+                } while (context);
             }
             // Support for function
             if (typeof value === 'function')
                 value = value(context);
+            // Support for filters
+            if (name[2 /* FILTERS */]) {
+                var filters = name[2 /* FILTERS */];
+                for (var _i = 0, filters_1 = filters; _i < filters_1.length; _i++) {
+                    var filter = filters_1[_i];
+                    if (hasOwnProperty.call(filterMap, filter))
+                        value = filterMap[filter](value);
+                    else
+                        throw new Error("Cannot resolve filter " + filter);
+                }
+            }
             // Cache the name
-            cache[name] = value;
+            cache[name[0 /* NAME */]] = value;
         }
         return value;
     };
@@ -197,7 +217,7 @@ var Renderer = /** @class */ (function () {
                     value = context.resolve(section[1 /* VALUE */]);
                     isArray_ = isArray(value);
                     // We can only know true or false after we sure it is array or not
-                    if (isArray_ ? value.length > 0 : value) {
+                    if (isArray_ ? value.length : value) {
                         if (isArray_)
                             for (var _a = 0, value_1 = value; _a < value_1.length; _a++) {
                                 var value_ = value_1[_a];
@@ -211,7 +231,7 @@ var Renderer = /** @class */ (function () {
                     section = token;
                     value = context.resolve(section[1 /* VALUE */]);
                     isArray_ = isArray(value);
-                    if (isArray_ ? value.length < 1 : !value)
+                    if (!(isArray_ ? value.length : value))
                         buffer += this.renderTree(section[2 /* BLOCK */], context, partialMap);
                     break;
                 // XXX: it may be slower than If-Section + Not-Section(about 1 ops/sec)
@@ -219,7 +239,7 @@ var Renderer = /** @class */ (function () {
                     section = token;
                     value = context.resolve(section[1 /* VALUE */]);
                     isArray_ = isArray(value);
-                    if (isArray_ ? value.length > 0 : value) {
+                    if (isArray_ ? value.length : value) {
                         if (isArray_)
                             for (var _b = 0, value_2 = value; _b < value_2.length; _b++) {
                                 var value_ = value_2[_b];
@@ -236,26 +256,29 @@ var Renderer = /** @class */ (function () {
                     buffer += token[1 /* VALUE */];
                     break;
                 case 5 /* RAW */:
+                    token = token;
                     value = context.resolve(token[1 /* VALUE */]);
                     // Check if it is non-values(null and undefined)
                     if (value != null)
                         buffer += value;
                     break;
                 case 6 /* FORMAT */:
+                    token = token;
                     value = context.resolve(token[1 /* VALUE */]);
                     if (value != null)
-                        // NOTE: `<object>.toString` will be called when we try to
-                        //     append a stringified object to buffer, it is not safe!
                         buffer += typeof value === 'number' ?
                             value
                             :
+                                // NOTE: `<object>.toString` will be called when we try to
+                                //     append a stringified object to buffer, it is not safe!
                                 escapeHTML(value);
                     break;
                 case 8 /* PARTIAL */:
+                    token = token;
                     if (partialMap && hasOwnProperty.call(partialMap, token[1 /* VALUE */]))
                         buffer += this.renderTree(partialMap[token[1 /* VALUE */]].treeRoot, context, partialMap);
                     else
-                        throw new Error("Cannot resolve partial template '" + token[1 /* VALUE */] + "'");
+                        throw new Error("Cannot resolve partial template '" + token[1 /* VALUE */][0 /* NAME */] + "'");
             }
         }
         return buffer;
@@ -272,17 +295,34 @@ var TokenTypeReverseMap = (_b = {},
     _b[2 /* ELSE */] = "*" /* ELSE */,
     _b[3 /* END */] = "/" /* END */,
     _b);
+var PipelineRe = /\s*\|\s*/, processToken = function (token) {
+    var name, name_, names, filters, token_;
+    name = token[1 /* VALUE */];
+    name_ = name; // Back up old name for Context
+    if (name.indexOf('|') !== -1) {
+        filters = name.split(PipelineRe);
+        name = filters[0];
+        filters = filters.slice(1);
+    }
+    if (name.indexOf('.') > 0) {
+        names = name.split('.');
+    }
+    token_ = [token[0 /* TYPE */], [name_, names, filters]];
+    return token_;
+};
 function buildTree(tokens) {
-    var section, sections = [], treeRoot = [], collector = treeRoot;
+    var token, section, sections = [], treeRoot = [], collector = treeRoot;
     for (var _i = 0, tokens_1 = tokens; _i < tokens_1.length; _i++) {
-        var token = tokens_1[_i];
-        switch (token[0 /* TYPE */]) {
+        var token_ = tokens_1[_i];
+        switch (token_[0 /* TYPE */]) {
             // Enter a section
             case 0 /* IF */:
             case 1 /* NOT */:
-                // Current block saves token
-                collector.push(token);
+                // Make `_Token` -> `Token`
+                token = processToken(token_);
                 section = token;
+                // Current block saves token
+                collector.push(section);
                 // Stack saves section
                 sections.push(section);
                 // Initialize and switch to section's block
@@ -291,46 +331,51 @@ function buildTree(tokens) {
             // Switch to section's else-block
             case 2 /* ELSE */:
                 // Get entered section
-                section = sections.length > 0 ?
+                section = sections.length ?
                     sections[sections.length - 1]
                     :
                         void 0x95E2 // Reset
                 ;
                 // Check current token is valid?
-                if (!section || section[0 /* TYPE */] !== 0 /* IF */ || token[1 /* VALUE */] !== section[1 /* VALUE */])
-                    throw new Error("Unexpected token '<type=" + TokenTypeReverseMap[token[0 /* TYPE */]] + ", value=" + token[1 /* VALUE */] + ">'");
+                if (!section || section[0 /* TYPE */] !== 0 /* IF */ || token_[1 /* VALUE */] !== section[1 /* VALUE */][0 /* NAME */])
+                    throw new Error("Unexpected token '<type=" + TokenTypeReverseMap[token_[0 /* TYPE */]] + ", value=" + token_[1 /* VALUE */][0 /* NAME */] + ">'");
                 // Switch the block to else-block
                 collector = section[3 /* ELSE_BLOCK */] = [];
                 break;
             // Leave a section
             case 3 /* END */:
                 section = sections.pop();
-                if (!section || token[1 /* VALUE */] !== section[1 /* VALUE */])
-                    throw new Error("Unexpected token '<type=" + TokenTypeReverseMap[token[0 /* TYPE */]] + ", value=" + token[1 /* VALUE */] + ">'");
+                if (!section || token_[1 /* VALUE */] !== section[1 /* VALUE */][0 /* NAME */])
+                    throw new Error("Unexpected token '<type=" + TokenTypeReverseMap[token_[0 /* TYPE */]] + ", value=" + token_[1 /* VALUE */][0 /* NAME */] + ">'");
                 // Change type for which section contains non-empty else-block
-                if (isArray(section[3 /* ELSE_BLOCK */]) && section[3 /* ELSE_BLOCK */].length > 0)
+                if (isArray(section[3 /* ELSE_BLOCK */]) && section[3 /* ELSE_BLOCK */].length)
                     section[0 /* TYPE */] = 2 /* ELSE */;
                 // Re-bind block to parent block
-                if (sections.length > 0)
+                collector = sections.length ?
                     // Is parent section has initialized else-block?
-                    collector = ((section = sections[sections.length - 1], isArray(section[3 /* ELSE_BLOCK */])) ?
+                    ((section = sections[sections.length - 1], isArray(section[3 /* ELSE_BLOCK */])) ?
                         // Yes, then parent block is else-block
                         section[3 /* ELSE_BLOCK */]
                         :
                             // No, then parent block is (if-)block
-                            section[2 /* BLOCK */]);
-                else
-                    collector = treeRoot;
+                            section[2 /* BLOCK */])
+                    :
+                        treeRoot;
                 break;
-            // Text or Formatter
-            default:
+            // Formatter
+            case 5 /* RAW */:
+            case 6 /* FORMAT */:
+                token = processToken(token_);
                 collector.push(token);
                 break;
+            // Text or Partial
+            default:
+                collector.push(token_);
         }
     }
-    if (sections.length > 0) {
+    if (sections.length) {
         section = sections.pop();
-        throw new Error("No matching section '<type=" + TokenTypeReverseMap[section[0 /* TYPE */]] + ", value=" + section[1 /* VALUE */] + ">'");
+        throw new Error("No matching section '<type=" + TokenTypeReverseMap[section[0 /* TYPE */]] + ", value=" + section[1 /* VALUE */][0 /* NAME */] + ">'");
     }
     return treeRoot;
 }

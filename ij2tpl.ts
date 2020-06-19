@@ -1,4 +1,6 @@
-// Copyright (c) 2018-2020 urain39 <urain39[AT]qq[DOT]com>
+/**
+ * Copyright (c) 2018-2020 urain39 <urain39[AT]qq[DOT]com>
+ */
 
 export const version: string = '0.1.0-dev';
 
@@ -33,34 +35,45 @@ const enum TokenMember {
 	BLOCK,
 	ELSE_BLOCK
 }
-/* eslint-enable no-unused-vars */
-
-// See https://github.com/microsoft/TypeScript/pull/33050
-//     https://stackoverflow.com/questions/47842266/recursive-types-in-typescript
-type SectionTuple<T> = [TokenType, string, T[], T[]];
-// ^^^ Single-block Section can compatible with double-block Sections
-
-interface Section extends SectionTuple<Section> {}
-
-type Text = [TokenType, string];
 
 const enum NameMember {
 	NAME,
 	NAMES,
 	FILTERS
 }
+/* eslint-enable no-unused-vars */
+
+// Compatible tokenized tokens
+type _Token = [TokenType, string];
 
 type Filter = (value: any) => any;
 
-type Name = [string, string[], Filter[]];
+type Name = [string, string[]?, string[]?];
+
+// See https://github.com/microsoft/TypeScript/pull/33050
+//     https://stackoverflow.com/questions/47842266/recursive-types-in-typescript
+type SectionTuple<T> = [TokenType, Name, T[], T[]];
+// ^^^ Single-block Section can compatible with double-block Sections
+
+interface Section extends SectionTuple<Section> {}
+
+type Text = _Token; // Text token same as tokenized token
 
 type Formatter = [TokenType, Name];
 
-// A `Token` always can fall back to a Formatter-like Tuple
-type Token = Section | Text | Formatter;
+type Partial = _Token; // Partial token same as tokenized token
+
+// Token literally compatible all tokens
+type Token = _Token | Section | Text | Formatter;
 
 // See TS1023, an index type must be `string` or `number`
 interface IMap</* K, */ V> { [key: string]: V; [index: number]: V; }
+
+let filterMap: IMap<Filter> = {};
+
+export function setFilterMap(filterMap_: IMap<Filter>): void {
+	filterMap = filterMap_;
+}
 
 // See https://github.com/microsoft/TypeScript/issues/14682
 const TokenTypeMap: IMap<TokenType> = {
@@ -72,16 +85,18 @@ const TokenTypeMap: IMap<TokenType> = {
 	[TokenString.PARTIAL]:	TokenType.PARTIAL
 };
 
-const WhiteSpaceRe = /^[\s\xA0\uFEFF]+|[\s\xA0\uFEFF]+$/g,
+const WhiteSpaceRe = /^[\s\xA0\uFEFF]+|[\s\xA0\uFEFF]+$/,
 	stripWhiteSpace = (string_: string): string => string_.replace(WhiteSpaceRe, ''),
 	// NOTE: if we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
 	//     will always generate a new string. So we need test it before replace it ;)
 	IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/,
-	IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/g,
+	IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/,
 	// To compress the source, we extracted some of the same code
 	stripIndentation = (token: Token, tokens: Token[]): void => {
 		// Remove token's indentation if exists
 		if (token[TokenMember.TYPE] === TokenType.TEXT) {
+			token = token as Text;
+
 			if (IndentedTestRe.test(token[TokenMember.VALUE]))
 				token[TokenMember.VALUE] = token[TokenMember.VALUE].replace(IndentedWhiteSpaceRe, '');
 
@@ -90,11 +105,11 @@ const WhiteSpaceRe = /^[\s\xA0\uFEFF]+|[\s\xA0\uFEFF]+$/g,
 		}
 	};
 
-export function tokenize(source: string, prefix: string, suffix: string): Token[] {
+export function tokenize(source: string, prefix: string, suffix: string): _Token[] {
 	let type_: string,
 		value: string,
 		token: Token = [TokenType.COMMENT, ''], // Initialized for backward check
-		tokens: Token[] = [];
+		tokens: _Token[] = [];
 
 	for (let i = 0, j = 0,
 		l = source.length,
@@ -153,6 +168,7 @@ export function tokenize(source: string, prefix: string, suffix: string): Token[
 		case TokenString.NOT:
 		case TokenString.ELSE:
 		case TokenString.END:
+		case TokenString.PARTIAL:
 			stripIndentation(token, tokens);
 
 			// Skip section's newline if exists
@@ -177,7 +193,6 @@ export function tokenize(source: string, prefix: string, suffix: string): Token[
 			}
 		// eslint-disable-line no-fallthrough
 		case TokenString.RAW:
-		case TokenString.PARTIAL:
 			value = stripWhiteSpace(value.slice(1)); // Left trim
 			token = [TokenTypeMap[type_], value], tokens.push(token);
 			break;
@@ -191,7 +206,7 @@ export function tokenize(source: string, prefix: string, suffix: string): Token[
 }
 
 // See https://github.com/janl/mustache.js/pull/530
-const htmlSpecialRe = /["&'\/<=>`]/g, // eslint-disable-line no-useless-escape
+const htmlSpecialRe = /["&'\/<=>`]/, // eslint-disable-line no-useless-escape
 	htmlSpecialEntityMap: IMap<string> = {
 		'"': '&quot;',
 		'&': '&amp;',
@@ -219,7 +234,7 @@ export class Context {
 		this.cache = { '.': this.data };
 	}
 
-	public resolve(name: string): any {
+	public resolve(name: Name): any {
 		let data: IMap<any>,
 			cache: IMap<any>,
 			value: any = null,
@@ -228,13 +243,13 @@ export class Context {
 		cache = context.cache;
 
 		// Cached in context?
-		if (hasOwnProperty.call(cache, name)) {
-			value = cache[name];
+		if (hasOwnProperty.call(cache, name[NameMember.NAME])) {
+			value = cache[name[NameMember.NAME]];
 		} else { // No cached record found
 			// Have properties?
-			if (name.indexOf('.') > 0) {
+			if (name[NameMember.NAMES]) {
 				let name_: string,
-					names: string[] = name.split('.');
+					names: string[] = name[NameMember.NAMES] as string[];
 
 				name_ = names[0];
 
@@ -268,8 +283,8 @@ export class Context {
 					data = context.data;
 
 					// Find out which context contains name
-					if (data && hasOwnProperty.call(data, name)) {
-						value = data[name];
+					if (data && hasOwnProperty.call(data, name[NameMember.NAME])) {
+						value = data[name[NameMember.NAME]];
 						break;
 					}
 
@@ -281,8 +296,20 @@ export class Context {
 			if (typeof value === 'function')
 				value = value(context);
 
+			// Support for filters
+			if (name[NameMember.FILTERS]) {
+				let filters: string[] = name[NameMember.FILTERS] as string[];
+
+				for (const filter of filters) {
+					if (hasOwnProperty.call(filterMap, filter))
+						value = filterMap[filter](value);
+					else
+						throw new Error(`Cannot resolve filter ${filter}`);
+				}
+			}
+
 			// Cache the name
-			cache[name] = value;
+			cache[name[NameMember.NAME]] = value;
 		}
 
 		return value;
@@ -312,7 +339,7 @@ export class Renderer {
 			buffer: string = '',
 			isArray_: boolean = false;
 
-		for (const token of treeRoot) {
+		for (let token of treeRoot) {
 			switch (token[TokenMember.TYPE]) {
 			case TokenType.IF:
 				section = token as Section;
@@ -320,7 +347,7 @@ export class Renderer {
 				isArray_ = isArray(value);
 
 				// We can only know true or false after we sure it is array or not
-				if (isArray_ ? value.length > 0 : value) {
+				if (isArray_ ? value.length : value) {
 					if (isArray_)
 						for (const value_ of value)
 							buffer += this.renderTree(
@@ -341,7 +368,7 @@ export class Renderer {
 				value = context.resolve(section[TokenMember.VALUE]);
 				isArray_ = isArray(value);
 
-				if (isArray_ ? value.length < 1 : !value)
+				if (!(isArray_ ? value.length : value))
 					buffer += this.renderTree(
 						section[TokenMember.BLOCK],
 						context,
@@ -354,7 +381,7 @@ export class Renderer {
 				value = context.resolve(section[TokenMember.VALUE]);
 				isArray_ = isArray(value);
 
-				if (isArray_ ? value.length > 0 : value) {
+				if (isArray_ ? value.length : value) {
 					if (isArray_)
 						for (const value_ of value)
 							buffer += this.renderTree(
@@ -380,6 +407,7 @@ export class Renderer {
 				buffer += token[TokenMember.VALUE];
 				break;
 			case TokenType.RAW:
+				token = token as Formatter;
 				value = context.resolve(token[TokenMember.VALUE]);
 
 				// Check if it is non-values(null and undefined)
@@ -387,18 +415,21 @@ export class Renderer {
 					buffer += value;
 				break;
 			case TokenType.FORMAT:
+				token = token as Formatter;
 				value = context.resolve(token[TokenMember.VALUE]);
 
 				if (value != null)
-					// NOTE: `<object>.toString` will be called when we try to
-					//     append a stringified object to buffer, it is not safe!
 					buffer += typeof value === 'number' ?
 						value
 						:
+						// NOTE: `<object>.toString` will be called when we try to
+						//     append a stringified object to buffer, it is not safe!
 						escapeHTML(value)
 					;
 				break;
 			case TokenType.PARTIAL:
+				token = token as Partial;
+
 				if (partialMap && hasOwnProperty.call(partialMap, token[TokenMember.VALUE]))
 					buffer += this.renderTree(partialMap[token[TokenMember.VALUE]].treeRoot, context, partialMap);
 				else
@@ -423,20 +454,50 @@ const TokenTypeReverseMap: IMap<TokenString> = {
 	[TokenType.END]:	TokenString.END,
 };
 
-function buildTree(tokens: Token[]): Token[] {
-	let section: Section | undefined,
+const PipelineRe = /\s*\|\s*/,
+	processToken = (token: _Token): Token => {
+		let name: string,
+			name_: string,
+			names: string[] | undefined,
+			filters: string[] | undefined,
+			token_: Token;
+
+		name = token[TokenMember.VALUE];
+		name_ = name; // Back up old name for Context
+
+		if (name.indexOf('|') !== -1) {
+			filters = name.split(PipelineRe);
+
+			name = filters[0];
+			filters = filters.slice(1);
+		}
+
+		if (name.indexOf('.') > 0) {
+			names = name.split('.');
+		}
+
+		token_ = [token[TokenMember.TYPE], [name_, names, filters]];
+
+		return token_;
+	};
+
+function buildTree(tokens: _Token[]): Token[] {
+	let token: Token,
+		section: Section | undefined,
 		sections: Section[] = [],
 		treeRoot: Token[] = [],
 		collector: Token[] = treeRoot;
 
-	for (const token of tokens) {
-		switch (token[TokenMember.TYPE]) {
+	for (const token_ of tokens) {
+		switch (token_[TokenMember.TYPE]) {
 		// Enter a section
 		case TokenType.IF:
 		case TokenType.NOT:
-			// Current block saves token
-			collector.push(token);
+			// Make `_Token` -> `Token`
+			token = processToken(token_);
 			section = token as Section;
+			// Current block saves token
+			collector.push(section);
 			// Stack saves section
 			sections.push(section);
 			// Initialize and switch to section's block
@@ -445,16 +506,16 @@ function buildTree(tokens: Token[]): Token[] {
 		// Switch to section's else-block
 		case TokenType.ELSE:
 			// Get entered section
-			section = sections.length > 0 ?
+			section = sections.length ?
 				sections[sections.length - 1]
 				:
 				void 0x95E2 // Reset
 			;
 
 			// Check current token is valid?
-			if (!section || section[TokenMember.TYPE] !== TokenType.IF || token[TokenMember.VALUE] !== section[TokenMember.VALUE])
+			if (!section || section[TokenMember.TYPE] !== TokenType.IF || token_[TokenMember.VALUE] !== section[TokenMember.VALUE][NameMember.NAME])
 				throw new Error(`Unexpected token '<type=${
-					TokenTypeReverseMap[token[TokenMember.TYPE]]}, value=${token[TokenMember.VALUE]}>'`);
+					TokenTypeReverseMap[token_[TokenMember.TYPE]]}, value=${token_[TokenMember.VALUE][NameMember.NAME]}>'`);
 
 			// Switch the block to else-block
 			collector = section[TokenMember.ELSE_BLOCK] = [];
@@ -463,39 +524,43 @@ function buildTree(tokens: Token[]): Token[] {
 		case TokenType.END:
 			section = sections.pop();
 
-			if (!section || token[TokenMember.VALUE] !== section[TokenMember.VALUE])
+			if (!section || token_[TokenMember.VALUE] !== section[TokenMember.VALUE][NameMember.NAME])
 				throw new Error(`Unexpected token '<type=${
-					TokenTypeReverseMap[token[TokenMember.TYPE]]}, value=${token[TokenMember.VALUE]}>'`);
+					TokenTypeReverseMap[token_[TokenMember.TYPE]]}, value=${token_[TokenMember.VALUE][NameMember.NAME]}>'`);
 
 			// Change type for which section contains non-empty else-block
-			if (isArray(section[TokenMember.ELSE_BLOCK]) && section[TokenMember.ELSE_BLOCK].length > 0)
+			if (isArray(section[TokenMember.ELSE_BLOCK]) && section[TokenMember.ELSE_BLOCK].length)
 				section[TokenMember.TYPE] = TokenType.ELSE;
 
 			// Re-bind block to parent block
-			if (sections.length > 0)
+			collector = sections.length ?
 				// Is parent section has initialized else-block?
-				collector = ((section = sections[sections.length - 1], isArray(section[TokenMember.ELSE_BLOCK])) ?
+				((section = sections[sections.length - 1], isArray(section[TokenMember.ELSE_BLOCK])) ?
 					// Yes, then parent block is else-block
 					section[TokenMember.ELSE_BLOCK]
 					:
 					// No, then parent block is (if-)block
 					section[TokenMember.BLOCK])
-				;
-			else
-				collector = treeRoot;
+				:
+				treeRoot;
 			break;
-		// Text or Formatter
-		default:
+		// Formatter
+		case TokenType.RAW:
+		case TokenType.FORMAT:
+			token = processToken(token_);
 			collector.push(token);
 			break;
+		// Text or Partial
+		default:
+			collector.push(token_);
 		}
 	}
 
-	if (sections.length > 0) {
+	if (sections.length) {
 		section = sections.pop() as Section;
 
 		throw new Error(`No matching section '<type=${
-			TokenTypeReverseMap[section[TokenMember.TYPE]]}, value=${section[TokenMember.VALUE]}>'`);
+			TokenTypeReverseMap[section[TokenMember.TYPE]]}, value=${section[TokenMember.VALUE][NameMember.NAME]}>'`);
 	}
 
 	return treeRoot;
