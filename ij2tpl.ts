@@ -85,7 +85,7 @@ const TokenTypeMap: IMap<TokenType> = {
 	[TokenString.PARTIAL]:	TokenType.PARTIAL
 };
 
-const WhiteSpaceRe = /^[\s\xA0\uFEFF]+|[\s\xA0\uFEFF]+$/,
+const WhiteSpaceRe = /^[\s\xA0\uFEFF]+|[\s\xA0\uFEFF]+$/g,
 	stripWhiteSpace = (string_: string): string => string_.replace(WhiteSpaceRe, ''),
 	// NOTE: if we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
 	//     will always generate a new string. So we need test it before replace it ;)
@@ -206,7 +206,7 @@ export function tokenize(source: string, prefix: string, suffix: string): _Token
 }
 
 // See https://github.com/janl/mustache.js/pull/530
-const htmlSpecialRe = /["&'\/<=>`]/, // eslint-disable-line no-useless-escape
+const htmlSpecialRe = /["&'\/<=>`]/g, // eslint-disable-line no-useless-escape
 	htmlSpecialEntityMap: IMap<string> = {
 		'"': '&quot;',
 		'&': '&amp;',
@@ -434,6 +434,7 @@ export class Renderer {
 					buffer += this.renderTree(partialMap[token[TokenMember.VALUE]].treeRoot, context, partialMap);
 				else
 					throw new Error(`Cannot resolve partial template '${token[TokenMember.VALUE]}'`);
+				break;
 			}
 		}
 
@@ -553,6 +554,7 @@ function buildTree(tokens: _Token[]): Token[] {
 		// Text or Partial
 		default:
 			collector.push(token_);
+			break;
 		}
 	}
 

@@ -16,7 +16,7 @@ var TokenTypeMap = (_a = {},
     _a["#" /* RAW */] = 5 /* RAW */,
     _a["@" /* PARTIAL */] = 8 /* PARTIAL */,
     _a);
-var WhiteSpaceRe = /^[\s\xA0\uFEFF]+|[\s\xA0\uFEFF]+$/, stripWhiteSpace = function (string_) { return string_.replace(WhiteSpaceRe, ''); }, 
+var WhiteSpaceRe = /^[\s\xA0\uFEFF]+|[\s\xA0\uFEFF]+$/g, stripWhiteSpace = function (string_) { return string_.replace(WhiteSpaceRe, ''); }, 
 // NOTE: if we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
 //     will always generate a new string. So we need test it before replace it ;)
 IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/, IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/, 
@@ -109,7 +109,7 @@ export function tokenize(source, prefix, suffix) {
     return tokens;
 }
 // See https://github.com/janl/mustache.js/pull/530
-var htmlSpecialRe = /["&'\/<=>`]/, // eslint-disable-line no-useless-escape
+var htmlSpecialRe = /["&'\/<=>`]/g, // eslint-disable-line no-useless-escape
 htmlSpecialEntityMap = {
     '"': '&quot;',
     '&': '&amp;',
@@ -278,7 +278,8 @@ var Renderer = /** @class */ (function () {
                     if (partialMap && hasOwnProperty.call(partialMap, token[1 /* VALUE */]))
                         buffer += this.renderTree(partialMap[token[1 /* VALUE */]].treeRoot, context, partialMap);
                     else
-                        throw new Error("Cannot resolve partial template '" + token[1 /* VALUE */][0 /* NAME */] + "'");
+                        throw new Error("Cannot resolve partial template '" + token[1 /* VALUE */] + "'");
+                    break;
             }
         }
         return buffer;
@@ -371,6 +372,7 @@ function buildTree(tokens) {
             // Text or Partial
             default:
                 collector.push(token_);
+                break;
         }
     }
     if (sections.length) {
