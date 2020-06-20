@@ -339,7 +339,7 @@ function buildTree(tokens) {
                     :
                         void 0x95E2 // Reset
                 ;
-                // Check current token is valid?
+                // `ELSE` are valid for `IF`, invalid for `NOT`
                 if (!section || section[0 /* TYPE */] !== 0 /* IF */ || token_[1 /* VALUE */] !== section[1 /* VALUE */][0 /* NAME */])
                     throw new Error("Unexpected token '<type=" + TokenTypeReverseMap[token_[0 /* TYPE */]] + ", value=" + token_[1 /* VALUE */][0 /* NAME */] + ">'");
                 // Switch the block to else-block
@@ -356,12 +356,12 @@ function buildTree(tokens) {
                 // Re-bind block to parent block
                 collector = sections.length ?
                     // Is parent section has initialized else-block?
-                    ((section = sections[sections.length - 1], isArray(section[3 /* ELSE_BLOCK */])) ?
+                    (section = sections[sections.length - 1], isArray(section[3 /* ELSE_BLOCK */])) ?
                         // Yes, then parent block is else-block
                         section[3 /* ELSE_BLOCK */]
                         :
                             // No, then parent block is (if-)block
-                            section[2 /* BLOCK */])
+                            section[2 /* BLOCK */]
                     :
                         treeRoot;
                 break;

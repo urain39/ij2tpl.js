@@ -53,7 +53,6 @@ type Name = [string, string[] | null, string[] | null];
 // See https://github.com/microsoft/TypeScript/pull/33050
 //     https://stackoverflow.com/questions/47842266/recursive-types-in-typescript
 type SectionTuple<T> = [TokenType, Name, T[], T[] | null];
-// ^^^ Single-block Section can compatible with double-block Sections
 
 interface Section extends SectionTuple<Section> {}
 
@@ -93,7 +92,7 @@ const WhiteSpaceRe = /[\s\xA0\uFEFF]+/g,
 	IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/,
 	IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/,
 	// To compress the source, we extracted some of the same code
-	stripIndentation = (token: _Token, tokens: Token[]): void => {
+	stripIndentation = (token: _Token, tokens: _Token[]): void => {
 		// Remove token's indentation if exists
 		if (token[TokenMember.TYPE] === TokenType.TEXT) {
 			token = token as Text;
@@ -220,7 +219,7 @@ const htmlSpecialRe = /["&'\/<=>`]/g, // eslint-disable-line no-useless-escape
 	},
 	escapeHTML = (value: any): string => String(value).replace(htmlSpecialRe, (key: string): string => htmlSpecialEntityMap[key]);
 
-export const escape = escapeHTML; // Escape for HTML by default
+export let escape = escapeHTML; // Escape for HTML by default
 
 const hasOwnProperty = {}.hasOwnProperty;
 
@@ -458,7 +457,7 @@ const TokenTypeReverseMap: IMap<TokenString> = {
 	[TokenType.END]:	TokenString.END,
 };
 
-const processToken = (token: _Token): Token => {
+const processToken = (token: _Token): Section | Formatter => {
 	let name: string,
 		names: string[] | null = null,
 		filters: string[] | null = null,
@@ -514,7 +513,7 @@ function buildTree(tokens: _Token[]): Token[] {
 				void 0x95E2 // Reset
 			;
 
-			// Check current token is valid?
+			// `ELSE` are valid for `IF`, invalid for `NOT`
 			if (!section || section[TokenMember.TYPE] !== TokenType.IF || token_[TokenMember.VALUE] !== section[TokenMember.VALUE][NameMember.NAME])
 				throw new Error(`Unexpected token '<type=${
 					TokenTypeReverseMap[token_[TokenMember.TYPE]]}, value=${token_[TokenMember.VALUE][NameMember.NAME]}>'`);
@@ -537,12 +536,12 @@ function buildTree(tokens: _Token[]): Token[] {
 			// Re-bind block to parent block
 			collector = sections.length ?
 				// Is parent section has initialized else-block?
-				((section = sections[sections.length - 1], isArray(section[TokenMember.ELSE_BLOCK])) ?
+				(section = sections[sections.length - 1], isArray(section[TokenMember.ELSE_BLOCK])) ?
 					// Yes, then parent block is else-block
 					section[TokenMember.ELSE_BLOCK] as Token[]
 					:
 					// No, then parent block is (if-)block
-					section[TokenMember.BLOCK])
+					section[TokenMember.BLOCK]
 				:
 				treeRoot;
 			break;
