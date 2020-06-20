@@ -46,27 +46,27 @@ const enum NameMember {
 // Compatible tokenized tokens
 type _Token = [TokenType, string];
 
-type Filter = (value: any) => any;
-
-type Name = [string, string[] | null, string[] | null];
+export type Name = [string, string[] | null, string[] | null];
 
 // See https://github.com/microsoft/TypeScript/pull/33050
 //     https://stackoverflow.com/questions/47842266/recursive-types-in-typescript
 type SectionTuple<T> = [TokenType, Name, T[], T[] | null];
 
-interface Section extends SectionTuple<Section> {}
+export interface Section extends SectionTuple<Section> {}
 
-type Text = _Token; // Text token same as tokenized token
+export type Text = _Token; // Text token same as tokenized token
 
-type Formatter = [TokenType, Name];
+export type Formatter = [TokenType, Name];
 
-type Partial = _Token; // Partial token same as tokenized token
+export type Partial = _Token; // Partial token same as tokenized token
 
 // Token literally compatible all tokens
-type Token = _Token | Section | Text | Formatter | Partial;
+export type Token = _Token | Section | Text | Formatter | Partial;
 
 // See TS1023, an index type must be `string` or `number`
 interface IMap</* K, */ V> { [key: string]: V; [index: number]: V; }
+
+export type Filter = (value: any) => any;
 
 let filterMap: IMap<Filter> = {};
 
