@@ -16,7 +16,8 @@ var TokenTypeMap = (_a = {},
     _a["#" /* RAW */] = 5 /* RAW */,
     _a["@" /* PARTIAL */] = 8 /* PARTIAL */,
     _a);
-var WhiteSpaceRe = /^[\s\xA0\uFEFF]+|[\s\xA0\uFEFF]+$/g, stripWhiteSpace = function (string_) { return string_.replace(WhiteSpaceRe, ''); }, 
+// We strip all white spaces to make check section easy(for `buildTree`)
+var WhiteSpaceRe = /[\s\xA0\uFEFF]+/g, stripWhiteSpace = function (string_) { return string_.replace(WhiteSpaceRe, ''); }, 
 // NOTE: if we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
 //     will always generate a new string. So we need test it before replace it ;)
 IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/, IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/, 
@@ -129,16 +130,17 @@ var Context = /** @class */ (function () {
         this.cache = { '.': this.data };
     }
     Context.prototype.resolve = function (name) {
-        var data, cache, value = null, context = this;
+        var data, cache, name_, names, filters, value = null, context = this;
         cache = context.cache;
+        name_ = name[0 /* NAME */];
         // Cached in context?
-        if (hasOwnProperty.call(cache, name[0 /* NAME */])) {
-            value = cache[name[0 /* NAME */]];
+        if (hasOwnProperty.call(cache, name_)) {
+            value = cache[name_];
         }
         else { // No cached record found
             // Have properties?
             if (name[1 /* NAMES */]) {
-                var name_ = void 0, names = name[1 /* NAMES */];
+                names = name[1 /* NAMES */];
                 name_ = names[0];
                 // Try to look up the (first)name in data
                 do {
@@ -167,8 +169,8 @@ var Context = /** @class */ (function () {
                 do {
                     data = context.data;
                     // Find out which context contains name
-                    if (data && hasOwnProperty.call(data, name[0 /* NAME */])) {
-                        value = data[name[0 /* NAME */]];
+                    if (data && hasOwnProperty.call(data, name_)) {
+                        value = data[name_];
                         break;
                     }
                     context = context.parent;
@@ -179,7 +181,7 @@ var Context = /** @class */ (function () {
                 value = value(context);
             // Support for filters
             if (name[2 /* FILTERS */]) {
-                var filters = name[2 /* FILTERS */];
+                filters = name[2 /* FILTERS */];
                 for (var _i = 0, filters_1 = filters; _i < filters_1.length; _i++) {
                     var filter = filters_1[_i];
                     if (hasOwnProperty.call(filterMap, filter))
@@ -189,7 +191,7 @@ var Context = /** @class */ (function () {
                 }
             }
             // Cache the name
-            cache[name[0 /* NAME */]] = value;
+            cache[name_] = value;
         }
         return value;
     };
@@ -296,18 +298,17 @@ var TokenTypeReverseMap = (_b = {},
     _b[2 /* ELSE */] = "*" /* ELSE */,
     _b[3 /* END */] = "/" /* END */,
     _b);
-var PipelineRe = /\s*\|\s*/, processToken = function (token) {
-    var name, name_, names, filters, token_;
+var processToken = function (token) {
+    var name, name_, names = null, filters = null, token_;
     name = token[1 /* VALUE */];
     name_ = name; // Back up old name for Context
     if (name.indexOf('|') !== -1) {
-        filters = name.split(PipelineRe);
+        filters = name.split('|');
         name = filters[0];
         filters = filters.slice(1);
     }
-    if (name.indexOf('.') > 0) {
+    if (name.indexOf('.') > 0)
         names = name.split('.');
-    }
     token_ = [token[0 /* TYPE */], [name_, names, filters]];
     return token_;
 };
@@ -321,13 +322,14 @@ function buildTree(tokens) {
             case 1 /* NOT */:
                 // Make `_Token` -> `Token`
                 token = processToken(token_);
-                section = token;
                 // Current block saves token
-                collector.push(section);
+                collector.push(token);
+                section = token;
                 // Stack saves section
                 sections.push(section);
                 // Initialize and switch to section's block
                 collector = section[2 /* BLOCK */] = [];
+                section[3 /* ELSE_BLOCK */] = null; // Padding?
                 break;
             // Switch to section's else-block
             case 2 /* ELSE */:

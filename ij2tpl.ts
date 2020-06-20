@@ -48,11 +48,11 @@ type _Token = [TokenType, string];
 
 type Filter = (value: any) => any;
 
-type Name = [string, string[]?, string[]?];
+type Name = [string, string[] | null, string[] | null];
 
 // See https://github.com/microsoft/TypeScript/pull/33050
 //     https://stackoverflow.com/questions/47842266/recursive-types-in-typescript
-type SectionTuple<T> = [TokenType, Name, T[], T[]];
+type SectionTuple<T> = [TokenType, Name, T[], T[] | null];
 // ^^^ Single-block Section can compatible with double-block Sections
 
 interface Section extends SectionTuple<Section> {}
@@ -64,7 +64,7 @@ type Formatter = [TokenType, Name];
 type Partial = _Token; // Partial token same as tokenized token
 
 // Token literally compatible all tokens
-type Token = _Token | Section | Text | Formatter;
+type Token = _Token | Section | Text | Formatter | Partial;
 
 // See TS1023, an index type must be `string` or `number`
 interface IMap</* K, */ V> { [key: string]: V; [index: number]: V; }
@@ -85,14 +85,15 @@ const TokenTypeMap: IMap<TokenType> = {
 	[TokenString.PARTIAL]:	TokenType.PARTIAL
 };
 
-const WhiteSpaceRe = /^[\s\xA0\uFEFF]+|[\s\xA0\uFEFF]+$/g,
+// We strip all white spaces to make check section easy(for `buildTree`)
+const WhiteSpaceRe = /[\s\xA0\uFEFF]+/g,
 	stripWhiteSpace = (string_: string): string => string_.replace(WhiteSpaceRe, ''),
 	// NOTE: if we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
 	//     will always generate a new string. So we need test it before replace it ;)
 	IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/,
 	IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/,
 	// To compress the source, we extracted some of the same code
-	stripIndentation = (token: Token, tokens: Token[]): void => {
+	stripIndentation = (token: _Token, tokens: Token[]): void => {
 		// Remove token's indentation if exists
 		if (token[TokenMember.TYPE] === TokenType.TEXT) {
 			token = token as Text;
@@ -237,20 +238,22 @@ export class Context {
 	public resolve(name: Name): any {
 		let data: IMap<any>,
 			cache: IMap<any>,
+			name_: string,
+			names: string[],
+			filters: string[],
 			value: any = null,
 			context: Context | null = this;
 
 		cache = context.cache;
+		name_ = name[NameMember.NAME];
 
 		// Cached in context?
-		if (hasOwnProperty.call(cache, name[NameMember.NAME])) {
-			value = cache[name[NameMember.NAME]];
+		if (hasOwnProperty.call(cache, name_)) {
+			value = cache[name_];
 		} else { // No cached record found
 			// Have properties?
 			if (name[NameMember.NAMES]) {
-				let name_: string,
-					names: string[] = name[NameMember.NAMES] as string[];
-
+				names = name[NameMember.NAMES] as string[];
 				name_ = names[0];
 
 				// Try to look up the (first)name in data
@@ -283,8 +286,8 @@ export class Context {
 					data = context.data;
 
 					// Find out which context contains name
-					if (data && hasOwnProperty.call(data, name[NameMember.NAME])) {
-						value = data[name[NameMember.NAME]];
+					if (data && hasOwnProperty.call(data, name_)) {
+						value = data[name_];
 						break;
 					}
 
@@ -298,7 +301,7 @@ export class Context {
 
 			// Support for filters
 			if (name[NameMember.FILTERS]) {
-				let filters: string[] = name[NameMember.FILTERS] as string[];
+				filters = name[NameMember.FILTERS] as string[];
 
 				for (const filter of filters) {
 					if (hasOwnProperty.call(filterMap, filter))
@@ -309,7 +312,7 @@ export class Context {
 			}
 
 			// Cache the name
-			cache[name[NameMember.NAME]] = value;
+			cache[name_] = value;
 		}
 
 		return value;
@@ -397,7 +400,7 @@ export class Renderer {
 						);
 				} else {
 					buffer += this.renderTree(
-						section[TokenMember.ELSE_BLOCK],
+						section[TokenMember.ELSE_BLOCK] as Token[],
 						context,
 						partialMap
 					);
@@ -455,32 +458,30 @@ const TokenTypeReverseMap: IMap<TokenString> = {
 	[TokenType.END]:	TokenString.END,
 };
 
-const PipelineRe = /\s*\|\s*/,
-	processToken = (token: _Token): Token => {
-		let name: string,
-			name_: string,
-			names: string[] | undefined,
-			filters: string[] | undefined,
-			token_: Token;
+const processToken = (token: _Token): Token => {
+	let name: string,
+		name_: string,
+		names: string[] | null = null,
+		filters: string[] | null = null,
+		token_: Token;
 
-		name = token[TokenMember.VALUE];
-		name_ = name; // Back up old name for Context
+	name = token[TokenMember.VALUE];
+	name_ = name; // Back up old name for Context
 
-		if (name.indexOf('|') !== -1) {
-			filters = name.split(PipelineRe);
+	if (name.indexOf('|') !== -1) {
+		filters = name.split('|');
 
-			name = filters[0];
-			filters = filters.slice(1);
-		}
+		name = filters[0];
+		filters = filters.slice(1);
+	}
 
-		if (name.indexOf('.') > 0) {
-			names = name.split('.');
-		}
+	if (name.indexOf('.') > 0)
+		names = name.split('.');
 
-		token_ = [token[TokenMember.TYPE], [name_, names, filters]];
+	token_ = [token[TokenMember.TYPE], [name_, names, filters]];
 
-		return token_;
-	};
+	return token_;
+};
 
 function buildTree(tokens: _Token[]): Token[] {
 	let token: Token,
@@ -496,13 +497,14 @@ function buildTree(tokens: _Token[]): Token[] {
 		case TokenType.NOT:
 			// Make `_Token` -> `Token`
 			token = processToken(token_);
-			section = token as Section;
 			// Current block saves token
-			collector.push(section);
+			collector.push(token);
+			section = token as Section;
 			// Stack saves section
 			sections.push(section);
 			// Initialize and switch to section's block
 			collector = section[TokenMember.BLOCK] = [];
+			section[TokenMember.ELSE_BLOCK] = null; // Padding?
 			break;
 		// Switch to section's else-block
 		case TokenType.ELSE:
@@ -530,7 +532,7 @@ function buildTree(tokens: _Token[]): Token[] {
 					TokenTypeReverseMap[token_[TokenMember.TYPE]]}, value=${token_[TokenMember.VALUE][NameMember.NAME]}>'`);
 
 			// Change type for which section contains non-empty else-block
-			if (isArray(section[TokenMember.ELSE_BLOCK]) && section[TokenMember.ELSE_BLOCK].length)
+			if (isArray(section[TokenMember.ELSE_BLOCK]) && (section[TokenMember.ELSE_BLOCK]as Token[]).length)
 				section[TokenMember.TYPE] = TokenType.ELSE;
 
 			// Re-bind block to parent block
@@ -538,7 +540,7 @@ function buildTree(tokens: _Token[]): Token[] {
 				// Is parent section has initialized else-block?
 				((section = sections[sections.length - 1], isArray(section[TokenMember.ELSE_BLOCK])) ?
 					// Yes, then parent block is else-block
-					section[TokenMember.ELSE_BLOCK]
+					section[TokenMember.ELSE_BLOCK] as Token[]
 					:
 					// No, then parent block is (if-)block
 					section[TokenMember.BLOCK])
