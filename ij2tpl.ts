@@ -299,20 +299,20 @@ export class Context {
 			if (typeof value === 'function')
 				value = value(context);
 
-			// Support for filters
-			if (name[NameMember.FILTERS]) {
-				filters = name[NameMember.FILTERS] as string[];
-
-				for (const filter of filters) {
-					if (hasOwnProperty.call(filterMap, filter))
-						value = filterMap[filter](value);
-					else
-						throw new Error(`Cannot resolve filter ${filter}`);
-				}
-			}
-
 			// Cache the name
 			cache[name_] = value;
+		}
+
+		// Apply filters if exists
+		if (name[NameMember.FILTERS]) {
+			filters = name[NameMember.FILTERS] as string[];
+
+			for (const filter of filters) {
+				if (hasOwnProperty.call(filterMap, filter))
+					value = filterMap[filter](value);
+				else
+					throw new Error(`Cannot resolve filter '${filter}'`);
+			}
 		}
 
 		return value;
@@ -436,7 +436,7 @@ export class Renderer {
 				if (partialMap && hasOwnProperty.call(partialMap, token[TokenMember.VALUE]))
 					buffer += this.renderTree(partialMap[token[TokenMember.VALUE]].treeRoot, context, partialMap);
 				else
-					throw new Error(`Cannot resolve partial template '${token[TokenMember.VALUE]}'`);
+					throw new Error(`Cannot resolve partial '${token[TokenMember.VALUE]}'`);
 				break;
 			}
 		}
@@ -460,17 +460,16 @@ const TokenTypeReverseMap: IMap<TokenString> = {
 
 const processToken = (token: _Token): Token => {
 	let name: string,
-		name_: string,
 		names: string[] | null = null,
 		filters: string[] | null = null,
 		token_: Token;
 
 	name = token[TokenMember.VALUE];
-	name_ = name; // Back up old name for Context
 
 	if (name.indexOf('|') !== -1) {
 		filters = name.split('|');
 
+		// NOTE: filters are just additional part of Token
 		name = filters[0];
 		filters = filters.slice(1);
 	}
@@ -478,7 +477,7 @@ const processToken = (token: _Token): Token => {
 	if (name.indexOf('.') > 0)
 		names = name.split('.');
 
-	token_ = [token[TokenMember.TYPE], [name_, names, filters]];
+	token_ = [token[TokenMember.TYPE], [name, names, filters]];
 
 	return token_;
 };

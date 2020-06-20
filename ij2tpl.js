@@ -179,19 +179,19 @@ var Context = /** @class */ (function () {
             // Support for function
             if (typeof value === 'function')
                 value = value(context);
-            // Support for filters
-            if (name[2 /* FILTERS */]) {
-                filters = name[2 /* FILTERS */];
-                for (var _i = 0, filters_1 = filters; _i < filters_1.length; _i++) {
-                    var filter = filters_1[_i];
-                    if (hasOwnProperty.call(filterMap, filter))
-                        value = filterMap[filter](value);
-                    else
-                        throw new Error("Cannot resolve filter " + filter);
-                }
-            }
             // Cache the name
             cache[name_] = value;
+        }
+        // Apply filters if exists
+        if (name[2 /* FILTERS */]) {
+            filters = name[2 /* FILTERS */];
+            for (var _i = 0, filters_1 = filters; _i < filters_1.length; _i++) {
+                var filter = filters_1[_i];
+                if (hasOwnProperty.call(filterMap, filter))
+                    value = filterMap[filter](value);
+                else
+                    throw new Error("Cannot resolve filter '" + filter + "'");
+            }
         }
         return value;
     };
@@ -280,7 +280,7 @@ var Renderer = /** @class */ (function () {
                     if (partialMap && hasOwnProperty.call(partialMap, token[1 /* VALUE */]))
                         buffer += this.renderTree(partialMap[token[1 /* VALUE */]].treeRoot, context, partialMap);
                     else
-                        throw new Error("Cannot resolve partial template '" + token[1 /* VALUE */] + "'");
+                        throw new Error("Cannot resolve partial '" + token[1 /* VALUE */] + "'");
                     break;
             }
         }
@@ -299,17 +299,17 @@ var TokenTypeReverseMap = (_b = {},
     _b[3 /* END */] = "/" /* END */,
     _b);
 var processToken = function (token) {
-    var name, name_, names = null, filters = null, token_;
+    var name, names = null, filters = null, token_;
     name = token[1 /* VALUE */];
-    name_ = name; // Back up old name for Context
     if (name.indexOf('|') !== -1) {
         filters = name.split('|');
+        // NOTE: filters are just additional part of Token
         name = filters[0];
         filters = filters.slice(1);
     }
     if (name.indexOf('.') > 0)
         names = name.split('.');
-    token_ = [token[0 /* TYPE */], [name_, names, filters]];
+    token_ = [token[0 /* TYPE */], [name, names, filters]];
     return token_;
 };
 function buildTree(tokens) {
