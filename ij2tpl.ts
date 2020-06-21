@@ -251,10 +251,12 @@ export class Context {
 		cache = context.cache;
 		name_ = name[NameMember.NAME];
 
+		if (ActionNames[name_]) {
+			// XXX: Do nothing for Action names
 		// Cached in context?
-		if (hasOwnProperty.call(cache, name_)) {
+		} else if (hasOwnProperty.call(cache, name_)) {
 			value = cache[name_];
-		} else if (!ActionNames[name_]) {
+		} else {
 			// No cached record found. Have properties?
 			if (name[NameMember.NAMES]) {
 				names = name[NameMember.NAMES] as string[];

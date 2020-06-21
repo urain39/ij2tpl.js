@@ -135,11 +135,14 @@ var Context = /** @class */ (function () {
         var data, cache, name_, names, filters, value = null, context = this;
         cache = context.cache;
         name_ = name[0 /* NAME */];
-        // Cached in context?
-        if (hasOwnProperty.call(cache, name_)) {
+        if (ActionNames[name_]) {
+            // XXX: Do nothing for Action names
+            // Cached in context?
+        }
+        else if (hasOwnProperty.call(cache, name_)) {
             value = cache[name_];
         }
-        else if (!ActionNames[name_]) {
+        else {
             // No cached record found. Have properties?
             if (name[1 /* NAMES */]) {
                 names = name[1 /* NAMES */];
