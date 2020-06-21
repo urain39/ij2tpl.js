@@ -123,6 +123,8 @@ htmlSpecialEntityMap = {
 }, escapeHTML = function (value) { return String(value).replace(htmlSpecialRe, function (key) { return htmlSpecialEntityMap[key]; }); };
 export var escape = escapeHTML; // Escape for HTML by default
 var hasOwnProperty = {}.hasOwnProperty;
+// Action name means we just want run filters :)
+export var ActionNames = { '': true /* , 'do': true */ };
 var Context = /** @class */ (function () {
     function Context(data, parent) {
         this.data = data;
@@ -137,8 +139,8 @@ var Context = /** @class */ (function () {
         if (hasOwnProperty.call(cache, name_)) {
             value = cache[name_];
         }
-        else { // No cached record found
-            // Have properties?
+        else if (!ActionNames[name_]) {
+            // No cached record found. Have properties?
             if (name[1 /* NAMES */]) {
                 names = name[1 /* NAMES */];
                 name_ = names[0];
@@ -255,7 +257,10 @@ var Renderer = /** @class */ (function () {
                     }
                     break;
                 case 4 /* TEXT */:
-                    buffer += token[1 /* VALUE */];
+                    token = token;
+                    value = token[1 /* VALUE */];
+                    // Empty text has been skipped when tokenizing
+                    buffer += value;
                     break;
                 case 5 /* RAW */:
                     token = token;
@@ -277,10 +282,11 @@ var Renderer = /** @class */ (function () {
                     break;
                 case 8 /* PARTIAL */:
                     token = token;
-                    if (partialMap && hasOwnProperty.call(partialMap, token[1 /* VALUE */]))
-                        buffer += this.renderTree(partialMap[token[1 /* VALUE */]].treeRoot, context, partialMap);
+                    value = token[1 /* VALUE */];
+                    if (partialMap && hasOwnProperty.call(partialMap, value))
+                        buffer += this.renderTree(partialMap[value].treeRoot, context, partialMap);
                     else
-                        throw new Error("Cannot resolve partial '" + token[1 /* VALUE */] + "'");
+                        throw new Error("Cannot resolve partial '" + value + "'");
                     break;
             }
         }
@@ -307,6 +313,7 @@ var processToken = function (token) {
         name = filters[0];
         filters = filters.slice(1);
     }
+    // One '.' means current data
     if (name.indexOf('.') > 0)
         names = name.split('.');
     token_ = [token[0 /* TYPE */], [name, names, filters]];
@@ -389,3 +396,6 @@ export function parse(source, prefix, suffix) {
     var treeRoot = buildTree(tokenize(source, prefix, suffix));
     return new Renderer(treeRoot);
 }
+// Support for ES3(Optional)
+if (!Object.defineProperty)
+    Object.defineProperty = function () { };

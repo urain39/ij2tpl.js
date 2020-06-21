@@ -46,11 +46,13 @@ const enum NameMember {
 // Compatible tokenized tokens
 type _Token = [TokenType, string];
 
+//                  NAME    NAMES            FILTERS
 export type Name = [string, string[] | null, string[] | null];
 
 // See https://github.com/microsoft/TypeScript/pull/33050
 //     https://stackoverflow.com/questions/47842266/recursive-types-in-typescript
 type SectionTuple<T> = [TokenType, Name, T[], T[] | null];
+// ^^^                                   BLOCK, ELSE_BLOCK
 
 export interface Section extends SectionTuple<Section> {}
 
@@ -64,7 +66,7 @@ export type Partial = _Token; // Partial token same as tokenized token
 export type Token = _Token | Section | Text | Formatter | Partial;
 
 // See TS1023, an index type must be `string` or `number`
-interface IMap</* K, */ V> { [key: string]: V; [index: number]: V; }
+interface IMap< /* K, */ V> { [key: string]: V; [index: number]: V; }
 
 export type Filter = (value: any) => any;
 
@@ -223,6 +225,9 @@ export let escape = escapeHTML; // Escape for HTML by default
 
 const hasOwnProperty = {}.hasOwnProperty;
 
+// Action name means we just want run filters :)
+export let ActionNames: IMap<boolean> = {'': true /* , 'do': true */ };
+
 export class Context {
 	public data: IMap<any>;
 	public cache: IMap<any>;
@@ -249,8 +254,8 @@ export class Context {
 		// Cached in context?
 		if (hasOwnProperty.call(cache, name_)) {
 			value = cache[name_];
-		} else { // No cached record found
-			// Have properties?
+		} else if (!ActionNames[name_]) {
+			// No cached record found. Have properties?
 			if (name[NameMember.NAMES]) {
 				names = name[NameMember.NAMES] as string[];
 				name_ = names[0];
@@ -406,7 +411,11 @@ export class Renderer {
 				}
 				break;
 			case TokenType.TEXT:
-				buffer += token[TokenMember.VALUE];
+				token = token as Text;
+				value = token[TokenMember.VALUE];
+
+				// Empty text has been skipped when tokenizing
+				buffer += value;
 				break;
 			case TokenType.RAW:
 				token = token as Formatter;
@@ -431,11 +440,12 @@ export class Renderer {
 				break;
 			case TokenType.PARTIAL:
 				token = token as Partial;
+				value = token[TokenMember.VALUE];
 
-				if (partialMap && hasOwnProperty.call(partialMap, token[TokenMember.VALUE]))
-					buffer += this.renderTree(partialMap[token[TokenMember.VALUE]].treeRoot, context, partialMap);
+				if (partialMap && hasOwnProperty.call(partialMap, value))
+					buffer += this.renderTree(partialMap[value].treeRoot, context, partialMap);
 				else
-					throw new Error(`Cannot resolve partial '${token[TokenMember.VALUE]}'`);
+					throw new Error(`Cannot resolve partial '${value}'`);
 				break;
 			}
 		}
@@ -473,6 +483,7 @@ const processToken = (token: _Token): Section | Formatter => {
 		filters = filters.slice(1);
 	}
 
+	// One '.' means current data
 	if (name.indexOf('.') > 0)
 		names = name.split('.');
 
@@ -575,3 +586,7 @@ export function parse(source: string, prefix: string = '{', suffix: string = '}'
 
 	return new Renderer(treeRoot);
 }
+
+// Support for ES3(Optional)
+if (!Object.defineProperty)
+	Object.defineProperty = (): void => {};
