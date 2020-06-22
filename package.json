@@ -7,7 +7,7 @@
   },
   "main": "./dist/ij2tpl.min.js",
   "scripts": {
-    "build": "node gen-changelog.js && tsc && rollup ij2tpl.js -f umd -n IJ2TPL -o dist/ij2tpl.umd.js && uglifyjs dist/ij2tpl.umd.js -m -o dist/ij2tpl.min.js",
+    "build": "node gen-changelog.js && tsc && rollup ij2tpl.js -f umd -n IJ2TPL -o dist/ij2tpl.umd.js && uglifyjs dist/ij2tpl.umd.js -ie8 -m -c properties,dead_code,conditionals,comparisons,evaluate,booleans,loops,unused,if_return,join_vars,collapse_vars,reduce_vars,negate_iife,expression,drop_console,passes=3 -o dist/ij2tpl.min.js",
     "lint": "eslint --ext .ts . gen-changelog.js",
     "test": "node test.js && node bin/ij2tpl.js _templates/CHANGELOG.md.ij2 changes.json"
   },
