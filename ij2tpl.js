@@ -317,12 +317,13 @@ var processToken = function (token) {
         filters = name.split('|');
         name = filters[0];
         filters = filters.slice(1);
+        // Action name is a variant of name + filters
+        if (actionNames[name])
+            isAction = true;
     }
     // One '.' means current data
     if (name.indexOf('.') > 0)
         names = name.split('.');
-    if (actionNames[name] && filters)
-        isAction = true;
     // NOTE: filters are just additional part of Token
     token_ = [token[0 /* TYPE */], [name, names, filters, isAction]];
     return token_;

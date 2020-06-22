@@ -23,17 +23,17 @@ section ::=
 
 section_head ::= prefix compare_symbol name suffix;
 
-section_else ::= prefix else_symbol name suffix;
-
-section_tail ::= pretix end_symbol name suffix;
-
 compare_symbol ::= "?" | "!";
+
+name ::= anything;
+
+section_else ::= prefix else_symbol name suffix;
 
 else_symbol ::= "*";
 
-end_symbol ::= "/";
+section_tail ::= pretix end_symbol name suffix;
 
-name ::= anything;
+end_symbol ::= "/";
 
 text ::= anything;
 
