@@ -135,57 +135,56 @@ var Context = /** @class */ (function () {
         var data, cache, name_, names, filters, value = null, context = this;
         cache = context.cache;
         name_ = name[0 /* NAME */];
-        if (ActionNames[name_]) {
-            // XXX: Do nothing for Action names
+        if (!ActionNames[name_]) {
             // Cached in context?
-        }
-        else if (hasOwnProperty.call(cache, name_)) {
-            value = cache[name_];
-        }
-        else {
-            // No cached record found. Have properties?
-            if (name[1 /* NAMES */]) {
-                names = name[1 /* NAMES */];
-                name_ = names[0];
-                // Try to look up the (first)name in data
-                do {
-                    data = context.data;
-                    // Find out which context contains name
-                    if (data && hasOwnProperty.call(data, name_)) {
-                        value = data[name_];
-                        // Resolve sub-names
-                        for (var i = 1, l = names.length; i < l; i++) {
-                            name_ = names[i];
-                            if (value && hasOwnProperty.call(value, name_)) {
-                                value = value[name_];
-                            }
-                            else {
-                                value = null; // Reset
-                                break;
-                            }
-                        }
-                        break;
-                    }
-                    context = context.parent;
-                } while (context);
+            if (hasOwnProperty.call(cache, name_)) {
+                value = cache[name_];
             }
             else {
-                // Try to look up the name in data
-                do {
-                    data = context.data;
-                    // Find out which context contains name
-                    if (data && hasOwnProperty.call(data, name_)) {
-                        value = data[name_];
-                        break;
-                    }
-                    context = context.parent;
-                } while (context);
+                // No cached record found. Have properties?
+                if (name[1 /* NAMES */]) {
+                    names = name[1 /* NAMES */];
+                    name_ = names[0];
+                    // Try to look up the (first)name in data
+                    do {
+                        data = context.data;
+                        // Find out which context contains name
+                        if (data && hasOwnProperty.call(data, name_)) {
+                            value = data[name_];
+                            // Resolve sub-names
+                            for (var i = 1, l = names.length; i < l; i++) {
+                                name_ = names[i];
+                                if (value && hasOwnProperty.call(value, name_)) {
+                                    value = value[name_];
+                                }
+                                else {
+                                    value = null; // Reset
+                                    break;
+                                }
+                            }
+                            break;
+                        }
+                        context = context.parent;
+                    } while (context);
+                }
+                else {
+                    // Try to look up the name in data
+                    do {
+                        data = context.data;
+                        // Find out which context contains name
+                        if (data && hasOwnProperty.call(data, name_)) {
+                            value = data[name_];
+                            break;
+                        }
+                        context = context.parent;
+                    } while (context);
+                }
+                // Support for function
+                if (typeof value === 'function')
+                    value = value(context);
+                // Cache the name
+                cache[name_] = value;
             }
-            // Support for function
-            if (typeof value === 'function')
-                value = value(context);
-            // Cache the name
-            cache[name_] = value;
         }
         // Apply filters if exists
         if (name[2 /* FILTERS */]) {
