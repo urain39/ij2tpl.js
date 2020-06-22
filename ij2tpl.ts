@@ -1,5 +1,8 @@
 /**
- * Copyright (c) 2018-2020 urain39 <urain39[AT]qq[DOT]com>
+ * @module IJ2TPL
+ * @version v0.1.0-dev
+ * @author urain39 <urain39@qq.com>
+ * @copyright (c) 2018-2020 IJ2TPL.js / IJ2TPL.ts Authors.
  */
 
 export const version: string = '0.1.0-dev';
@@ -37,17 +40,18 @@ const enum TokenMember {
 }
 
 const enum NameMember {
-  NAME,
+  NAME = 0,
   NAMES,
-  FILTERS
+  FILTERS,
+  IS_ACTION
 }
 /* eslint-enable no-unused-vars */
 
 // Compatible tokenized tokens
 type _Token = [TokenType, string];
 
-//                  NAME    NAMES            FILTERS
-export type Name = [string, string[] | null, string[] | null];
+//                  NAME    NAMES            FILTERS          IS_ACTION
+export type Name = [string, string[] | null, string[] | null, boolean];
 
 // See https://github.com/microsoft/TypeScript/pull/33050
 //     https://stackoverflow.com/questions/47842266/recursive-types-in-typescript
@@ -110,7 +114,7 @@ const WhiteSpaceRe = /[\s\xA0\uFEFF]+/g,
 export function tokenize(source: string, prefix: string, suffix: string): _Token[] {
   let type_: string,
     value: string,
-    token: Token = [TokenType.COMMENT, ''], // Initialized for backward check
+    token: Token = [TokenType.COMMENT, ''], // Initialized for first backward check
     tokens: _Token[] = [];
 
   for (let i = 0, j = 0,
@@ -226,7 +230,7 @@ export let escape = escapeHTML; // Escape for HTML by default
 const hasOwnProperty = {}.hasOwnProperty;
 
 // Action name means we just want run filters :)
-export let ActionNames: IMap<boolean> = {'': true /* , 'do': true */ };
+let actionNames: IMap<boolean> = {'': true, 'do': true};
 
 export class Context {
   public data: IMap<any>;
@@ -251,7 +255,7 @@ export class Context {
     cache = context.cache;
     name_ = name[NameMember.NAME];
 
-    if (!ActionNames[name_]) {
+    if (!name[NameMember.IS_ACTION]) {
       // Cached in context?
       if (hasOwnProperty.call(cache, name_)) {
         value = cache[name_];
@@ -313,11 +317,11 @@ export class Context {
     if (name[NameMember.FILTERS]) {
       filters = name[NameMember.FILTERS] as string[];
 
-      for (const filter of filters) {
-        if (hasOwnProperty.call(filterMap, filter))
-          value = filterMap[filter](value);
+      for (const filterName of filters) {
+        if (hasOwnProperty.call(filterMap, filterName))
+          value = filterMap[filterName](value);
         else
-          throw new Error(`Cannot resolve filter '${filter}'`);
+          throw new Error(`Cannot resolve filter '${filterName}'`);
       }
     }
 
@@ -435,8 +439,8 @@ export class Renderer {
           buffer += typeof value === 'number' ?
             value
             :
-          // NOTE: `<object>.toString` will be called when we try to
-          //     append a stringified object to buffer, it is not safe!
+            // NOTE: `<object>.toString` will be called when we try to
+            //     append a stringified object to buffer, it is not safe!
             escapeHTML(value)
           ;
         break;
@@ -473,14 +477,15 @@ const processToken = (token: _Token): Section | Formatter => {
   let name: string,
     names: string[] | null = null,
     filters: string[] | null = null,
+    isAction: boolean = false,
     token_: Token;
 
   name = token[TokenMember.VALUE];
 
+  // Name can be empty, see `actionNames`
   if (name.indexOf('|') !== -1) {
     filters = name.split('|');
 
-    // NOTE: filters are just additional part of Token
     name = filters[0];
     filters = filters.slice(1);
   }
@@ -489,7 +494,11 @@ const processToken = (token: _Token): Section | Formatter => {
   if (name.indexOf('.') > 0)
     names = name.split('.');
 
-  token_ = [token[TokenMember.TYPE], [name, names, filters]];
+  if (actionNames[name] && filters)
+    isAction = true;
+
+  // NOTE: filters are just additional part of Token
+  token_ = [token[TokenMember.TYPE], [name, names, filters, isAction]];
 
   return token_;
 };
@@ -531,7 +540,7 @@ function buildTree(tokens: _Token[]): Token[] {
         throw new Error(`Unexpected token '<type=${
           TokenTypeReverseMap[token_[TokenMember.TYPE]]}, value=${token_[TokenMember.VALUE][NameMember.NAME]}>'`);
 
-      // Switch the block to else-block
+      // Initialize and switch to section's else-block
       collector = section[TokenMember.ELSE_BLOCK] = [];
       break;
       // Leave a section
@@ -553,18 +562,18 @@ function buildTree(tokens: _Token[]): Token[] {
           // Yes, then parent block is else-block
           section[TokenMember.ELSE_BLOCK] as Token[]
           :
-        // No, then parent block is (if-)block
+          // No, then parent block is (if-)block
           section[TokenMember.BLOCK]
         :
         treeRoot;
       break;
-      // Formatter
+    // Formatter
     case TokenType.RAW:
     case TokenType.FORMAT:
       token = processToken(token_);
       collector.push(token);
       break;
-      // Text or Partial
+    // Text or Partial
     default:
       collector.push(token_);
       break;

@@ -11,7 +11,7 @@ CHANGELOG
 - Fixed check on **empty array**(difference with mustache.js)
 - Supported partial template
 - Optimized `IJ2TPL.tokenize` for comments
-- ...
+- Supported filters and action names(based on filters)
 
 status: **DEVELOPING**
 

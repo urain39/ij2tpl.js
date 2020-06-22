@@ -1,5 +1,8 @@
 /**
- * Copyright (c) 2018-2020 urain39 <urain39[AT]qq[DOT]com>
+ * @module IJ2TPL
+ * @version v0.1.0-dev
+ * @author urain39 <urain39@qq.com>
+ * @copyright (c) 2018-2020 IJ2TPL.js / IJ2TPL.ts Authors.
  */
 var _a, _b;
 export var version = '0.1.0-dev';
@@ -33,7 +36,7 @@ stripIndentation = function (token, tokens) {
     }
 };
 export function tokenize(source, prefix, suffix) {
-    var type_, value, token = [7 /* COMMENT */, ''], // Initialized for backward check
+    var type_, value, token = [7 /* COMMENT */, ''], // Initialized for first backward check
     tokens = [];
     for (var i = 0, j = 0, l = source.length, pl = prefix.length, sl = suffix.length; i < l;) {
         // Match '{'
@@ -124,7 +127,7 @@ htmlSpecialEntityMap = {
 export var escape = escapeHTML; // Escape for HTML by default
 var hasOwnProperty = {}.hasOwnProperty;
 // Action name means we just want run filters :)
-export var ActionNames = { '': true /* , 'do': true */ };
+var actionNames = { '': true, 'do': true };
 var Context = /** @class */ (function () {
     function Context(data, parent) {
         this.data = data;
@@ -135,7 +138,7 @@ var Context = /** @class */ (function () {
         var data, cache, name_, names, filters, value = null, context = this;
         cache = context.cache;
         name_ = name[0 /* NAME */];
-        if (!ActionNames[name_]) {
+        if (!name[3 /* IS_ACTION */]) {
             // Cached in context?
             if (hasOwnProperty.call(cache, name_)) {
                 value = cache[name_];
@@ -190,11 +193,11 @@ var Context = /** @class */ (function () {
         if (name[2 /* FILTERS */]) {
             filters = name[2 /* FILTERS */];
             for (var _i = 0, filters_1 = filters; _i < filters_1.length; _i++) {
-                var filter = filters_1[_i];
-                if (hasOwnProperty.call(filterMap, filter))
-                    value = filterMap[filter](value);
+                var filterName = filters_1[_i];
+                if (hasOwnProperty.call(filterMap, filterName))
+                    value = filterMap[filterName](value);
                 else
-                    throw new Error("Cannot resolve filter '" + filter + "'");
+                    throw new Error("Cannot resolve filter '" + filterName + "'");
             }
         }
         return value;
@@ -307,18 +310,21 @@ var TokenTypeReverseMap = (_b = {},
     _b[3 /* END */] = "/" /* END */,
     _b);
 var processToken = function (token) {
-    var name, names = null, filters = null, token_;
+    var name, names = null, filters = null, isAction = false, token_;
     name = token[1 /* VALUE */];
+    // Name can be empty, see `actionNames`
     if (name.indexOf('|') !== -1) {
         filters = name.split('|');
-        // NOTE: filters are just additional part of Token
         name = filters[0];
         filters = filters.slice(1);
     }
     // One '.' means current data
     if (name.indexOf('.') > 0)
         names = name.split('.');
-    token_ = [token[0 /* TYPE */], [name, names, filters]];
+    if (actionNames[name] && filters)
+        isAction = true;
+    // NOTE: filters are just additional part of Token
+    token_ = [token[0 /* TYPE */], [name, names, filters, isAction]];
     return token_;
 };
 function buildTree(tokens) {
@@ -351,7 +357,7 @@ function buildTree(tokens) {
                 // `ELSE` are valid for `IF`, invalid for `NOT`
                 if (!section || section[0 /* TYPE */] !== 0 /* IF */ || token_[1 /* VALUE */] !== section[1 /* VALUE */][0 /* NAME */])
                     throw new Error("Unexpected token '<type=" + TokenTypeReverseMap[token_[0 /* TYPE */]] + ", value=" + token_[1 /* VALUE */][0 /* NAME */] + ">'");
-                // Switch the block to else-block
+                // Initialize and switch to section's else-block
                 collector = section[3 /* ELSE_BLOCK */] = [];
                 break;
             // Leave a section

@@ -1,0 +1,46 @@
+template ::=
+	comment |
+	section |
+	text |
+	formatter |
+	partial;
+
+comment ::= prefix comment_symbol anything suffix;
+
+comment_symbol ::= "-";
+
+(**
+ * anything ::= /[\S\s]+/
+ * Actually it is not contains `prefix` and `suffix`
+ *)
+
+section ::=
+	section_head
+		template
+	[section_else
+		template]
+	section_tail;
+
+section_head ::= prefix compare_symbol name suffix;
+
+section_else ::= prefix else_symbol name suffix;
+
+section_tail ::= pretix end_symbol name suffix;
+
+compare_symbol ::= "?" | "!";
+
+else_symbol ::= "*";
+
+end_symbol ::= "/";
+
+name ::= anything;
+
+text ::= anything;
+
+formatter ::= prefix [raw_symbol] name suffix;
+
+raw_symbol ::= "#";
+
+partial ::= prefix partial_symbol name suffix;
+
+partial_symbol ::= "@";
