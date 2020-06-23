@@ -137,7 +137,7 @@ var Context = /** @class */ (function () {
     }
     Context.prototype.resolve = function (name) {
         var data, cache, name_, name__, // First-name or Sub-name
-        names, value = null, context = this;
+        names, filters, value = null, context = this;
         cache = context.cache;
         if (!name[3 /* IS_ACTION */]) {
             name_ = name[0 /* NAME */];
@@ -146,9 +146,9 @@ var Context = /** @class */ (function () {
                 value = cache[name_];
             }
             else {
-                // No cached record found. Have properties?
-                if (name[1 /* NAMES */]) {
-                    names = name[1 /* NAMES */];
+                // No cached records found. Assume it has properties
+                names = name[1 /* NAMES */];
+                if (names) {
                     name__ = names[0];
                     // Try to look up the (first)name in data
                     do {
@@ -191,10 +191,12 @@ var Context = /** @class */ (function () {
                 cache[name_] = value;
             }
         }
+        // Assume it has filters at first
+        filters = name[2 /* FILTERS */];
         // Apply filters if exists
-        if (name[2 /* FILTERS */]) {
-            for (var _i = 0, _a = name[2 /* FILTERS */]; _i < _a.length; _i++) {
-                var filterName = _a[_i];
+        if (filters) {
+            for (var _i = 0, filters_1 = filters; _i < filters_1.length; _i++) {
+                var filterName = filters_1[_i];
                 if (hasOwnProperty.call(filterMap, filterName))
                     value = filterMap[filterName](value);
                 else
@@ -339,13 +341,10 @@ function buildTree(tokens) {
             // Enter a section
             case 0 /* IF */:
             case 1 /* NOT */:
-                // Make `_Token` -> `Token`
-                token = processToken(token_);
-                // Current block saves token
-                collector.push(token);
+                token = processToken(token_); // Make `_Token` -> `Token`
+                collector.push(token); // Current block saves token
                 section = token;
-                // Stack saves section
-                sections.push(section);
+                sections.push(section); // Stack saves section
                 // Initialize and switch to section's block
                 collector = section[2 /* BLOCK */] = [];
                 section[3 /* ELSE_BLOCK */] = null; // Padding?
@@ -369,13 +368,13 @@ function buildTree(tokens) {
                 section = sections.pop();
                 if (!section || token_[1 /* VALUE */] !== section[1 /* VALUE */][0 /* NAME */])
                     throw new Error("Unexpected token '<type=" + TokenTypeReverseMap[token_[0 /* TYPE */]] + ", value=" + token_[1 /* VALUE */][0 /* NAME */] + ">'");
-                // Change type for which section contains non-empty else-block
-                if (isArray(section[3 /* ELSE_BLOCK */]) && section[3 /* ELSE_BLOCK */].length)
+                // Change type for which section contains else-block
+                if (section[3 /* ELSE_BLOCK */] && section[3 /* ELSE_BLOCK */])
                     section[0 /* TYPE */] = 2 /* ELSE */;
                 // Re-bind block to parent block
                 collector = sections.length ?
                     // Is parent section has initialized else-block?
-                    (section = sections[sections.length - 1], isArray(section[3 /* ELSE_BLOCK */])) ?
+                    (section = sections[sections.length - 1], section[3 /* ELSE_BLOCK */]) ?
                         // Yes, then parent block is else-block
                         section[3 /* ELSE_BLOCK */]
                         :

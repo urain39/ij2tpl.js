@@ -11,12 +11,12 @@ prefix ::= "{";
 
 comment_symbol ::= "-";
 
-suffix ::= "}";
-
 (**
  * anything ::= /[\S\s]+/
  * Actually it is not contains `suffix`
  *)
+
+suffix ::= "}";
 
 section ::=
 	section_head

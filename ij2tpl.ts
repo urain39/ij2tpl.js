@@ -250,6 +250,7 @@ export class Context {
       name_: string,
       name__: string, // First-name or Sub-name
       names: string[],
+      filters: string[],
       value: any = null,
       context: Context | null = this;
 
@@ -262,9 +263,10 @@ export class Context {
       if (hasOwnProperty.call(cache, name_)) {
         value = cache[name_];
       } else {
-        // No cached record found. Have properties?
-        if (name[NameMember.NAMES]) {
-          names = name[NameMember.NAMES] as string[];
+        // No cached records found. Assume it has properties
+        names = name[NameMember.NAMES] as string[];
+
+        if (names) {
           name__ = names[0];
 
           // Try to look up the (first)name in data
@@ -315,9 +317,12 @@ export class Context {
       }
     }
 
+    // Assume it has filters at first
+    filters = name[NameMember.FILTERS] as string[];
+
     // Apply filters if exists
-    if (name[NameMember.FILTERS]) {
-      for (const filterName of name[NameMember.FILTERS] as string[]) {
+    if (filters) {
+      for (const filterName of filters) {
         if (hasOwnProperty.call(filterMap, filterName))
           value = filterMap[filterName](value);
         else
@@ -519,13 +524,12 @@ function buildTree(tokens: _Token[]): Token[] {
     // Enter a section
     case TokenType.IF:
     case TokenType.NOT:
-      // Make `_Token` -> `Token`
-      token = processToken(token_);
-      // Current block saves token
-      collector.push(token);
+      token = processToken(token_); // Make `_Token` -> `Token`
+      collector.push(token); // Current block saves token
+
       section = token as Section;
-      // Stack saves section
-      sections.push(section);
+      sections.push(section); // Stack saves section
+
       // Initialize and switch to section's block
       collector = section[TokenMember.BLOCK] = [];
       section[TokenMember.ELSE_BLOCK] = null; // Padding?
@@ -555,14 +559,14 @@ function buildTree(tokens: _Token[]): Token[] {
         throw new Error(`Unexpected token '<type=${
           TokenTypeReverseMap[token_[TokenMember.TYPE]]}, value=${token_[TokenMember.VALUE][NameMember.NAME]}>'`);
 
-      // Change type for which section contains non-empty else-block
-      if (isArray(section[TokenMember.ELSE_BLOCK]) && (section[TokenMember.ELSE_BLOCK]as Token[]).length)
+      // Change type for which section contains else-block
+      if (section[TokenMember.ELSE_BLOCK] && section[TokenMember.ELSE_BLOCK])
         section[TokenMember.TYPE] = TokenType.ELSE;
 
       // Re-bind block to parent block
       collector = sections.length ?
-      // Is parent section has initialized else-block?
-        (section = sections[sections.length - 1], isArray(section[TokenMember.ELSE_BLOCK])) ?
+        // Is parent section has initialized else-block?
+        (section = sections[sections.length - 1], section[TokenMember.ELSE_BLOCK]) ?
           // Yes, then parent block is else-block
           section[TokenMember.ELSE_BLOCK] as Token[]
           :

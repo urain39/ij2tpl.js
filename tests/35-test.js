@@ -1,4 +1,4 @@
-const IJ2TPL2 = Object.assign(IJ2TPL);
+const IJ2TPL2 = Object.assign({}, IJ2TPL);
 
 IJ2TPL.setFilterMap({
 	alwaysFalse: () => false
