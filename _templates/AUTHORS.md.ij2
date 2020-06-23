@@ -1,0 +1,10 @@
+<!--
+	-- Auto-generated from <PROJECT ROOT>/authors.json
+	-- DO NOT TRY TO MODIFY DIRECTLY!!!
+	-->
+AUTHORS
+==========
+
+{?.}
+	{-}- {name} - {#description}
+{/.}

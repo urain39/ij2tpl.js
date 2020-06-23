@@ -5,13 +5,13 @@
 CHANGELOG
 ==========
 
-### v0.1.0(2020-06-15?)
+### v0.1.0(2020-07-01)
 - Re-Supported If-Else Section
 - **Changed** `IJ2TPL.escapeHTML` -> `IJ2TPL.escape`
 - Fixed check on **empty array**(difference with mustache.js)
 - Supported partial template
 - Optimized `IJ2TPL.tokenize` for comments
-- ...
+- Supported filters and action names(based on filters)
 
 status: **DEVELOPING**
 

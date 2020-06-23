@@ -1,5 +1,5 @@
 # IJ2TPL.js
-TypeScript 编写的类 Mustache 模板引擎(uglify后仅 3kB)。
+TypeScript 编写的类 Mustache 模板引擎(uglify后 <= 3kB)。
 
 > 比Mustache.js更快(至少不会更慢)！
 
@@ -81,7 +81,7 @@ function humanReadableSize(context) {
 
 **行起始标记(LBM)**
 ```html
-{-- 因为我们的 `tokenize` 实现，你可以在某个缩进的末尾使用
+{-- 我们的 `tokenize` 实现允许你在某个缩进的末尾使用
 	一个空注释表示你想要在这一行中去除缩进。
 
 	参考 https://github.com/urain39/ij2tpl.js/issues/70
@@ -99,9 +99,54 @@ Hello World
 IJ2TPL.parse('Hello <%name%>', '<%', '%>');
 ```
 
+**片段模板(v0.1.0 已添加)**
+```html
+{? xxxEnabled }
+	{@partial_template}
+{/ xxxEnabled }
+```
+
+```js
+let renderer = IJ2TPL.parse(source),
+	renderer2 = IJ2TPL.parse(source2),
+	partialMap = {
+		partial_template: renderer2
+	};
+
+renderer.render(data, partialMap);
+```
+
+**过滤器 与 动词(Action names)(v0.1.0 已添加)**
+```html
+Hello { name | no-f-word }
+```
+
+```js
+IJ2TPL.setFilterMap({
+	'no-f-word': function(word) {
+		return word.replace('fuck', '****');
+	}
+});
+```
+
+*动词* 与 过滤器 是一样的, 但是其并不会查找字段(因为“没名字”)
+```html
+{- 简单的例子 -}
+{| report}
+```
+
+或者：
+```html
+{do | refresh}
+```
+
+**`Function type`与`Action names`的不同点**
+
+`Function type`每次都会查找字段(name), 但是`Action name`不会。
+
 **还未实现:**
 - ~~函数类型(已在 v0.0.2-dev 支持)~~
 - ~~子模板(Partial Section)~~
-- 格式化管道(又叫做过滤器)
+- ~~格式化管道(又叫做过滤器)~~
 
 上次更新: 2020-06-12

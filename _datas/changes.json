@@ -1,6 +1,6 @@
 [
 	{
-		"date": "2020-06-15?",
+		"date": "2020-07-01",
 		"version": "v0.1.0",
 		"status": "DEVELOPING",
 		"changes": [
@@ -9,7 +9,7 @@
 			"Fixed check on **empty array**(difference with mustache.js)",
 			"Supported partial template",
 			"Optimized `IJ2TPL.tokenize` for comments",
-			"..."
+			"Supported filters and action names(based on filters)"
 		]
 	},
 	{
