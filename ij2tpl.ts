@@ -560,7 +560,7 @@ function buildTree(tokens: _Token[]): Token[] {
           TokenTypeReverseMap[token_[TokenMember.TYPE]]}, value=${token_[TokenMember.VALUE][NameMember.NAME]}>'`);
 
       // Change type for which section contains else-block
-      if (section[TokenMember.ELSE_BLOCK] && section[TokenMember.ELSE_BLOCK])
+      if (section[TokenMember.ELSE_BLOCK])
         section[TokenMember.TYPE] = TokenType.ELSE;
 
       // Re-bind block to parent block

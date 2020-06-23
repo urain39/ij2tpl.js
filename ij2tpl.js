@@ -369,7 +369,7 @@ function buildTree(tokens) {
                 if (!section || token_[1 /* VALUE */] !== section[1 /* VALUE */][0 /* NAME */])
                     throw new Error("Unexpected token '<type=" + TokenTypeReverseMap[token_[0 /* TYPE */]] + ", value=" + token_[1 /* VALUE */][0 /* NAME */] + ">'");
                 // Change type for which section contains else-block
-                if (section[3 /* ELSE_BLOCK */] && section[3 /* ELSE_BLOCK */])
+                if (section[3 /* ELSE_BLOCK */])
                     section[0 /* TYPE */] = 2 /* ELSE */;
                 // Re-bind block to parent block
                 collector = sections.length ?
