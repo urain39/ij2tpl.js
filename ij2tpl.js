@@ -1,5 +1,5 @@
 /**
- * @module IJ2TPL
+ * @file IJ2TPL.js - The Awesome Template Engine.
  * @version v0.1.0-dev
  * @author urain39 <urain39@qq.com>
  * @copyright (c) 2018-2020 IJ2TPL.js / IJ2TPL.ts Authors.
@@ -26,12 +26,16 @@ var WhiteSpaceRe = /[\s\xA0\uFEFF]+/g, stripWhiteSpace = function (string_) { re
 IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/, IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/, 
 // To compress the source, we extracted some of the same code
 stripIndentation = function (token, tokens) {
+    var value;
     // Remove token's indentation if exists
     if (token[0 /* TYPE */] === 4 /* TEXT */) {
         token = token;
-        if (IndentedTestRe.test(token[1 /* VALUE */]))
-            token[1 /* VALUE */] = token[1 /* VALUE */].replace(IndentedWhiteSpaceRe, '');
-        if (!token[1 /* VALUE */])
+        value = token[1 /* VALUE */];
+        if (IndentedTestRe.test(value))
+            value = value.replace(IndentedWhiteSpaceRe, '');
+        if (value)
+            token[1 /* VALUE */] = value;
+        else
             tokens.pop(); // Drop the empty text ''
     }
 };
@@ -52,7 +56,7 @@ export function tokenize(source, prefix, suffix) {
         // Eat the left side of a token
         value = source.slice(i, j);
         j += pl; // Skip the '{'
-        // Don't eat the empty text ''
+        // Don't save the empty text ''
         if (value)
             token = [4 /* TEXT */, value], tokens.push(token);
         // Match the '}'
@@ -102,8 +106,7 @@ export function tokenize(source, prefix, suffix) {
                 }
             // eslint-disable-line no-fallthrough
             case "#" /* RAW */:
-                value = stripWhiteSpace(value.slice(1)); // Left trim
-                token = [TokenTypeMap[type_], value], tokens.push(token);
+                token = [TokenTypeMap[type_], value.slice(1)], tokens.push(token);
                 break;
             default:
                 token = [6 /* FORMAT */, value], tokens.push(token);
@@ -126,8 +129,6 @@ htmlSpecialEntityMap = {
 }, escapeHTML = function (value) { return String(value).replace(htmlSpecialRe, function (key) { return htmlSpecialEntityMap[key]; }); };
 export var escape = escapeHTML; // Escape for HTML by default
 var hasOwnProperty = {}.hasOwnProperty;
-// Action name means we just want run filters :)
-var actionNames = { '': true, 'do': true };
 var Context = /** @class */ (function () {
     function Context(data, parent) {
         this.data = data;
@@ -135,10 +136,11 @@ var Context = /** @class */ (function () {
         this.cache = { '.': this.data };
     }
     Context.prototype.resolve = function (name) {
-        var data, cache, name_, names, filters, value = null, context = this;
+        var data, cache, name_, name__, // First-name or Sub-name
+        names, value = null, context = this;
         cache = context.cache;
-        name_ = name[0 /* NAME */];
         if (!name[3 /* IS_ACTION */]) {
+            name_ = name[0 /* NAME */];
             // Cached in context?
             if (hasOwnProperty.call(cache, name_)) {
                 value = cache[name_];
@@ -147,18 +149,18 @@ var Context = /** @class */ (function () {
                 // No cached record found. Have properties?
                 if (name[1 /* NAMES */]) {
                     names = name[1 /* NAMES */];
-                    name_ = names[0];
+                    name__ = names[0];
                     // Try to look up the (first)name in data
                     do {
                         data = context.data;
                         // Find out which context contains name
-                        if (data && hasOwnProperty.call(data, name_)) {
-                            value = data[name_];
+                        if (data && hasOwnProperty.call(data, name__)) {
+                            value = data[name__];
                             // Resolve sub-names
                             for (var i = 1, l = names.length; i < l; i++) {
-                                name_ = names[i];
-                                if (value && hasOwnProperty.call(value, name_)) {
-                                    value = value[name_];
+                                name__ = names[i];
+                                if (value && hasOwnProperty.call(value, name__)) {
+                                    value = value[name__];
                                 }
                                 else {
                                     value = null; // Reset
@@ -191,9 +193,8 @@ var Context = /** @class */ (function () {
         }
         // Apply filters if exists
         if (name[2 /* FILTERS */]) {
-            filters = name[2 /* FILTERS */];
-            for (var _i = 0, filters_1 = filters; _i < filters_1.length; _i++) {
-                var filterName = filters_1[_i];
+            for (var _i = 0, _a = name[2 /* FILTERS */]; _i < _a.length; _i++) {
+                var filterName = _a[_i];
                 if (hasOwnProperty.call(filterMap, filterName))
                     value = filterMap[filterName](value);
                 else
@@ -309,6 +310,8 @@ var TokenTypeReverseMap = (_b = {},
     _b[2 /* ELSE */] = "*" /* ELSE */,
     _b[3 /* END */] = "/" /* END */,
     _b);
+// Action name means we just want run filters :)
+var actionNames = { '': true, 'do': true };
 var processToken = function (token) {
     var name, names = null, filters = null, isAction = false, token_;
     name = token[1 /* VALUE */];

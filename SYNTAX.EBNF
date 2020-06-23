@@ -7,11 +7,15 @@ template ::=
 
 comment ::= prefix comment_symbol anything suffix;
 
+prefix ::= "{";
+
 comment_symbol ::= "-";
+
+suffix ::= "}";
 
 (**
  * anything ::= /[\S\s]+/
- * Actually it is not contains `prefix` and `suffix`
+ * Actually it is not contains `suffix`
  *)
 
 section ::=

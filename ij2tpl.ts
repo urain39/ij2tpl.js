@@ -1,5 +1,5 @@
 /**
- * @module IJ2TPL
+ * @file IJ2TPL.js - The Awesome Template Engine.
  * @version v0.1.0-dev
  * @author urain39 <urain39@qq.com>
  * @copyright (c) 2018-2020 IJ2TPL.js / IJ2TPL.ts Authors.
@@ -99,14 +99,19 @@ const WhiteSpaceRe = /[\s\xA0\uFEFF]+/g,
   IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/,
   // To compress the source, we extracted some of the same code
   stripIndentation = (token: _Token, tokens: _Token[]): void => {
+    let value: string;
+
     // Remove token's indentation if exists
     if (token[TokenMember.TYPE] === TokenType.TEXT) {
       token = token as Text;
+      value = token[TokenMember.VALUE];
 
-      if (IndentedTestRe.test(token[TokenMember.VALUE]))
-        token[TokenMember.VALUE] = token[TokenMember.VALUE].replace(IndentedWhiteSpaceRe, '');
+      if (IndentedTestRe.test(value))
+        value = value.replace(IndentedWhiteSpaceRe, '');
 
-      if(!token[TokenMember.VALUE])
+      if(value)
+        token[TokenMember.VALUE] = value;
+      else
         tokens.pop(); // Drop the empty text ''
     }
   };
@@ -139,7 +144,7 @@ export function tokenize(source: string, prefix: string, suffix: string): _Token
     value = source.slice(i, j);
     j += pl; // Skip the '{'
 
-    // Don't eat the empty text ''
+    // Don't save the empty text ''
     if (value)
       token = [TokenType.TEXT, value], tokens.push(token);
 
@@ -199,8 +204,7 @@ export function tokenize(source: string, prefix: string, suffix: string): _Token
       }
       // eslint-disable-line no-fallthrough
     case TokenString.RAW:
-      value = stripWhiteSpace(value.slice(1)); // Left trim
-      token = [TokenTypeMap[type_], value], tokens.push(token);
+      token = [TokenTypeMap[type_], value.slice(1)], tokens.push(token);
       break;
     default:
       token = [TokenType.FORMAT, value], tokens.push(token);
@@ -229,9 +233,6 @@ export let escape = escapeHTML; // Escape for HTML by default
 
 const hasOwnProperty = {}.hasOwnProperty;
 
-// Action name means we just want run filters :)
-let actionNames: IMap<boolean> = {'': true, 'do': true};
-
 export class Context {
   public data: IMap<any>;
   public cache: IMap<any>;
@@ -247,15 +248,16 @@ export class Context {
     let data: IMap<any>,
       cache: IMap<any>,
       name_: string,
+      name__: string, // First-name or Sub-name
       names: string[],
-      filters: string[],
       value: any = null,
       context: Context | null = this;
 
     cache = context.cache;
-    name_ = name[NameMember.NAME];
 
     if (!name[NameMember.IS_ACTION]) {
+      name_ = name[NameMember.NAME];
+
       // Cached in context?
       if (hasOwnProperty.call(cache, name_)) {
         value = cache[name_];
@@ -263,22 +265,22 @@ export class Context {
         // No cached record found. Have properties?
         if (name[NameMember.NAMES]) {
           names = name[NameMember.NAMES] as string[];
-          name_ = names[0];
+          name__ = names[0];
 
           // Try to look up the (first)name in data
           do {
             data = context.data;
 
             // Find out which context contains name
-            if (data && hasOwnProperty.call(data, name_)) {
-              value = data[name_];
+            if (data && hasOwnProperty.call(data, name__)) {
+              value = data[name__];
 
               // Resolve sub-names
               for (let i = 1, l = names.length; i < l; i++) {
-                name_ = names[i];
+                name__ = names[i];
 
-                if (value && hasOwnProperty.call(value, name_)) {
-                  value = value[name_];
+                if (value && hasOwnProperty.call(value, name__)) {
+                  value = value[name__];
                 } else {
                   value = null; // Reset
                   break;
@@ -315,9 +317,7 @@ export class Context {
 
     // Apply filters if exists
     if (name[NameMember.FILTERS]) {
-      filters = name[NameMember.FILTERS] as string[];
-
-      for (const filterName of filters) {
+      for (const filterName of name[NameMember.FILTERS] as string[]) {
         if (hasOwnProperty.call(filterMap, filterName))
           value = filterMap[filterName](value);
         else
@@ -472,6 +472,9 @@ const TokenTypeReverseMap: IMap<TokenString> = {
   [TokenType.ELSE]:	TokenString.ELSE,
   [TokenType.END]:	TokenString.END,
 };
+
+// Action name means we just want run filters :)
+let actionNames: IMap<boolean> = {'': true, 'do': true};
 
 const processToken = (token: _Token): Section | Formatter => {
   let name: string,
