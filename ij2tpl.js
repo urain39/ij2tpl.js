@@ -20,11 +20,9 @@ var TokenTypeMap = (_a = {},
     _a["@" /* PARTIAL */] = 8 /* PARTIAL */,
     _a);
 // We strip all white spaces to make check section easy(for `buildTree`)
-var WhiteSpaceRe = /[\s\xA0\uFEFF]+/g, stripWhiteSpace = function (string_) { return string_.replace(WhiteSpaceRe, ''); }, 
-// NOTE: if we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
+var WhiteSpaceRe = /[\s\xA0\uFEFF]+/g, stripWhiteSpace = function (string_) { return string_.replace(WhiteSpaceRe, ''); }, // NOTE: if we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
 //     will always generate a new string. So we need test it before replace it ;)
-IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/, IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/, 
-// To compress the source, we extracted some of the same code
+IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/, IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/, // To compress the source, we extracted some of the same code
 stripIndentation = function (token, tokens) {
     var value;
     // Remove token's indentation if exists
@@ -40,8 +38,8 @@ stripIndentation = function (token, tokens) {
     }
 };
 export function tokenize(source, prefix, suffix) {
-    var type_, value, token = [7 /* COMMENT */, ''], // Initialized for first backward check
-    tokens = [];
+    var type_, value, token = [7 /* COMMENT */, ''] // Initialized for first backward check
+    , tokens = [];
     for (var i = 0, j = 0, l = source.length, pl = prefix.length, sl = suffix.length; i < l;) {
         // Match '{'
         j = source.indexOf(prefix, i);
@@ -116,11 +114,12 @@ export function tokenize(source, prefix, suffix) {
     return tokens;
 }
 // See https://github.com/janl/mustache.js/pull/530
-var htmlSpecialRe = /["&'\/<=>`]/g, // eslint-disable-line no-useless-escape
-htmlSpecialEntityMap = {
+var htmlSpecialRe = /["&'\/<=>`]/g // eslint-disable-line no-useless-escape
+, htmlSpecialEntityMap = {
     '"': '&quot;',
     '&': '&amp;',
-    "'": '&#39;',
+    "'": '&#39;' // eslint-disable-line quotes
+    ,
     '/': '&#x2F;',
     '<': '&lt;',
     '=': '&#x3D;',
@@ -136,8 +135,8 @@ var Context = /** @class */ (function () {
         this.cache = { '.': this.data };
     }
     Context.prototype.resolve = function (name) {
-        var data, cache, name_, name__, // First-name or Sub-name
-        names, filters, value = null, context = this;
+        var data, cache, name_, name__ // First-name or Sub-name
+        , names, filters, value = null, context = this;
         cache = context.cache;
         if (!name[3 /* IS_ACTION */]) {
             name_ = name[0 /* NAME */];
@@ -334,10 +333,11 @@ var processToken = function (token) {
     return token_;
 };
 function buildTree(tokens) {
-    var token, section, sections = [], treeRoot = [], collector = treeRoot;
+    var type_, value, token, elseBlock, section, sections = [], treeRoot = [], collector = treeRoot;
     for (var _i = 0, tokens_1 = tokens; _i < tokens_1.length; _i++) {
         var token_ = tokens_1[_i];
-        switch (token_[0 /* TYPE */]) {
+        type_ = token_[0 /* TYPE */];
+        switch (type_) {
             // Enter a section
             case 0 /* IF */:
             case 1 /* NOT */:
@@ -357,26 +357,31 @@ function buildTree(tokens) {
                     :
                         void 0x95E2 // Reset
                 ;
+                value = token_[1 /* VALUE */];
                 // `ELSE` are valid for `IF`, invalid for `NOT`
-                if (!section || section[0 /* TYPE */] !== 0 /* IF */ || token_[1 /* VALUE */] !== section[1 /* VALUE */][0 /* NAME */])
-                    throw new Error("Unexpected token '<type=" + TokenTypeReverseMap[token_[0 /* TYPE */]] + ", value=" + token_[1 /* VALUE */][0 /* NAME */] + ">'");
+                if (!section ||
+                    section[0 /* TYPE */] !== 0 /* IF */ ||
+                    value !== section[1 /* VALUE */][0 /* NAME */])
+                    throw new Error("Unexpected token '<type=" + TokenTypeReverseMap[type_] + ", value=" + value + ">'");
                 // Initialize and switch to section's else-block
                 collector = section[3 /* ELSE_BLOCK */] = [];
                 break;
             // Leave a section
             case 3 /* END */:
                 section = sections.pop();
-                if (!section || token_[1 /* VALUE */] !== section[1 /* VALUE */][0 /* NAME */])
-                    throw new Error("Unexpected token '<type=" + TokenTypeReverseMap[token_[0 /* TYPE */]] + ", value=" + token_[1 /* VALUE */][0 /* NAME */] + ">'");
-                // Change type for which section contains else-block
+                value = token_[1 /* VALUE */];
+                if (!section ||
+                    value !== section[1 /* VALUE */][0 /* NAME */])
+                    throw new Error("Unexpected token '<type=" + TokenTypeReverseMap[type_] + ", value=" + value + ">'");
+                // Change type for which section contains initialized else-block
                 if (section[3 /* ELSE_BLOCK */])
                     section[0 /* TYPE */] = 2 /* ELSE */;
                 // Re-bind block to parent block
                 collector = sections.length ?
                     // Is parent section has initialized else-block?
-                    (section = sections[sections.length - 1], section[3 /* ELSE_BLOCK */]) ?
+                    (section = sections[sections.length - 1], elseBlock = section[3 /* ELSE_BLOCK */]) ?
                         // Yes, then parent block is else-block
-                        section[3 /* ELSE_BLOCK */]
+                        elseBlock
                         :
                             // No, then parent block is (if-)block
                             section[2 /* BLOCK */]

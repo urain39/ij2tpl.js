@@ -8,42 +8,42 @@
 export const version: string = '0.1.0-dev';
 
 /* eslint-disable no-unused-vars */
-// XXX: ^^^ it seems that is a bug of ESLint
+// FIXME: ^^^ it seems that is a bug of ESLint
 
 const enum TokenString {
-  IF =	'?',
-  NOT =	'!',
-  ELSE =	'*',
-  END =	'/',
-  RAW =	'#',
-  COMMENT =	'-',
-  PARTIAL =	'@'
+  IF =	'?'
+  , NOT =	'!'
+  , ELSE =	'*'
+  , END =	'/'
+  , RAW =	'#'
+  , COMMENT =	'-'
+  , PARTIAL =	'@'
 }
 
 const enum TokenType {
-  IF = 0,
-  NOT,
-  ELSE,
-  END,
-  TEXT,
-  RAW,
-  FORMAT,
-  COMMENT,
-  PARTIAL
+  IF = 0
+  , NOT
+  , ELSE
+  , END
+  , TEXT
+  , RAW
+  , FORMAT
+  , COMMENT
+  , PARTIAL
 }
 
 const enum TokenMember {
-  TYPE = 0,
-  VALUE,
-  BLOCK,
-  ELSE_BLOCK
+  TYPE = 0
+  , VALUE
+  , BLOCK
+  , ELSE_BLOCK
 }
 
 const enum NameMember {
-  NAME = 0,
-  NAMES,
-  FILTERS,
-  IS_ACTION
+  NAME = 0
+  , NAMES
+  , FILTERS
+  , IS_ACTION
 }
 /* eslint-enable no-unused-vars */
 
@@ -82,22 +82,22 @@ export function setFilterMap(filterMap_: IMap<Filter>): void {
 
 // See https://github.com/microsoft/TypeScript/issues/14682
 const TokenTypeMap: IMap<TokenType> = {
-  [TokenString.IF]:	TokenType.IF,
-  [TokenString.NOT]:	TokenType.NOT,
-  [TokenString.ELSE]:	TokenType.ELSE,
-  [TokenString.END]:	TokenType.END,
-  [TokenString.RAW]:	TokenType.RAW,
-  [TokenString.PARTIAL]:	TokenType.PARTIAL
+  [TokenString.IF]:	TokenType.IF
+  , [TokenString.NOT]:	TokenType.NOT
+  , [TokenString.ELSE]:	TokenType.ELSE
+  , [TokenString.END]:	TokenType.END
+  , [TokenString.RAW]:	TokenType.RAW
+  , [TokenString.PARTIAL]:	TokenType.PARTIAL
 };
 
 // We strip all white spaces to make check section easy(for `buildTree`)
-const WhiteSpaceRe = /[\s\xA0\uFEFF]+/g,
-  stripWhiteSpace = (string_: string): string => string_.replace(WhiteSpaceRe, ''),
-  // NOTE: if we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
+const WhiteSpaceRe = /[\s\xA0\uFEFF]+/g
+  , stripWhiteSpace = (string_: string): string => string_.replace(WhiteSpaceRe, '')
+  , // NOTE: if we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
   //     will always generate a new string. So we need test it before replace it ;)
-  IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/,
-  IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/,
-  // To compress the source, we extracted some of the same code
+  IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/
+  , IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/
+  , // To compress the source, we extracted some of the same code
   stripIndentation = (token: _Token, tokens: _Token[]): void => {
     let value: string;
 
@@ -117,15 +117,15 @@ const WhiteSpaceRe = /[\s\xA0\uFEFF]+/g,
   };
 
 export function tokenize(source: string, prefix: string, suffix: string): _Token[] {
-  let type_: string,
-    value: string,
-    token: Token = [TokenType.COMMENT, ''], // Initialized for first backward check
-    tokens: _Token[] = [];
+  let type_: string
+    , value: string
+    , token: Token = [TokenType.COMMENT, ''] // Initialized for first backward check
+    , tokens: _Token[] = [];
 
-  for (let i = 0, j = 0,
-    l = source.length,
-    pl = prefix.length,
-    sl = suffix.length; i < l;) {
+  for (let i = 0, j = 0
+    , l = source.length
+    , pl = prefix.length
+    , sl = suffix.length; i < l;) {
     // Match '{'
     j = source.indexOf(prefix, i);
 
@@ -216,18 +216,18 @@ export function tokenize(source: string, prefix: string, suffix: string): _Token
 }
 
 // See https://github.com/janl/mustache.js/pull/530
-const htmlSpecialRe = /["&'\/<=>`]/g, // eslint-disable-line no-useless-escape
-  htmlSpecialEntityMap: IMap<string> = {
-    '"': '&quot;',
-    '&': '&amp;',
-    "'": '&#39;', // eslint-disable-line quotes
-    '/': '&#x2F;',
-    '<': '&lt;',
-    '=': '&#x3D;',
-    '>': '&gt;',
-    '`': '&#x60;'
-  },
-  escapeHTML = (value: any): string => String(value).replace(htmlSpecialRe, (key: string): string => htmlSpecialEntityMap[key]);
+const htmlSpecialRe = /["&'\/<=>`]/g // eslint-disable-line no-useless-escape
+  , htmlSpecialEntityMap: IMap<string> = {
+    '"': '&quot;'
+    , '&': '&amp;'
+    , "'": '&#39;' // eslint-disable-line quotes
+    , '/': '&#x2F;'
+    , '<': '&lt;'
+    , '=': '&#x3D;'
+    , '>': '&gt;'
+    , '`': '&#x60;'
+  }
+  , escapeHTML = (value: any): string => String(value).replace(htmlSpecialRe, (key: string): string => htmlSpecialEntityMap[key]);
 
 export let escape = escapeHTML; // Escape for HTML by default
 
@@ -245,14 +245,14 @@ export class Context {
   }
 
   public resolve(name: Name): any {
-    let data: IMap<any>,
-      cache: IMap<any>,
-      name_: string,
-      name__: string, // First-name or Sub-name
-      names: string[],
-      filters: string[],
-      value: any = null,
-      context: Context | null = this;
+    let data: IMap<any>
+      , cache: IMap<any>
+      , name_: string
+      , name__: string // First-name or Sub-name
+      , names: string[]
+      , filters: string[]
+      , value: any = null
+      , context: Context | null = this;
 
     cache = context.cache;
 
@@ -352,10 +352,10 @@ export class Renderer {
   }
 
   public renderTree(treeRoot: Token[], context: Context, partialMap?: IMap<Renderer>): string {
-    let value: any,
-      section: Section,
-      buffer: string = '',
-      isArray_: boolean = false;
+    let value: any
+      , section: Section
+      , buffer: string = ''
+      , isArray_: boolean = false;
 
     for (let token of treeRoot) {
       switch (token[TokenMember.TYPE]) {
@@ -369,15 +369,15 @@ export class Renderer {
           if (isArray_)
             for (const value_ of value)
               buffer += this.renderTree(
-                section[TokenMember.BLOCK],
-                new Context(value_, context),
-                partialMap
+                section[TokenMember.BLOCK]
+                , new Context(value_, context)
+                , partialMap
               );
           else
             buffer += this.renderTree(
-              section[TokenMember.BLOCK],
-              new Context(value, context),
-              partialMap
+              section[TokenMember.BLOCK]
+              , new Context(value, context)
+              , partialMap
             );
         }
         break;
@@ -388,9 +388,9 @@ export class Renderer {
 
         if (!(isArray_ ? value.length : value))
           buffer += this.renderTree(
-            section[TokenMember.BLOCK],
-            context,
-            partialMap
+            section[TokenMember.BLOCK]
+            , context
+            , partialMap
           );
         break;
         // XXX: it may be slower than If-Section + Not-Section(about 1 ops/sec)
@@ -403,21 +403,21 @@ export class Renderer {
           if (isArray_)
             for (const value_ of value)
               buffer += this.renderTree(
-                section[TokenMember.BLOCK],
-                new Context(value_, context),
-                partialMap
+                section[TokenMember.BLOCK]
+                , new Context(value_, context)
+                , partialMap
               );
           else
             buffer += this.renderTree(
-              section[TokenMember.BLOCK],
-              new Context(value, context),
-              partialMap
+              section[TokenMember.BLOCK]
+              , new Context(value, context)
+              , partialMap
             );
         } else {
           buffer += this.renderTree(
-            section[TokenMember.ELSE_BLOCK] as Token[],
-            context,
-            partialMap
+            section[TokenMember.ELSE_BLOCK] as Token[]
+            , context
+            , partialMap
           );
         }
         break;
@@ -472,21 +472,21 @@ export class Renderer {
 }
 
 const TokenTypeReverseMap: IMap<TokenString> = {
-  [TokenType.IF]:	TokenString.IF,
-  [TokenType.NOT]:	TokenString.NOT,
-  [TokenType.ELSE]:	TokenString.ELSE,
-  [TokenType.END]:	TokenString.END,
+  [TokenType.IF]:	TokenString.IF
+  , [TokenType.NOT]:	TokenString.NOT
+  , [TokenType.ELSE]:	TokenString.ELSE
+  , [TokenType.END]:	TokenString.END
 };
 
 // Action name means we just want run filters :)
 let actionNames: IMap<boolean> = {'': true, 'do': true};
 
 const processToken = (token: _Token): Section | Formatter => {
-  let name: string,
-    names: string[] | null = null,
-    filters: string[] | null = null,
-    isAction: boolean = false,
-    token_: Token;
+  let name: string
+    , names: string[] | null = null
+    , filters: string[] | null = null
+    , isAction: boolean = false
+    , token_: Token;
 
   name = token[TokenMember.VALUE];
 
@@ -513,14 +513,19 @@ const processToken = (token: _Token): Section | Formatter => {
 };
 
 function buildTree(tokens: _Token[]): Token[] {
-  let token: Token,
-    section: Section | undefined,
-    sections: Section[] = [],
-    treeRoot: Token[] = [],
-    collector: Token[] = treeRoot;
+  let type_: TokenType
+    , value: string
+    , token: Token
+    , elseBlock: Token[] | null
+    , section: Section | undefined
+    , sections: Section[] = []
+    , treeRoot: Token[] = []
+    , collector: Token[] = treeRoot;
 
   for (const token_ of tokens) {
-    switch (token_[TokenMember.TYPE]) {
+    type_ = token_[TokenMember.TYPE];
+
+    switch (type_) {
     // Enter a section
     case TokenType.IF:
     case TokenType.NOT:
@@ -543,10 +548,13 @@ function buildTree(tokens: _Token[]): Token[] {
         void 0x95E2 // Reset
       ;
 
+      value = token_[TokenMember.VALUE];
+
       // `ELSE` are valid for `IF`, invalid for `NOT`
-      if (!section || section[TokenMember.TYPE] !== TokenType.IF || token_[TokenMember.VALUE] !== section[TokenMember.VALUE][NameMember.NAME])
-        throw new Error(`Unexpected token '<type=${
-          TokenTypeReverseMap[token_[TokenMember.TYPE]]}, value=${token_[TokenMember.VALUE][NameMember.NAME]}>'`);
+      if (!section ||
+        section[TokenMember.TYPE] !== TokenType.IF ||
+        value !== section[TokenMember.VALUE][NameMember.NAME])
+        throw new Error(`Unexpected token '<type=${TokenTypeReverseMap[type_]}, value=${value}>'`);
 
       // Initialize and switch to section's else-block
       collector = section[TokenMember.ELSE_BLOCK] = [];
@@ -554,21 +562,22 @@ function buildTree(tokens: _Token[]): Token[] {
       // Leave a section
     case TokenType.END:
       section = sections.pop();
+      value = token_[TokenMember.VALUE];
 
-      if (!section || token_[TokenMember.VALUE] !== section[TokenMember.VALUE][NameMember.NAME])
-        throw new Error(`Unexpected token '<type=${
-          TokenTypeReverseMap[token_[TokenMember.TYPE]]}, value=${token_[TokenMember.VALUE][NameMember.NAME]}>'`);
+      if (!section ||
+        value !== section[TokenMember.VALUE][NameMember.NAME])
+        throw new Error(`Unexpected token '<type=${TokenTypeReverseMap[type_]}, value=${value}>'`);
 
-      // Change type for which section contains else-block
+      // Change type for which section contains initialized else-block
       if (section[TokenMember.ELSE_BLOCK])
         section[TokenMember.TYPE] = TokenType.ELSE;
 
       // Re-bind block to parent block
       collector = sections.length ?
         // Is parent section has initialized else-block?
-        (section = sections[sections.length - 1], section[TokenMember.ELSE_BLOCK]) ?
+        (section = sections[sections.length - 1], elseBlock = section[TokenMember.ELSE_BLOCK]) ?
           // Yes, then parent block is else-block
-          section[TokenMember.ELSE_BLOCK] as Token[]
+          elseBlock as Token[]
           :
           // No, then parent block is (if-)block
           section[TokenMember.BLOCK]
