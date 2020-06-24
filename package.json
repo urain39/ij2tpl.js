@@ -1,6 +1,6 @@
 {
   "name": "ij2tpl",
-  "version": "0.1.0-dev",
+  "version": "0.1.0-beta",
   "description": "Mustache-like Template for Javascript.",
   "bin": {
     "ij2tpl": "./bin/ij2tpl.js"

@@ -1,11 +1,11 @@
 /**
  * @file IJ2TPL.js - The Awesome Template Engine.
- * @version v0.1.0-dev
+ * @version v0.1.0-beta
  * @author urain39 <urain39@qq.com>
  * @copyright (c) 2018-2020 IJ2TPL.js / IJ2TPL.ts Authors.
  */
 var _a, _b;
-export var version = '0.1.0-dev';
+export var version = '0.1.0-beta';
 var filterMap = {};
 export function setFilterMap(filterMap_) {
     filterMap = filterMap_;
@@ -145,7 +145,7 @@ var Context = /** @class */ (function () {
                 value = cache[name_];
             }
             else {
-                // No cached records found. Assume it has properties
+                // No cached records found. Assume name has properties
                 names = name[1 /* NAMES */];
                 if (names) {
                     name__ = names[0];
@@ -190,7 +190,7 @@ var Context = /** @class */ (function () {
                 cache[name_] = value;
             }
         }
-        // Assume it has filters at first
+        // Assume name has filters
         filters = name[2 /* FILTERS */];
         // Apply filters if exists
         if (filters) {
@@ -376,10 +376,12 @@ function buildTree(tokens) {
                 // Change type for which section contains initialized else-block
                 if (section[3 /* ELSE_BLOCK */])
                     section[0 /* TYPE */] = 2 /* ELSE */;
+                // Assume section has else-block
+                elseBlock = section[3 /* ELSE_BLOCK */];
                 // Re-bind block to parent block
                 collector = sections.length ?
                     // Is parent section has initialized else-block?
-                    (section = sections[sections.length - 1], elseBlock = section[3 /* ELSE_BLOCK */]) ?
+                    (section = sections[sections.length - 1], elseBlock) ?
                         // Yes, then parent block is else-block
                         elseBlock
                         :

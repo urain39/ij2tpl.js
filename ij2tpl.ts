@@ -1,11 +1,11 @@
 /**
  * @file IJ2TPL.js - The Awesome Template Engine.
- * @version v0.1.0-dev
+ * @version v0.1.0-beta
  * @author urain39 <urain39@qq.com>
  * @copyright (c) 2018-2020 IJ2TPL.js / IJ2TPL.ts Authors.
  */
 
-export const version: string = '0.1.0-dev';
+export const version: string = '0.1.0-beta';
 
 /* eslint-disable no-unused-vars */
 // FIXME: ^^^ it seems that is a bug of ESLint
@@ -264,7 +264,7 @@ export class Context {
       if (hasOwnProperty.call(cache, name_)) {
         value = cache[name_];
       } else {
-        // No cached records found. Assume it has properties
+        // No cached records found. Assume name has properties
         names = name[NameMember.NAMES] as string[];
 
         if (names) {
@@ -318,7 +318,7 @@ export class Context {
       }
     }
 
-    // Assume it has filters at first
+    // Assume name has filters
     filters = name[NameMember.FILTERS] as string[];
 
     // Apply filters if exists
@@ -517,7 +517,7 @@ function buildTree(tokens: _Token[]): Token[] {
   let type_: TokenType
     , value: string
     , token: Token
-    , elseBlock: Token[] | null
+    , elseBlock: Token[]
     , section: Section | undefined
     , sections: Section[] = []
     , treeRoot: Token[] = []
@@ -575,12 +575,15 @@ function buildTree(tokens: _Token[]): Token[] {
       if (section[TokenMember.ELSE_BLOCK])
         section[TokenMember.TYPE] = TokenType.ELSE;
 
+      // Assume section has else-block
+      elseBlock = section[TokenMember.ELSE_BLOCK] as Token[];
+
       // Re-bind block to parent block
       collector = sections.length ?
         // Is parent section has initialized else-block?
-        (section = sections[sections.length - 1], elseBlock = section[TokenMember.ELSE_BLOCK]) ?
+        (section = sections[sections.length - 1], elseBlock) ?
           // Yes, then parent block is else-block
-          elseBlock as Token[]
+          elseBlock
           :
           // No, then parent block is (if-)block
           section[TokenMember.BLOCK]
