@@ -125,7 +125,8 @@ export function tokenize(source: string, prefix: string, suffix: string): _Token
   for (let i = 0, j = 0
     , l = source.length
     , pl = prefix.length
-    , sl = suffix.length; i < l;) {
+    , sl = suffix.length; i < l;
+  ) {
     // Match '{'
     j = source.indexOf(prefix, i);
 
@@ -553,7 +554,8 @@ function buildTree(tokens: _Token[]): Token[] {
       // `ELSE` are valid for `IF`, invalid for `NOT`
       if (!section ||
         section[TokenMember.TYPE] !== TokenType.IF ||
-        value !== section[TokenMember.VALUE][NameMember.NAME])
+        value !== section[TokenMember.VALUE][NameMember.NAME]
+      )
         throw new Error(`Unexpected token '<type=${TokenTypeReverseMap[type_]}, value=${value}>'`);
 
       // Initialize and switch to section's else-block
@@ -565,7 +567,8 @@ function buildTree(tokens: _Token[]): Token[] {
       value = token_[TokenMember.VALUE];
 
       if (!section ||
-        value !== section[TokenMember.VALUE][NameMember.NAME])
+        value !== section[TokenMember.VALUE][NameMember.NAME]
+      )
         throw new Error(`Unexpected token '<type=${TokenTypeReverseMap[type_]}, value=${value}>'`);
 
       // Change type for which section contains initialized else-block
