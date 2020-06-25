@@ -150,4 +150,4 @@ Or:
 - ~~Sub-template(aka Partial Section)~~
 - ~~Format Pipe(aka Filter)~~
 
-Last update: 2020-06-12
+Last Update: 2020-06-25

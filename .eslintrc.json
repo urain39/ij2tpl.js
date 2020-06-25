@@ -39,6 +39,10 @@
         "semi": [
             "error",
             "always"
+        ],
+        "comma-style": [
+          "error",
+          "first"
         ]
     }
 }
