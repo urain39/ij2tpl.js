@@ -335,7 +335,8 @@ var processToken = function (token) {
     return token_;
 };
 function buildTree(tokens) {
-    var type_, value, token, elseBlock, section, sections = [], treeRoot = [], collector = treeRoot;
+    var type_, value, token, collector, elseBlock, section, sections = [], treeRoot = [];
+    collector = treeRoot;
     for (var _i = 0, tokens_1 = tokens; _i < tokens_1.length; _i++) {
         var token_ = tokens_1[_i];
         type_ = token_[0 /* TYPE */];

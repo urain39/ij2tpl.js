@@ -517,11 +517,13 @@ function buildTree(tokens: _Token[]): Token[] {
   let type_: TokenType
     , value: string
     , token: Token
+    , collector: Token[]
     , elseBlock: Token[]
     , section: Section | undefined
     , sections: Section[] = []
-    , treeRoot: Token[] = []
-    , collector: Token[] = treeRoot;
+    , treeRoot: Token[] = [];
+
+  collector = treeRoot;
 
   for (const token_ of tokens) {
     type_ = token_[TokenMember.TYPE];
