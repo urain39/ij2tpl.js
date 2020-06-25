@@ -20,10 +20,12 @@ var TokenTypeMap = (_a = {},
     _a["@" /* PARTIAL */] = 8 /* PARTIAL */,
     _a);
 // We strip all white spaces to make check section easy(for `buildTree`)
-var WhiteSpaceRe = /[\s\xA0\uFEFF]+/g, stripWhiteSpace = function (string_) { return string_.replace(WhiteSpaceRe, ''); }, // NOTE: if we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
+var WhiteSpaceRe = /[\s\xA0\uFEFF]+/g, stripWhiteSpace = function (string_) { return string_.replace(WhiteSpaceRe, ''); }
+// NOTE: if we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
 //     will always generate a new string. So we need test it before replace it ;)
-IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/, IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/, // To compress the source, we extracted some of the same code
-stripIndentation = function (token, tokens) {
+, IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/, IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/
+// To compress the source, we extracted some of the same code
+, stripIndentation = function (token, tokens) {
     var value;
     // Remove token's indentation if exists
     if (token[0 /* TYPE */] === 4 /* TEXT */) {
@@ -376,12 +378,12 @@ function buildTree(tokens) {
                 // Change type for which section contains initialized else-block
                 if (section[3 /* ELSE_BLOCK */])
                     section[0 /* TYPE */] = 2 /* ELSE */;
-                // Assume section has else-block
-                elseBlock = section[3 /* ELSE_BLOCK */];
                 // Re-bind block to parent block
                 collector = sections.length ?
                     // Is parent section has initialized else-block?
-                    (section = sections[sections.length - 1], elseBlock) ?
+                    (section = sections[sections.length - 1]
+                        // Assume parent section has else-block
+                        , elseBlock = section[3 /* ELSE_BLOCK */]) ?
                         // Yes, then parent block is else-block
                         elseBlock
                         :

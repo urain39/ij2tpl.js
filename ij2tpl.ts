@@ -93,12 +93,12 @@ const TokenTypeMap: IMap<TokenType> = {
 // We strip all white spaces to make check section easy(for `buildTree`)
 const WhiteSpaceRe = /[\s\xA0\uFEFF]+/g
   , stripWhiteSpace = (string_: string): string => string_.replace(WhiteSpaceRe, '')
-  , // NOTE: if we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
+  // NOTE: if we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
   //     will always generate a new string. So we need test it before replace it ;)
-  IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/
+  , IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/
   , IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/
-  , // To compress the source, we extracted some of the same code
-  stripIndentation = (token: _Token, tokens: _Token[]): void => {
+  // To compress the source, we extracted some of the same code
+  , stripIndentation = (token: _Token, tokens: _Token[]): void => {
     let value: string;
 
     // Remove token's indentation if exists
@@ -575,13 +575,13 @@ function buildTree(tokens: _Token[]): Token[] {
       if (section[TokenMember.ELSE_BLOCK])
         section[TokenMember.TYPE] = TokenType.ELSE;
 
-      // Assume section has else-block
-      elseBlock = section[TokenMember.ELSE_BLOCK] as Token[];
-
       // Re-bind block to parent block
       collector = sections.length ?
         // Is parent section has initialized else-block?
-        (section = sections[sections.length - 1], elseBlock) ?
+        (section = sections[sections.length - 1]
+        // Assume parent section has else-block
+        , elseBlock = section[TokenMember.ELSE_BLOCK] as Token[]
+        ) ?
           // Yes, then parent block is else-block
           elseBlock
           :
