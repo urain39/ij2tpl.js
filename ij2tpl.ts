@@ -394,7 +394,7 @@ export class Renderer {
             , partialMap
           );
         break;
-        // XXX: it may be slower than If-Section + Not-Section(about 1 ops/sec)
+      // XXX: it may be slower than If-Section + Not-Section(about 1 ops/sec)
       case TokenType.ELSE:
         section = token as Section;
         value = context.resolve(section[TokenMember.VALUE]);
@@ -540,7 +540,7 @@ function buildTree(tokens: _Token[]): Token[] {
       collector = section[TokenMember.BLOCK] = [];
       section[TokenMember.ELSE_BLOCK] = null; // Padding?
       break;
-      // Switch to section's else-block
+    // Switch to section's else-block
     case TokenType.ELSE:
       // Get entered section
       section = sections.length ?
@@ -561,7 +561,7 @@ function buildTree(tokens: _Token[]): Token[] {
       // Initialize and switch to section's else-block
       collector = section[TokenMember.ELSE_BLOCK] = [];
       break;
-      // Leave a section
+    // Leave a section
     case TokenType.END:
       section = sections.pop();
       value = token_[TokenMember.VALUE];
