@@ -23,9 +23,7 @@ var TokenTypeMap = (_a = {},
 var WhiteSpaceRe = /[\s\xA0\uFEFF]+/g, stripWhiteSpace = function (string_) { return string_.replace(WhiteSpaceRe, ''); }
 // NOTE: if we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
 //     will always generate a new string. So we need test it before replace it ;)
-, IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/, IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/
-// To compress the source, we extracted some of the same code
-, stripIndentation = function (token, tokens) {
+, IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/, IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/, stripIndentation = function (token, tokens) {
     var value;
     // Remove token's indentation if exists
     if (token[0 /* TYPE */] === 4 /* TEXT */) {
@@ -36,7 +34,7 @@ var WhiteSpaceRe = /[\s\xA0\uFEFF]+/g, stripWhiteSpace = function (string_) { re
         if (value)
             token[1 /* VALUE */] = value;
         else
-            tokens.pop(); // Drop the empty text ''
+            tokens.pop(); // Don't save text that has become empty
     }
 };
 export function tokenize(source, prefix, suffix) {
@@ -49,6 +47,7 @@ export function tokenize(source, prefix, suffix) {
         if (j === -1) {
             // Eat the rest of the source
             value = source.slice(i);
+            // Don't save the empty text ''
             if (value)
                 token = [4 /* TEXT */, value], tokens.push(token);
             break; // Done
@@ -56,7 +55,6 @@ export function tokenize(source, prefix, suffix) {
         // Eat the left side of a token
         value = source.slice(i, j);
         j += pl; // Skip the '{'
-        // Don't save the empty text ''
         if (value)
             token = [4 /* TEXT */, value], tokens.push(token);
         // Match the '}'
@@ -67,12 +65,12 @@ export function tokenize(source, prefix, suffix) {
         // We don't want to call `source.slice` for comments
         if (source[j] === "-" /* COMMENT */) {
             stripIndentation(token, tokens);
-            i += sl; // Skip the '}'
-            continue; // Skip the comment
+            i += sl; // Skip the '}' for comments
+            continue; // Tokenize next one
         }
         // Eat the text between the '{' and '}'
         value = source.slice(j, i);
-        i += sl;
+        i += sl; // Skip the '}' for tokens
         value = stripWhiteSpace(value);
         if (!value)
             continue; // Skip the empty token, such as '{}'
@@ -92,9 +90,9 @@ export function tokenize(source, prefix, suffix) {
                             break;
                         case '\r':
                             // Have next character?
-                            i += i + 1 < l ?
+                            i += (j = i + 1) < l ?
                                 // Yes, next character is LF?
-                                source[i + 1] === '\n' ?
+                                source[j] === '\n' ?
                                     2 // Yes, then newline is CRLF
                                     :
                                         1 // No, then newline is CR
@@ -115,8 +113,9 @@ export function tokenize(source, prefix, suffix) {
     }
     return tokens;
 }
+var hasOwnProperty = {}.hasOwnProperty
 // See https://github.com/janl/mustache.js/pull/530
-var htmlSpecialRe = /["&'\/<=>`]/g // eslint-disable-line no-useless-escape
+, htmlSpecialRe = /["&'\/<=>`]/g // eslint-disable-line no-useless-escape
 , htmlSpecialEntityMap = {
     '"': '&quot;',
     '&': '&amp;',
@@ -129,35 +128,39 @@ var htmlSpecialRe = /["&'\/<=>`]/g // eslint-disable-line no-useless-escape
     '`': '&#x60;'
 }, escapeHTML = function (value) { return String(value).replace(htmlSpecialRe, function (key) { return htmlSpecialEntityMap[key]; }); };
 export var escape = escapeHTML; // Escape for HTML by default
-var hasOwnProperty = {}.hasOwnProperty;
 var Context = /** @class */ (function () {
     function Context(data, parent) {
         this.data = data;
-        this.parent = parent;
         this.cache = { '.': this.data };
+        this.parent = parent;
     }
     Context.prototype.resolve = function (name) {
-        var data, cache, name_, name__ // First-name or Sub-name
-        , names, filters, value = null, context = this;
-        cache = context.cache;
+        var data, cache, name_, name__ // Used to look up
+        , names, filters, value = null, context = this, hasProperties = false;
         if (!name[3 /* IS_ACTION */]) {
+            cache = context.cache;
             name_ = name[0 /* NAME */];
             // Cached in context?
             if (hasOwnProperty.call(cache, name_)) {
                 value = cache[name_];
             }
-            else {
-                // No cached records found. Assume name has properties
-                names = name[1 /* NAMES */];
-                if (names) {
+            else { // No cached records found
+                // eslint-disable-next-line no-cond-assign
+                if (names = name[1 /* NAMES */]) {
                     name__ = names[0];
-                    // Try to look up the (first)name in data
-                    do {
-                        data = context.data;
-                        // Find out which context contains name
-                        if (data && hasOwnProperty.call(data, name__)) {
-                            value = data[name__];
-                            // Resolve sub-names
+                    hasProperties = true;
+                }
+                else {
+                    name__ = name_;
+                }
+                // Try to look up the name in data
+                do {
+                    data = context.data;
+                    // Find out which context contains name
+                    if (data && hasOwnProperty.call(data, name__)) {
+                        value = data[name__];
+                        // Resolve properties if exists
+                        if (hasProperties) {
                             for (var i = 1, l = names.length; i < l; i++) {
                                 name__ = names[i];
                                 if (value && hasOwnProperty.call(value, name__)) {
@@ -168,23 +171,11 @@ var Context = /** @class */ (function () {
                                     break;
                                 }
                             }
-                            break;
                         }
-                        context = context.parent;
-                    } while (context);
-                }
-                else {
-                    // Try to look up the name in data
-                    do {
-                        data = context.data;
-                        // Find out which context contains name
-                        if (data && hasOwnProperty.call(data, name_)) {
-                            value = data[name_];
-                            break;
-                        }
-                        context = context.parent;
-                    } while (context);
-                }
+                        break;
+                    }
+                    context = context.parent;
+                } while (context);
                 // Support for function
                 if (typeof value === 'function')
                     value = value(context);
@@ -192,10 +183,8 @@ var Context = /** @class */ (function () {
                 cache[name_] = value;
             }
         }
-        // Assume name has filters
-        filters = name[2 /* FILTERS */];
-        // Apply filters if exists
-        if (filters) {
+        // eslint-disable-next-line no-cond-assign
+        if (filters = name[2 /* FILTERS */]) {
             for (var _i = 0, filters_1 = filters; _i < filters_1.length; _i++) {
                 var filterName = filters_1[_i];
                 if (hasOwnProperty.call(filterMap, filterName))
@@ -247,7 +236,7 @@ var Renderer = /** @class */ (function () {
                     if (!(isArray_ ? value.length : value))
                         buffer += this.renderTree(section[2 /* BLOCK */], context, partialMap);
                     break;
-                // XXX: it may be slower than If-Section + Not-Section(about 1 ops/sec)
+                // FIXME: it may be slower than If-Section + Not-Section(about 1 ops/sec)
                 case 2 /* ELSE */:
                     section = token;
                     value = context.resolve(section[1 /* VALUE */]);
@@ -283,10 +272,8 @@ var Renderer = /** @class */ (function () {
                     value = context.resolve(token[1 /* VALUE */]);
                     if (value != null)
                         buffer += typeof value === 'number' ?
-                            value
+                            value // Numbers are absolutely safe
                             :
-                                // NOTE: `<object>.toString` will be called when we try to
-                                //     append a stringified object to buffer, it is not safe!
                                 escapeHTML(value);
                     break;
                 case 8 /* PARTIAL */:
@@ -315,9 +302,12 @@ var TokenTypeReverseMap = (_b = {},
     _b);
 // Action name means we just want run filters :)
 var actionNames = { '': true, 'do': true };
-var processToken = function (token) {
-    var name, names = null, filters = null, isAction = false, token_;
-    name = token[1 /* VALUE */];
+var processToken = function (token_) {
+    var name, names, filters, isAction, token;
+    names = null;
+    filters = null;
+    isAction = false;
+    name = token_[1 /* VALUE */];
     // Name can be empty, see `actionNames`
     if (name.indexOf('|') !== -1) {
         filters = name.split('|');
@@ -331,8 +321,8 @@ var processToken = function (token) {
     if (name.indexOf('.') > 0)
         names = name.split('.');
     // NOTE: filters are just additional part of Token
-    token_ = [token[0 /* TYPE */], [name, names, filters, isAction]];
-    return token_;
+    token = [token_[0 /* TYPE */], [name, names, filters, isAction]];
+    return token;
 };
 function buildTree(tokens) {
     var type_, value, token, collector, elseBlock, section, sections = [], treeRoot = [];
@@ -383,7 +373,6 @@ function buildTree(tokens) {
                 collector = sections.length ?
                     // Is parent section has initialized else-block?
                     (section = sections[sections.length - 1]
-                        // Assume parent section has else-block
                         , elseBlock = section[3 /* ELSE_BLOCK */]) ?
                         // Yes, then parent block is else-block
                         elseBlock
