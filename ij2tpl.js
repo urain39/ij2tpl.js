@@ -5,6 +5,7 @@
  * @copyright (c) 2018-2020 IJ2TPL.js / IJ2TPL.ts Authors.
  */
 var _a, _b;
+/* eslint-disable prefer-const */
 export var version = '0.1.0-beta';
 var filterMap = {};
 export function setFilterMap(filterMap_) {
@@ -44,7 +45,7 @@ export function tokenize(source, prefix, suffix) {
         // Match '{'
         j = source.indexOf(prefix, i);
         // Not found the '{'
-        if (j === -1) {
+        if (!~j /* j === -1 */) {
             // Eat the rest of the source
             value = source.slice(i);
             // Don't save the empty text ''
@@ -60,7 +61,7 @@ export function tokenize(source, prefix, suffix) {
         // Match the '}'
         i = source.indexOf(suffix, j);
         // Not found the '}'
-        if (i === -1)
+        if (!~i /* i === -1 */)
             throw new Error("No matching prefix '" + prefix + "'");
         // We don't want to call `source.slice` for comments
         if (source[j] === "-" /* COMMENT */) {
@@ -126,7 +127,7 @@ var hasOwnProperty = {}.hasOwnProperty
     '=': '&#x3D;',
     '>': '&gt;',
     '`': '&#x60;'
-}, escapeHTML = function (value) { return String(value).replace(htmlSpecialRe, function (key) { return htmlSpecialEntityMap[key]; }); };
+}, escapeHTML = function (value) { return String(value).replace(htmlSpecialRe, function (special) { return htmlSpecialEntityMap[special]; }); };
 export var escape = escapeHTML; // Escape for HTML by default
 var Context = /** @class */ (function () {
     function Context(data, parent) {
@@ -135,8 +136,7 @@ var Context = /** @class */ (function () {
         this.parent = parent;
     }
     Context.prototype.resolve = function (name) {
-        var data, cache, name_, name__ // Used to look up
-        , names, filters, value = null, context = this, hasProperties = false;
+        var data, cache, name_, name__, names, filters, value = null, context = this, hasProperties = false;
         if (!name[3 /* IS_ACTION */]) {
             cache = context.cache;
             name_ = name[0 /* NAME */];
@@ -309,7 +309,7 @@ var processToken = function (token_) {
     isAction = false;
     name = token_[1 /* VALUE */];
     // Name can be empty, see `actionNames`
-    if (name.indexOf('|') !== -1) {
+    if (~name.indexOf('|') /* name.indexOf('|') !== -1 */) {
         filters = name.split('|');
         name = filters[0];
         filters = filters.slice(1);

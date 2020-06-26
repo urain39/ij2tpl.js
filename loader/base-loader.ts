@@ -21,7 +21,7 @@ export class IJ2BaseLoader {
     if (!this.isValidFilename(path_))
       throw new IJ2BaseLoaderError(`Invalid filename '${path_}'!`);
 
-    let source: string = fs.readFileSync(path_, 'utf-8');
+    const source: string = fs.readFileSync(path_, 'utf-8');
 
     return source;
   }

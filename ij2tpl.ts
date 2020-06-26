@@ -5,6 +5,8 @@
  * @copyright (c) 2018-2020 IJ2TPL.js / IJ2TPL.ts Authors.
  */
 
+/* eslint-disable prefer-const */
+
 export const version: string = '0.1.0-beta';
 
 /* eslint-disable no-unused-vars */
@@ -130,7 +132,7 @@ export function tokenize(source: string, prefix: string, suffix: string): _Token
     j = source.indexOf(prefix, i);
 
     // Not found the '{'
-    if (j === -1) {
+    if (!~j /* j === -1 */) {
       // Eat the rest of the source
       value = source.slice(i);
 
@@ -152,7 +154,7 @@ export function tokenize(source: string, prefix: string, suffix: string): _Token
     i = source.indexOf(suffix, j);
 
     // Not found the '}'
-    if (i === -1)
+    if (!~i /* i === -1 */)
       throw new Error(`No matching prefix '${prefix}'`);
 
     // We don't want to call `source.slice` for comments
@@ -229,7 +231,7 @@ const hasOwnProperty = {}.hasOwnProperty
     , '`': '&#x60;'
   }
   , escapeHTML = (value: any): string => String(value).replace(
-    htmlSpecialRe, (key: string): string => htmlSpecialEntityMap[key]
+    htmlSpecialRe, (special: string): string => htmlSpecialEntityMap[special]
   );
 
 export let escape = escapeHTML; // Escape for HTML by default
@@ -249,7 +251,7 @@ export class Context {
     let data: IMap<any>
       , cache: IMap<any>
       , name_: string
-      , name__: string // Used to look up
+      , name__: string
       , names: string[]
       , filters: string[]
       , value: any = null
@@ -481,7 +483,7 @@ const processToken = (token_: _Token): Section | Formatter => {
   name = token_[TokenMember.VALUE];
 
   // Name can be empty, see `actionNames`
-  if (name.indexOf('|') !== -1) {
+  if (~name.indexOf('|') /* name.indexOf('|') !== -1 */) {
     filters = name.split('|');
 
     name = filters[0];
