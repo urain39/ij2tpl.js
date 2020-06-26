@@ -5,6 +5,8 @@
  * @copyright (c) 2018-2020 IJ2TPL.js / IJ2TPL.ts Authors.
  */
 
+/* eslint-disable prefer-const */
+
 export const version: string = '0.1.0-beta';
 
 /* eslint-disable no-unused-vars */
@@ -28,7 +30,7 @@ const enum TokenType {
   , TEXT
   , RAW
   , FORMAT
-  , COMMENT
+  , COMMENT // Used for initialization only
   , PARTIAL
 }
 
@@ -97,7 +99,6 @@ const WhiteSpaceRe = /[\s\xA0\uFEFF]+/g
   //     will always generate a new string. So we need test it before replace it ;)
   , IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/
   , IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/
-  // To compress the source, we extracted some of the same code
   , stripIndentation = (token: _Token, tokens: _Token[]): void => {
     let value: string;
 
@@ -112,7 +113,7 @@ const WhiteSpaceRe = /[\s\xA0\uFEFF]+/g
       if(value)
         token[TokenMember.VALUE] = value;
       else
-        tokens.pop(); // Drop the empty text ''
+        tokens.pop(); // Don't save text that has become empty
     }
   };
 
@@ -131,10 +132,11 @@ export function tokenize(source: string, prefix: string, suffix: string): _Token
     j = source.indexOf(prefix, i);
 
     // Not found the '{'
-    if (j === -1) {
+    if (!~j /* j === -1 */) {
       // Eat the rest of the source
       value = source.slice(i);
 
+      // Don't save the empty text ''
       if (value)
         token = [TokenType.TEXT, value], tokens.push(token);
 
@@ -145,7 +147,6 @@ export function tokenize(source: string, prefix: string, suffix: string): _Token
     value = source.slice(i, j);
     j += pl; // Skip the '{'
 
-    // Don't save the empty text ''
     if (value)
       token = [TokenType.TEXT, value], tokens.push(token);
 
@@ -153,20 +154,20 @@ export function tokenize(source: string, prefix: string, suffix: string): _Token
     i = source.indexOf(suffix, j);
 
     // Not found the '}'
-    if (i === -1)
+    if (!~i /* i === -1 */)
       throw new Error(`No matching prefix '${prefix}'`);
 
     // We don't want to call `source.slice` for comments
     if (source[j] === TokenString.COMMENT) {
       stripIndentation(token, tokens);
-      i += sl; // Skip the '}'
+      i += sl; // Skip the '}' for comments
 
-      continue; // Skip the comment
+      continue; // Tokenize next one
     }
 
     // Eat the text between the '{' and '}'
     value = source.slice(j, i);
-    i += sl;
+    i += sl; // Skip the '}' for tokens
 
     value = stripWhiteSpace(value);
 
@@ -191,9 +192,9 @@ export function tokenize(source: string, prefix: string, suffix: string): _Token
           break;
         case '\r':
           // Have next character?
-          i += i + 1 < l ?
-          // Yes, next character is LF?
-            source[i + 1] === '\n' ?
+          i += (j = i + 1) < l ?
+            // Yes, next character is LF?
+            source[j] === '\n' ?
               2 // Yes, then newline is CRLF
               :
               1 // No, then newline is CR
@@ -203,7 +204,7 @@ export function tokenize(source: string, prefix: string, suffix: string): _Token
           break;
         }
       }
-      // eslint-disable-line no-fallthrough
+    // eslint-disable-line no-fallthrough
     case TokenString.RAW:
       token = [TokenTypeMap[type_], value.slice(1)], tokens.push(token);
       break;
@@ -216,8 +217,9 @@ export function tokenize(source: string, prefix: string, suffix: string): _Token
   return tokens;
 }
 
-// See https://github.com/janl/mustache.js/pull/530
-const htmlSpecialRe = /["&'\/<=>`]/g // eslint-disable-line no-useless-escape
+const hasOwnProperty = {}.hasOwnProperty
+  // See https://github.com/janl/mustache.js/pull/530
+  , htmlSpecialRe = /["&'\/<=>`]/g // eslint-disable-line no-useless-escape
   , htmlSpecialEntityMap: IMap<string> = {
     '"': '&quot;'
     , '&': '&amp;'
@@ -228,11 +230,11 @@ const htmlSpecialRe = /["&'\/<=>`]/g // eslint-disable-line no-useless-escape
     , '>': '&gt;'
     , '`': '&#x60;'
   }
-  , escapeHTML = (value: any): string => String(value).replace(htmlSpecialRe, (key: string): string => htmlSpecialEntityMap[key]);
+  , escapeHTML = (value: any): string => String(value).replace(
+    htmlSpecialRe, (special: string): string => htmlSpecialEntityMap[special]
+  );
 
 export let escape = escapeHTML; // Escape for HTML by default
-
-const hasOwnProperty = {}.hasOwnProperty;
 
 export class Context {
   public data: IMap<any>;
@@ -241,44 +243,47 @@ export class Context {
 
   public constructor(data: IMap<any>, parent: Context | null) {
     this.data = data;
-    this.parent = parent;
     this.cache = { '.': this.data };
+    this.parent = parent;
   }
 
   public resolve(name: Name): any {
     let data: IMap<any>
       , cache: IMap<any>
       , name_: string
-      , name__: string // First-name or Sub-name
+      , name__: string
       , names: string[]
       , filters: string[]
       , value: any = null
-      , context: Context | null = this;
-
-    cache = context.cache;
+      , context: Context | null = this
+      , hasProperties: boolean = false;
 
     if (!name[NameMember.IS_ACTION]) {
+      cache = context.cache;
       name_ = name[NameMember.NAME];
 
       // Cached in context?
       if (hasOwnProperty.call(cache, name_)) {
         value = cache[name_];
-      } else {
-        // No cached records found. Assume name has properties
-        names = name[NameMember.NAMES] as string[];
-
-        if (names) {
+      } else { // No cached records found
+        // eslint-disable-next-line no-cond-assign
+        if (names = name[NameMember.NAMES] as string[]) {
           name__ = names[0];
+          hasProperties = true;
+        } else {
+          name__ = name_;
+        }
 
-          // Try to look up the (first)name in data
-          do {
-            data = context.data;
+        // Try to look up the name in data
+        do {
+          data = context.data;
 
-            // Find out which context contains name
-            if (data && hasOwnProperty.call(data, name__)) {
-              value = data[name__];
+          // Find out which context contains name
+          if (data && hasOwnProperty.call(data, name__)) {
+            value = data[name__];
 
-              // Resolve sub-names
+            // Resolve properties if exists
+            if (hasProperties) {
               for (let i = 1, l = names.length; i < l; i++) {
                 name__ = names[i];
 
@@ -289,25 +294,12 @@ export class Context {
                   break;
                 }
               }
-              break;
             }
+            break;
+          }
 
-            context = context.parent;
-          } while (context);
-        } else {
-          // Try to look up the name in data
-          do {
-            data = context.data;
-
-            // Find out which context contains name
-            if (data && hasOwnProperty.call(data, name_)) {
-              value = data[name_];
-              break;
-            }
-
-            context = context.parent;
-          } while (context);
-        }
+          context = context.parent;
+        } while (context);
 
         // Support for function
         if (typeof value === 'function')
@@ -318,11 +310,8 @@ export class Context {
       }
     }
 
-    // Assume name has filters
-    filters = name[NameMember.FILTERS] as string[];
-
-    // Apply filters if exists
-    if (filters) {
+    // eslint-disable-next-line no-cond-assign
+    if (filters = name[NameMember.FILTERS] as string[]) {
       for (const filterName of filters) {
         if (hasOwnProperty.call(filterMap, filterName))
           value = filterMap[filterName](value);
@@ -394,7 +383,7 @@ export class Renderer {
             , partialMap
           );
         break;
-      // XXX: it may be slower than If-Section + Not-Section(about 1 ops/sec)
+      // FIXME: it may be slower than If-Section + Not-Section(about 1 ops/sec)
       case TokenType.ELSE:
         section = token as Section;
         value = context.resolve(section[TokenMember.VALUE]);
@@ -443,10 +432,8 @@ export class Renderer {
 
         if (value != null)
           buffer += typeof value === 'number' ?
-            value
+            value // Numbers are absolutely safe
             :
-            // NOTE: `<object>.toString` will be called when we try to
-            //     append a stringified object to buffer, it is not safe!
             escapeHTML(value)
           ;
         break;
@@ -482,17 +469,21 @@ const TokenTypeReverseMap: IMap<TokenString> = {
 // Action name means we just want run filters :)
 let actionNames: IMap<boolean> = {'': true, 'do': true};
 
-const processToken = (token: _Token): Section | Formatter => {
+const processToken = (token_: _Token): Section | Formatter => {
   let name: string
-    , names: string[] | null = null
-    , filters: string[] | null = null
-    , isAction: boolean = false
-    , token_: Token;
+    , names: string[] | null
+    , filters: string[] | null
+    , isAction: boolean
+    , token: Token;
 
-  name = token[TokenMember.VALUE];
+  names = null;
+  filters = null;
+  isAction = false;
+
+  name = token_[TokenMember.VALUE];
 
   // Name can be empty, see `actionNames`
-  if (name.indexOf('|') !== -1) {
+  if (~name.indexOf('|') /* name.indexOf('|') !== -1 */) {
     filters = name.split('|');
 
     name = filters[0];
@@ -508,9 +499,9 @@ const processToken = (token: _Token): Section | Formatter => {
     names = name.split('.');
 
   // NOTE: filters are just additional part of Token
-  token_ = [token[TokenMember.TYPE], [name, names, filters, isAction]];
+  token = [token_[TokenMember.TYPE], [name, names, filters, isAction]];
 
-  return token_;
+  return token;
 };
 
 function buildTree(tokens: _Token[]): Token[] {
@@ -581,7 +572,6 @@ function buildTree(tokens: _Token[]): Token[] {
       collector = sections.length ?
         // Is parent section has initialized else-block?
         (section = sections[sections.length - 1]
-        // Assume parent section has else-block
         , elseBlock = section[TokenMember.ELSE_BLOCK] as Token[]
         ) ?
           // Yes, then parent block is else-block

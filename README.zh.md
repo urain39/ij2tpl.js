@@ -1,5 +1,5 @@
 # IJ2TPL.js
-TypeScript 编写的类 Mustache 模板引擎(uglify后 <= 3kB)。
+TypeScript 编写的类 Mustache 模板引擎(uglify后 <= 4kB)。
 
 > 比Mustache.js更快(至少不会更慢)！
 
