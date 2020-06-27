@@ -1,13 +1,13 @@
 /**
  * @file IJ2TPL.js - The Awesome Template Engine.
- * @version v0.1.0-beta
+ * @version v0.1.0
  * @author urain39 <urain39@qq.com>
  * @copyright (c) 2018-2020 IJ2TPL.js / IJ2TPL.ts Authors.
  */
 
 /* eslint-disable prefer-const */
 
-export const version: string = '0.1.0-beta';
+export const version: string = '0.1.0';
 
 /* eslint-disable no-unused-vars */
 // FIXME: ^^^ it seems that is a bug of ESLint

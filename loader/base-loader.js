@@ -26,14 +26,14 @@ var IJ2BaseLoader = /** @class */ (function () {
         if (basePath === void 0) { basePath = '.'; }
         this.basePath = basePath;
     }
-    IJ2BaseLoader.prototype.isValidFilename = function (filename) {
-        return filename.split('.').slice(-2).indexOf('ij2') !== -1;
+    IJ2BaseLoader.prototype.isValidfileName = function (fileName) {
+        return !!~fileName.split('.').slice(-2).indexOf('ij2');
     };
     IJ2BaseLoader.prototype.loadFile = function (path_) {
         if (!path.isAbsolute(path_))
             path_ = path.resolve(path.join(this.basePath, path_));
-        if (!this.isValidFilename(path_))
-            throw new IJ2BaseLoaderError("Invalid filename '" + path_ + "'!");
+        if (!this.isValidfileName(path_))
+            throw new IJ2BaseLoaderError("Invalid fileName '" + path_ + "'!");
         var source = fs.readFileSync(path_, 'utf-8');
         return source;
     };
