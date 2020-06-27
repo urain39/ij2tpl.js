@@ -29,14 +29,14 @@ renderer.render({name: 'IJ2TPL'}); // -> "Hello, IJ2TPL!"
 **If Section**
 ```html
 {?valid}
-	Only valid data can be rendered.
+	Only render when it is valid
 {/valid}
 ```
 
 **Not Section**
 ```html
 {!valid}
-	Only invalid data can be rendered.
+	Only render when it is invalid
 {/valid}
 ```
 
@@ -47,16 +47,14 @@ Hello {#name}
 ```
 
 **If-Else Section**
-
 ```html
 {?valid}
-	Only valid data can be rendered.
+	Only render when it is valid
 {*valid}
 	Oops, something's wrong?
 {/valid}
-```
 
-**Function type(Formatter)**
+**Function type(Lambda)**
 ```js
 function toHumanReadableSize(size) {
 	var i = 0,
@@ -70,7 +68,7 @@ function toHumanReadableSize(size) {
 
 /* You can think it is a property getter, same as other formatters */
 function humanReadableSize(context) {
-	var downloadedSize = context.resolve('downloadedSize');
+	var downloadedSize = context.resolve(['downloadedSize', null, null]);
 	return toHumanReadableSize(downloadedSize);
 }
 ```
@@ -79,7 +77,7 @@ function humanReadableSize(context) {
 Downloaded {humanReadableSize}
 ```
 
-**Line Begin Mark(LBM)**
+**Line Begin Mark(Dedent)**
 ```html
 {-- Our `tokenize` implementation allows you to use a
 	empty comment at the end of indentation to indicate
@@ -143,11 +141,31 @@ Or:
 
 **Differences between `Function type` and `Action names`**
 
-`Function type` will always cache look up results, but `Action name` not.
+The `Function type` will always cache look up results, but `Action name` not.
+
+**Complex Section(Nested)**
+```html
+	{?valid}
+		{-}Your Scores:
+		{?scores}
+			{-}Score: {.}
+		{/scores}
+	{/valid}
+```
+
+**About Debugging**
+
+Sorry, i don't consider on it. I have removed location of a token to improve tokenizing speed.
+But you can also guess what's wrong from the error messages, it will tell you the section name and type.
 
 **Not Implemented Yet:**
 - ~~Function type(Supported on v0.0.2-dev)~~
 - ~~Sub-template(aka Partial Section)~~
 - ~~Format Pipe(aka Filter)~~
 
-Last Update: 2020-06-25
+**About Readme**
+
+Typo wrong / Can't understand? Please help me to improve it!
+Just open a new issue or PR to my project, i will reply you as possible as i can :)
+
+Last Update: 2020-06-27

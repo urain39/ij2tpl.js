@@ -29,14 +29,14 @@ renderer.render({name: 'IJ2TPL'}); // -> "你好, IJ2TPL!"
 **If 段落**
 ```html
 {?valid}
-	只渲染合法的数据。
+	仅在数据合法时渲染。
 {/valid}
 ```
 
 **Not 段落**
 ```html
 {!valid}
-	只渲染非法的数据。
+	仅在数据非法时渲染。
 {/valid}
 ```
 
@@ -50,13 +50,13 @@ renderer.render({name: 'IJ2TPL'}); // -> "你好, IJ2TPL!"
 
 ```html
 {?valid}
-	仅合法的数据才能被渲染。
+	数据合法。
 {*valid}
 	哎呀，好像出错了？
 {/valid}
 ```
 
-**函数类型(格式化器)**
+**函数类型(Lambda)**
 ```js
 function toHumanReadableSize(size) {
 	var i = 0,
@@ -70,7 +70,7 @@ function toHumanReadableSize(size) {
 
 /* 你可以理解为这是一个属性 getter，与其他格式化器相同 */
 function humanReadableSize(context) {
-	var downloadedSize = context.resolve('downloadedSize');
+	var downloadedSize = context.resolve(['downloadedSize', null, null]);
 	return toHumanReadableSize(downloadedSize);
 }
 ```
@@ -79,7 +79,7 @@ function humanReadableSize(context) {
 已下载 {humanReadableSize}
 ```
 
-**行起始标记(LBM)**
+**行起始标记(去缩进)**
 ```html
 {-- 我们的 `tokenize` 实现允许你在某个缩进的末尾使用
 	一个空注释表示你想要在这一行中去除缩进。
@@ -94,7 +94,7 @@ Hello World
 {-- 上面的两个 hello-world 是相同的。 }
 ```
 
-**定制 Prefix 与 Suffix(又叫做分隔符)**
+**定制 前缀 与 后缀(分隔符)**
 ```js
 IJ2TPL.parse('Hello <%name%>', '<%', '%>');
 ```
@@ -144,9 +144,29 @@ IJ2TPL.setFilterMap({
 
 `Function type`每次都会查找字段(name), 但是`Action name`不会。
 
+**复杂的Section(嵌套)**
+```html
+	{?valid}
+		{-}你的得分：
+		{?scores}
+			{-}得分：{.}
+		{/scores}
+	{/valid}
+```
+
+**关于调试**
+
+抱歉，我没有考虑到这一点。 为了改进令牌化(tokenizing)速度，我将位置信息移除了。
+不过你依然可以从错误信息中猜测是哪里出了问题，它会告诉你 Section 的名字与类型。
+
 **还未实现:**
 - ~~函数类型(已在 v0.0.2-dev 支持)~~
 - ~~子模板(Partial Section)~~
 - ~~格式化管道(又叫做过滤器)~~
 
-上次更新: 2020-06-25
+**关于自述文件**
+
+写错了 / 不能理解？请帮助我改进！
+你只需在我的项目主页打开一个新的 issue 或者 PR ，我会尽可能的回复的 :)
+
+上次更新: 2020-06-27
