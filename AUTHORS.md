@@ -1,5 +1,5 @@
 <!--
-	-- Auto-generated from <PROJECT ROOT>/authors.json
+	-- Auto-generated from <PROJECT ROOT>/_datas/authors.json
 	-- DO NOT TRY TO MODIFY DIRECTLY!!!
 	-->
 AUTHORS
