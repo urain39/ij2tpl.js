@@ -1,5 +1,5 @@
 <!--
-	-- Auto-generated from <PROJECT ROOT>/_datas/changes.json
+	-- Auto-generated from <PROJECT ROOT>/_data/changes.json
 	-- DO NOT TRY TO MODIFY DIRECTLY!!!
 	-->
 CHANGELOG
