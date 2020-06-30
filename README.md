@@ -3,9 +3,12 @@ A Mustache-like Template Engine written in TypeScript(<= 4kB after uglifying).
 
 > Faster than Mustache.js(at least not slower)!
 
-[English](./README.md) | [中文](./README.zh.md)
+English | [中文](./README.zh.md)
 
-**Usage:**
+**Supported**
+- ES3(>=IE6)
+
+**Usage**
 ```js
 // Import ij2tpl.js, for example nodejs:
 const IJ2TPL = require('./dist/ij2tpl.min');
@@ -145,12 +148,12 @@ The `Function type` will always cache look up results, but `Action name` not.
 
 **Complex Section(Nested)**
 ```html
-	{?valid}
-		{-}Your Scores:
-		{?scores}
-			{-}Score: {.}
-		{/scores}
-	{/valid}
+{?valid}
+	{-}Your Scores:
+	{?scores}
+		{-}Score: {.}
+	{/scores}
+{/valid}
 ```
 
 **About Debugging**

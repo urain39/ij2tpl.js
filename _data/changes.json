@@ -2,7 +2,7 @@
 	{
 		"date": "2020-07-01",
 		"version": "v0.1.0",
-		"status": "DEVELOPING",
+		"status": "RELEASED",
 		"changes": [
 			"Re-Supported If-Else Section",
 			"**Changed** `IJ2TPL.escapeHTML` -> `IJ2TPL.escape`",
@@ -15,7 +15,7 @@
 	{
 		"date": "2020-05-20",
 		"version": "v0.0.3",
-		"status": "RELEASED",
+		"status": "OUTDATED",
 		"changes": [
 			"Supported function values",
 			"Fixed newline and indentation problems",

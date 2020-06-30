@@ -3,7 +3,7 @@ let fs = require('fs');
 let IJ2TPL = require('./dist/ij2tpl.min');
 
 // Changelog
-let CHANGES = require('./_datas/changes');
+let CHANGES = require('./_data/changes');
 
 let CHANGELOG_TEMPLATE = fs.readFileSync('./_templates/CHANGELOG.md.ij2', 'utf-8');
 
@@ -12,7 +12,7 @@ CHANGELOG_TEMPLATE = IJ2TPL.parse(CHANGELOG_TEMPLATE);
 fs.writeFileSync('./CHANGELOG.md', CHANGELOG_TEMPLATE.render(CHANGES));
 
 // Authors
-let AUTHORS = require('./_datas/authors');
+let AUTHORS = require('./_data/authors');
 
 let AUTHORS_TEMPLATE = fs.readFileSync('./_templates/AUTHORS.md.ij2', 'utf-8');
 

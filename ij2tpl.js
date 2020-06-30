@@ -1,12 +1,12 @@
 /**
  * @file IJ2TPL.js - The Awesome Template Engine.
- * @version v0.1.0-beta
+ * @version v0.1.0
  * @author urain39 <urain39@qq.com>
  * @copyright (c) 2018-2020 IJ2TPL.js / IJ2TPL.ts Authors.
  */
 var _a, _b;
 /* eslint-disable prefer-const */
-export var version = '0.1.0-beta';
+export var version = '0.1.0';
 var filterMap = {};
 export function setFilterMap(filterMap_) {
     filterMap = filterMap_;

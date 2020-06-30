@@ -1,5 +1,5 @@
 <!--
-	-- Auto-generated from <PROJECT ROOT>/changes.json
+	-- Auto-generated from <PROJECT ROOT>/_data/changes.json
 	-- DO NOT TRY TO MODIFY DIRECTLY!!!
 	-->
 CHANGELOG
@@ -13,7 +13,7 @@ CHANGELOG
 - Optimized `IJ2TPL.tokenize` for comments
 - Supported filters and action names(based on filters)
 
-status: **DEVELOPING**
+status: **RELEASED**
 
 ### v0.0.3(2020-05-20)
 - Supported function values
@@ -21,7 +21,7 @@ status: **DEVELOPING**
 - Fixed #36 (instanceof Array is not safe) (#39)
 - Added more optimizations...
 
-status: **RELEASED**
+status: **OUTDATED**
 
 ### v0.0.2(2019-12-08)
 - Fixed `Context.resolve` bug

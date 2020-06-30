@@ -3,7 +3,10 @@ TypeScript 编写的类 Mustache 模板引擎(uglify后 <= 4kB)。
 
 > 比Mustache.js更快(至少不会更慢)！
 
-[English](./README.md) | [中文](./README.zh.md)
+[English](./README.md) | 中文
+
+**已支持**
+- ES3(>=IE6)
 
 **使用方法:**
 ```js
@@ -146,12 +149,12 @@ IJ2TPL.setFilterMap({
 
 **复杂的Section(嵌套)**
 ```html
-	{?valid}
-		{-}你的得分：
-		{?scores}
-			{-}得分：{.}
-		{/scores}
-	{/valid}
+{?valid}
+	{-}你的得分：
+	{?scores}
+		{-}得分：{.}
+	{/scores}
+{/valid}
 ```
 
 **关于调试**
