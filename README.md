@@ -56,6 +56,7 @@ Hello {#name}
 {*valid}
 	Oops, something's wrong?
 {/valid}
+```
 
 **Function type(Lambda)**
 ```js
