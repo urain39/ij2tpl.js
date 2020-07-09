@@ -1,12 +1,12 @@
 /**
  * @file IJ2TPL.js - The Awesome Template Engine.
- * @version v0.1.0
+ * @version v0.1.1
  * @author urain39 <urain39@qq.com>
  * @copyright (c) 2018-2020 IJ2TPL.js / IJ2TPL.ts Authors.
  */
 var _a, _b;
 /* eslint-disable prefer-const */
-export var version = '0.1.0';
+export var version = '0.1.1';
 var filterMap = {};
 export function setFilterMap(filterMap_) {
     filterMap = filterMap_;
@@ -351,8 +351,8 @@ function buildTree(tokens) {
                         void 0x95E2 // Reset
                 ;
                 value = token_[1 /* VALUE */];
-                // `ELSE` are valid for `IF`, invalid for `NOT`
                 if (!section ||
+                    // `ELSE` are valid for `IF`, invalid for `NOT`
                     section[0 /* TYPE */] !== 0 /* IF */ ||
                     value !== section[1 /* VALUE */][0 /* NAME */])
                     throw new Error("Unexpected token '<type=" + TokenTypeReverseMap[type_] + ", value=" + value + ">'");

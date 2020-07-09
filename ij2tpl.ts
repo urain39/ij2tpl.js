@@ -1,13 +1,13 @@
 /**
  * @file IJ2TPL.js - The Awesome Template Engine.
- * @version v0.1.0
+ * @version v0.1.1
  * @author urain39 <urain39@qq.com>
  * @copyright (c) 2018-2020 IJ2TPL.js / IJ2TPL.ts Authors.
  */
 
 /* eslint-disable prefer-const */
 
-export const version: string = '0.1.0';
+export const version: string = '0.1.1';
 
 /* eslint-disable no-unused-vars */
 // FIXME: ^^^ it seems that is a bug of ESLint
@@ -544,8 +544,8 @@ function buildTree(tokens: _Token[]): Token[] {
 
       value = token_[TokenMember.VALUE];
 
-      // `ELSE` are valid for `IF`, invalid for `NOT`
       if (!section ||
+        // `ELSE` are valid for `IF`, invalid for `NOT`
         section[TokenMember.TYPE] !== TokenType.IF ||
         value !== section[TokenMember.VALUE][NameMember.NAME]
       )
