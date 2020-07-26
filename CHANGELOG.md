@@ -5,6 +5,12 @@
 CHANGELOG
 ==========
 
+### v0.1.1(2020-07-26)
+- Fixed README.md
+- Optimized for-loops for ES3/ES5
+
+status: **PENDING**
+
 ### v0.1.0(2020-07-01)
 - Re-Supported If-Else Section
 - **Changed** `IJ2TPL.escapeHTML` -> `IJ2TPL.escape`

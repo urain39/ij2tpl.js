@@ -312,7 +312,9 @@ export class Context {
 
     // eslint-disable-next-line no-cond-assign
     if (filters = name[NameMember.FILTERS] as string[]) {
-      for (const filterName of filters) {
+      for (let i = 0, l = filters.length, filterName; i < l;) {
+        filterName = filters[i++];
+
         if (hasOwnProperty.call(filterMap, filterName))
           value = filterMap[filterName](value);
         else
@@ -347,7 +349,9 @@ export class Renderer {
       , buffer: string = ''
       , isArray_: boolean = false;
 
-    for (let token of treeRoot) {
+    for (let i = 0, l = treeRoot.length, token; i < l;) {
+      token = treeRoot[i++];
+
       switch (token[TokenMember.TYPE]) {
       case TokenType.IF:
         section = token as Section;
@@ -357,12 +361,15 @@ export class Renderer {
         // We can only know true or false after we sure it is array or not
         if (isArray_ ? value.length : value) {
           if (isArray_)
-            for (const value_ of value)
+            for (let i = 0, l = value.length, value_; i < l;) {
+              value_ = value[i++];
+
               buffer += this.renderTree(
                 section[TokenMember.BLOCK]
                 , new Context(value_, context)
                 , partialMap
               );
+            }
           else
             buffer += this.renderTree(
               section[TokenMember.BLOCK]
@@ -391,12 +398,15 @@ export class Renderer {
 
         if (isArray_ ? value.length : value) {
           if (isArray_)
-            for (const value_ of value)
+            for (let i = 0, l = value.length, value_; i < l;) {
+              value_ = value[i++];
+
               buffer += this.renderTree(
                 section[TokenMember.BLOCK]
                 , new Context(value_, context)
                 , partialMap
               );
+            }
           else
             buffer += this.renderTree(
               section[TokenMember.BLOCK]
@@ -516,7 +526,8 @@ function buildTree(tokens: _Token[]): Token[] {
 
   collector = treeRoot;
 
-  for (const token_ of tokens) {
+  for (let i = 0, l = tokens.length, token_; i < l;) {
+    token_ = tokens[i++];
     type_ = token_[TokenMember.TYPE];
 
     switch (type_) {
