@@ -623,7 +623,3 @@ export function parse(source: string, prefix: string = '{', suffix: string = '}'
 
   return new Renderer(treeRoot);
 }
-
-// Support for ES3(Optional)
-if (!Object.defineProperty)
-  Object.defineProperty = (): void => {};

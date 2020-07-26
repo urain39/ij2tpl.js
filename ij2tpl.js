@@ -406,6 +406,3 @@ export function parse(source, prefix, suffix) {
     var treeRoot = buildTree(tokenize(source, prefix, suffix));
     return new Renderer(treeRoot);
 }
-// Support for ES3(Optional)
-if (!Object.defineProperty)
-    Object.defineProperty = function () { };

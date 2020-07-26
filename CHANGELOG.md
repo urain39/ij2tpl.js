@@ -8,8 +8,9 @@ CHANGELOG
 ### v0.1.1(2020-07-26)
 - Fixed README.md
 - Optimized for-loops for ES3/ES5
+- Improved ES3 Support
 
-status: **PENDING**
+status: **RELEASED**
 
 ### v0.1.0(2020-07-01)
 - Re-Supported If-Else Section
@@ -19,7 +20,7 @@ status: **PENDING**
 - Optimized `IJ2TPL.tokenize` for comments
 - Supported filters and action names(based on filters)
 
-status: **RELEASED**
+status: **OUTDATED**
 
 ### v0.0.3(2020-05-20)
 - Supported function values

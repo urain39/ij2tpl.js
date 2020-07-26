@@ -7,7 +7,7 @@
   },
   "main": "./dist/ij2tpl.min.js",
   "scripts": {
-    "build": "node update.js && tsc && rollup ij2tpl.js -f umd -n IJ2TPL -o dist/ij2tpl.umd.js && uglifyjs dist/ij2tpl.umd.js -m -c properties,dead_code,conditionals,comparisons,evaluate,booleans,loops,unused,if_return,join_vars,collapse_vars,reduce_vars,negate_iife,expression,drop_console,passes=3 -o dist/ij2tpl.min.js",
+    "build": "node update.js && tsc && rollup ij2tpl.js -f umd -n IJ2TPL -o dist/ij2tpl.umd.js && node hacks/*.js && uglifyjs dist/ij2tpl.umd.js -m -c properties,dead_code,conditionals,comparisons,evaluate,booleans,loops,unused,if_return,join_vars,collapse_vars,reduce_vars,negate_iife,expression,drop_console,passes=3 -o dist/ij2tpl.min.js",
     "lint": "eslint --ext .ts . update.js",
     "test": "node test.js && node bin/ij2tpl.js _templates/CHANGELOG.md.ij2 _data/changes.json"
   },
