@@ -312,7 +312,7 @@ export class Context {
 
     // eslint-disable-next-line no-cond-assign
     if (filters = name[NameMember.FILTERS] as string[]) {
-      for (let i = 0, l = filters.length, filterName: string; i < l;) {
+      for (let i = 0, l = filters.length, filterName; i < l;) {
         filterName = filters[i++];
 
         if (hasOwnProperty.call(filterMap, filterName))
@@ -349,7 +349,7 @@ export class Renderer {
       , buffer: string = ''
       , isArray_: boolean = false;
 
-    for (let i = 0, l = treeRoot.length, token: Token; i < l;) {
+    for (let i = 0, l = treeRoot.length, token; i < l;) {
       token = treeRoot[i++];
 
       switch (token[TokenMember.TYPE]) {
@@ -361,7 +361,7 @@ export class Renderer {
         // We can only know true or false after we sure it is array or not
         if (isArray_ ? value.length : value) {
           if (isArray_)
-            for (let i = 0, l = value.length, value_: any; i < l;) {
+            for (let i = 0, l = value.length, value_; i < l;) {
               value_ = value[i++];
 
               buffer += this.renderTree(
@@ -398,7 +398,7 @@ export class Renderer {
 
         if (isArray_ ? value.length : value) {
           if (isArray_)
-            for (let i = 0, l = value.length, value_: any; i < l;) {
+            for (let i = 0, l = value.length, value_; i < l;) {
               value_ = value[i++];
 
               buffer += this.renderTree(
@@ -526,7 +526,7 @@ function buildTree(tokens: _Token[]): Token[] {
 
   collector = treeRoot;
 
-  for (let i = 0, l = tokens.length, token_: _Token; i < l;) {
+  for (let i = 0, l = tokens.length, token_; i < l;) {
     token_ = tokens[i++];
     type_ = token_[TokenMember.TYPE];
 
