@@ -20,7 +20,7 @@ status: **RELEASED**
 - Optimized `IJ2TPL.tokenize` for comments
 - Supported filters and action names(based on filters)
 
-status: **RELEASED**
+status: **OUTDATED**
 
 ### v0.0.3(2020-05-20)
 - Supported function values
