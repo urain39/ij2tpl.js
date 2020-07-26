@@ -314,6 +314,7 @@ export class Context {
     if (filters = name[NameMember.FILTERS] as string[]) {
       for (let i = 0, l = filters.length, filterName: string; i < l;) {
         filterName = filters[i++];
+
         if (hasOwnProperty.call(filterMap, filterName))
           value = filterMap[filterName](value);
         else
@@ -350,6 +351,7 @@ export class Renderer {
 
     for (let i = 0, l = treeRoot.length, token: Token; i < l;) {
       token = treeRoot[i++];
+
       switch (token[TokenMember.TYPE]) {
       case TokenType.IF:
         section = token as Section;
@@ -361,6 +363,7 @@ export class Renderer {
           if (isArray_)
             for (let i = 0, l = value.length, value_: any; i < l;) {
               value_ = value[i++];
+
               buffer += this.renderTree(
                 section[TokenMember.BLOCK]
                 , new Context(value_, context)
@@ -397,6 +400,7 @@ export class Renderer {
           if (isArray_)
             for (let i = 0, l = value.length, value_: any; i < l;) {
               value_ = value[i++];
+
               buffer += this.renderTree(
                 section[TokenMember.BLOCK]
                 , new Context(value_, context)
