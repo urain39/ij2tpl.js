@@ -2,10 +2,11 @@
 	{
 		"date": "2020-07-26",
 		"version": "v0.1.1",
-		"status": "PENDING",
+		"status": "RELEASED",
 		"changes": [
 			"Fixed README.md",
-			"Optimized for-loops for ES3/ES5"
+			"Optimized for-loops for ES3/ES5",
+			"Improved ES3 Support"
 		]
 	},
 	{
