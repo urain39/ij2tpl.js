@@ -185,8 +185,8 @@ var Context = /** @class */ (function () {
         }
         // eslint-disable-next-line no-cond-assign
         if (filters = name[2 /* FILTERS */]) {
-            for (var _i = 0, filters_1 = filters; _i < filters_1.length; _i++) {
-                var filterName = filters_1[_i];
+            for (var i = 0, l = filters.length, filterName = void 0; i < l;) {
+                filterName = filters[i++];
                 if (hasOwnProperty.call(filterMap, filterName))
                     value = filterMap[filterName](value);
                 else
@@ -211,8 +211,8 @@ var Renderer = /** @class */ (function () {
     }
     Renderer.prototype.renderTree = function (treeRoot, context, partialMap) {
         var value, section, buffer = '', isArray_ = false;
-        for (var _i = 0, treeRoot_1 = treeRoot; _i < treeRoot_1.length; _i++) {
-            var token = treeRoot_1[_i];
+        for (var i = 0, l = treeRoot.length, token = void 0; i < l;) {
+            token = treeRoot[i++];
             switch (token[0 /* TYPE */]) {
                 case 0 /* IF */:
                     section = token;
@@ -221,8 +221,8 @@ var Renderer = /** @class */ (function () {
                     // We can only know true or false after we sure it is array or not
                     if (isArray_ ? value.length : value) {
                         if (isArray_)
-                            for (var _a = 0, value_1 = value; _a < value_1.length; _a++) {
-                                var value_ = value_1[_a];
+                            for (var i_1 = 0, l_1 = value.length, value_ = void 0; i_1 < l_1;) {
+                                value_ = value[i_1++];
                                 buffer += this.renderTree(section[2 /* BLOCK */], new Context(value_, context), partialMap);
                             }
                         else
@@ -243,8 +243,8 @@ var Renderer = /** @class */ (function () {
                     isArray_ = isArray(value);
                     if (isArray_ ? value.length : value) {
                         if (isArray_)
-                            for (var _b = 0, value_2 = value; _b < value_2.length; _b++) {
-                                var value_ = value_2[_b];
+                            for (var i_2 = 0, l_2 = value.length, value_ = void 0; i_2 < l_2;) {
+                                value_ = value[i_2++];
                                 buffer += this.renderTree(section[2 /* BLOCK */], new Context(value_, context), partialMap);
                             }
                         else
@@ -327,8 +327,8 @@ var processToken = function (token_) {
 function buildTree(tokens) {
     var type_, value, token, collector, elseBlock, section, sections = [], treeRoot = [];
     collector = treeRoot;
-    for (var _i = 0, tokens_1 = tokens; _i < tokens_1.length; _i++) {
-        var token_ = tokens_1[_i];
+    for (var i = 0, l = tokens.length, token_ = void 0; i < l;) {
+        token_ = tokens[i++];
         type_ = token_[0 /* TYPE */];
         switch (type_) {
             // Enter a section
