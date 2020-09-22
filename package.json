@@ -34,7 +34,7 @@
     "@typescript-eslint/parser": "^3.10.1",
     "eslint": "^7.8.1",
     "rollup": "^2.26.11",
-    "typescript": "^3.9.7",
+    "typescript": "^4.0.3",
     "uglify-js": "^3.10.4"
   }
 }
