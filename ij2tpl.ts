@@ -345,6 +345,7 @@ export class Renderer {
 
   public renderTree(treeRoot: Token[], context: Context, partialMap?: IMap<Renderer>): string {
     let value: any
+      , valueLength: number
       , section: Section
       , buffer: string = ''
       , isArray_: boolean = false;
@@ -359,9 +360,11 @@ export class Renderer {
         isArray_ = isArray(value);
 
         // We can only know true or false after we sure it is array or not
-        if (isArray_ ? value.length : value) {
+        if (isArray_ ? valueLength = value.length : value) {
           if (isArray_)
-            for (let i = 0, l = value.length, value_; i < l;) {
+            // XXX: It's dangerous!
+            // @ts-ignore
+            for (let i = 0, l = valueLength, value_; i < l;) {
               value_ = value[i++];
 
               buffer += this.renderTree(
@@ -396,9 +399,11 @@ export class Renderer {
         value = context.resolve(section[TokenMember.VALUE]);
         isArray_ = isArray(value);
 
-        if (isArray_ ? value.length : value) {
+        if (isArray_ ? valueLength = value.length : value) {
           if (isArray_)
-            for (let i = 0, l = value.length, value_; i < l;) {
+            // XXX: It's dangerous!
+            // @ts-ignore
+            for (let i = 0, l = valueLength, value_; i < l;) {
               value_ = value[i++];
 
               buffer += this.renderTree(
@@ -522,6 +527,7 @@ function buildTree(tokens: _Token[]): Token[] {
     , elseBlock: Token[]
     , section: Section | undefined
     , sections: Section[] = []
+    , sectionsLength: number
     , treeRoot: Token[] = [];
 
   collector = treeRoot;
@@ -547,8 +553,8 @@ function buildTree(tokens: _Token[]): Token[] {
     // Switch to section's else-block
     case TokenType.ELSE:
       // Get entered section
-      section = sections.length ?
-        sections[sections.length - 1]
+      section = (sectionsLength = sections.length) ?
+        sections[sectionsLength - 1]
         :
         void 0x95E2 // Reset
       ;
@@ -580,9 +586,9 @@ function buildTree(tokens: _Token[]): Token[] {
         section[TokenMember.TYPE] = TokenType.ELSE;
 
       // Re-bind block to parent block
-      collector = sections.length ?
+      collector = (sectionsLength = sections.length) ?
         // Is parent section has initialized else-block?
-        (section = sections[sections.length - 1]
+        (section = sections[sectionsLength - 1]
         , elseBlock = section[TokenMember.ELSE_BLOCK] as Token[]
         ) ?
           // Yes, then parent block is else-block

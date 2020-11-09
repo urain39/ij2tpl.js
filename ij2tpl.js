@@ -210,7 +210,7 @@ var Renderer = /** @class */ (function () {
         this.treeRoot = treeRoot;
     }
     Renderer.prototype.renderTree = function (treeRoot, context, partialMap) {
-        var value, section, buffer = '', isArray_ = false;
+        var value, valueLength, section, buffer = '', isArray_ = false;
         for (var i = 0, l = treeRoot.length, token = void 0; i < l;) {
             token = treeRoot[i++];
             switch (token[0 /* TYPE */]) {
@@ -219,9 +219,11 @@ var Renderer = /** @class */ (function () {
                     value = context.resolve(section[1 /* VALUE */]);
                     isArray_ = isArray(value);
                     // We can only know true or false after we sure it is array or not
-                    if (isArray_ ? value.length : value) {
+                    if (isArray_ ? valueLength = value.length : value) {
                         if (isArray_)
-                            for (var i_1 = 0, l_1 = value.length, value_ = void 0; i_1 < l_1;) {
+                            // XXX: It's dangerous!
+                            // @ts-ignore
+                            for (var i_1 = 0, l_1 = valueLength, value_ = void 0; i_1 < l_1;) {
                                 value_ = value[i_1++];
                                 buffer += this.renderTree(section[2 /* BLOCK */], new Context(value_, context), partialMap);
                             }
@@ -241,9 +243,11 @@ var Renderer = /** @class */ (function () {
                     section = token;
                     value = context.resolve(section[1 /* VALUE */]);
                     isArray_ = isArray(value);
-                    if (isArray_ ? value.length : value) {
+                    if (isArray_ ? valueLength = value.length : value) {
                         if (isArray_)
-                            for (var i_2 = 0, l_2 = value.length, value_ = void 0; i_2 < l_2;) {
+                            // XXX: It's dangerous!
+                            // @ts-ignore
+                            for (var i_2 = 0, l_2 = valueLength, value_ = void 0; i_2 < l_2;) {
                                 value_ = value[i_2++];
                                 buffer += this.renderTree(section[2 /* BLOCK */], new Context(value_, context), partialMap);
                             }
@@ -325,7 +329,7 @@ var processToken = function (token_) {
     return token;
 };
 function buildTree(tokens) {
-    var type_, value, token, collector, elseBlock, section, sections = [], treeRoot = [];
+    var type_, value, token, collector, elseBlock, section, sections = [], sectionsLength, treeRoot = [];
     collector = treeRoot;
     for (var i = 0, l = tokens.length, token_ = void 0; i < l;) {
         token_ = tokens[i++];
@@ -345,8 +349,8 @@ function buildTree(tokens) {
             // Switch to section's else-block
             case 2 /* ELSE */:
                 // Get entered section
-                section = sections.length ?
-                    sections[sections.length - 1]
+                section = (sectionsLength = sections.length) ?
+                    sections[sectionsLength - 1]
                     :
                         void 0x95E2 // Reset
                 ;
@@ -370,9 +374,9 @@ function buildTree(tokens) {
                 if (section[3 /* ELSE_BLOCK */])
                     section[0 /* TYPE */] = 2 /* ELSE */;
                 // Re-bind block to parent block
-                collector = sections.length ?
+                collector = (sectionsLength = sections.length) ?
                     // Is parent section has initialized else-block?
-                    (section = sections[sections.length - 1]
+                    (section = sections[sectionsLength - 1]
                         , elseBlock = section[3 /* ELSE_BLOCK */]) ?
                         // Yes, then parent block is else-block
                         elseBlock
