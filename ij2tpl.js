@@ -1,5 +1,5 @@
 /**
- * @file IJ2TPL.js - The Awesome Template Engine.
+ * @file IJ2TPL.js - A Lightweight Template Engine.
  * @version v0.1.1
  * @author urain39 <urain39@qq.com>
  * @copyright (c) 2018-2020 IJ2TPL.js / IJ2TPL.ts Authors.
@@ -45,7 +45,7 @@ export function tokenize(source, prefix, suffix) {
         // Match '{'
         j = source.indexOf(prefix, i);
         // Not found the '{'
-        if (!~j /* j === -1 */) {
+        if (j === -1) {
             // Eat the rest of the source
             value = source.slice(i);
             // Don't save the empty text ''
@@ -61,7 +61,7 @@ export function tokenize(source, prefix, suffix) {
         // Match the '}'
         i = source.indexOf(suffix, j);
         // Not found the '}'
-        if (!~i /* i === -1 */)
+        if (i === -1)
             throw new Error("No matching prefix '" + prefix + "'");
         // We don't want to call `source.slice` for comments
         if (source[j] === "-" /* COMMENT */) {
@@ -309,7 +309,7 @@ var processToken = function (token_) {
     isAction = false;
     name = token_[1 /* VALUE */];
     // Name can be empty, see `actionNames`
-    if (~name.indexOf('|') /* name.indexOf('|') !== -1 */) {
+    if (name.indexOf('|') !== -1) {
         filters = name.split('|');
         name = filters[0];
         filters = filters.slice(1);

@@ -10,7 +10,7 @@ export class IJ2BaseLoader {
     this.basePath = basePath;
   }
 
-  public isValidfileName(fileName: string): boolean {
+  public isValidFileName(fileName: string): boolean {
     return !!~fileName.split('.').slice(-2).indexOf('ij2');
   }
 
@@ -18,7 +18,7 @@ export class IJ2BaseLoader {
     if (!path.isAbsolute(path_))
       path_ = path.resolve(path.join(this.basePath, path_));
 
-    if (!this.isValidfileName(path_))
+    if (!this.isValidFileName(path_))
       throw new IJ2BaseLoaderError(`Invalid fileName '${path_}'!`);
 
     const source: string = fs.readFileSync(path_, 'utf-8');
