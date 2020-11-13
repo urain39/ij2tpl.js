@@ -22,7 +22,7 @@ var TokenTypeMap = (_a = {},
     _a);
 // We strip all white spaces to make check section easy(for `buildTree`)
 var WhiteSpaceRe = /[\s\xA0\uFEFF]+/g, stripWhiteSpace = function (string_) { return string_.replace(WhiteSpaceRe, ''); }
-// NOTE: if we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
+// NOTE: If we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
 //     will always generate a new string. So we need test it before replace it ;)
 , IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/, IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/, stripIndentation = function (token, tokens) {
     var value;
@@ -238,7 +238,7 @@ var Renderer = /** @class */ (function () {
                     if (!(isArray_ ? value.length : value))
                         buffer += this.renderTree(section[2 /* BLOCK */], context, partialMap);
                     break;
-                // FIXME: it may be slower than If-Section + Not-Section(about 1 ops/sec)
+                // FIXME: It may be slower than If-Section + Not-Section(about 1 ops/sec)
                 case 2 /* ELSE */:
                     section = token;
                     value = context.resolve(section[1 /* VALUE */]);
@@ -324,7 +324,7 @@ var processToken = function (token_) {
     // One '.' means current data
     if (name.indexOf('.') > 0)
         names = name.split('.');
-    // NOTE: filters are just additional part of Token
+    // NOTE: Filters are just additional part of Token
     token = [token_[0 /* TYPE */], [name, names, filters, isAction]];
     return token;
 };
@@ -349,6 +349,7 @@ function buildTree(tokens) {
             // Switch to section's else-block
             case 2 /* ELSE */:
                 // Get entered section
+                // eslint-disable-next-line no-cond-assign
                 section = (sectionsLength = sections.length) ?
                     sections[sectionsLength - 1]
                     :
@@ -374,6 +375,7 @@ function buildTree(tokens) {
                 if (section[3 /* ELSE_BLOCK */])
                     section[0 /* TYPE */] = 2 /* ELSE */;
                 // Re-bind block to parent block
+                // eslint-disable-next-line no-cond-assign
                 collector = (sectionsLength = sections.length) ?
                     // Is parent section has initialized else-block?
                     (section = sections[sectionsLength - 1]
