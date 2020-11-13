@@ -10,7 +10,7 @@
 export const version: string = '0.1.1';
 
 /* eslint-disable no-unused-vars */
-// FIXME: ^^^ it seems that is a bug of ESLint
+// FIXME: ^^^ It seems that is a bug of ESLint
 
 const enum TokenString {
   IF =	'?'
@@ -74,6 +74,8 @@ export type Token = _Token | Section | Text | Formatter | Partial;
 // See TS1023, an index type must be `string` or `number`
 interface IMap< /* K, */ V> { [key: string]: V; [index: number]: V; }
 
+// FIXME: It's also a bug of ESLint
+// eslint-disable-next-line no-unused-vars
 export type Filter = (value: any) => any;
 
 let filterMap: IMap<Filter> = {};
@@ -95,7 +97,7 @@ const TokenTypeMap: IMap<TokenType> = {
 // We strip all white spaces to make check section easy(for `buildTree`)
 const WhiteSpaceRe = /[\s\xA0\uFEFF]+/g
   , stripWhiteSpace = (string_: string): string => string_.replace(WhiteSpaceRe, '')
-  // NOTE: if we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
+  // NOTE: If we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
   //     will always generate a new string. So we need test it before replace it ;)
   , IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/
   , IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/
@@ -393,7 +395,7 @@ export class Renderer {
             , partialMap
           );
         break;
-      // FIXME: it may be slower than If-Section + Not-Section(about 1 ops/sec)
+      // FIXME: It may be slower than If-Section + Not-Section(about 1 ops/sec)
       case TokenType.ELSE:
         section = token as Section;
         value = context.resolve(section[TokenMember.VALUE]);
@@ -513,7 +515,7 @@ const processToken = (token_: _Token): Section | Formatter => {
   if (name.indexOf('.') > 0)
     names = name.split('.');
 
-  // NOTE: filters are just additional part of Token
+  // NOTE: Filters are just additional part of Token
   token = [token_[TokenMember.TYPE], [name, names, filters, isAction]];
 
   return token;
@@ -553,6 +555,7 @@ function buildTree(tokens: _Token[]): Token[] {
     // Switch to section's else-block
     case TokenType.ELSE:
       // Get entered section
+      // eslint-disable-next-line no-cond-assign
       section = (sectionsLength = sections.length) ?
         sections[sectionsLength - 1]
         :
@@ -586,6 +589,7 @@ function buildTree(tokens: _Token[]): Token[] {
         section[TokenMember.TYPE] = TokenType.ELSE;
 
       // Re-bind block to parent block
+      // eslint-disable-next-line no-cond-assign
       collector = (sectionsLength = sections.length) ?
         // Is parent section has initialized else-block?
         (section = sections[sectionsLength - 1]
