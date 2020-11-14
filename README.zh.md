@@ -119,7 +119,7 @@ let renderer = IJ2TPL.parse(source),
 renderer.render(data, partialMap);
 ```
 
-**过滤器 与 动词(Action names)(v0.1.0 已添加)**
+**过滤器 与 动作(Actions)(v0.1.0 已添加)**
 ```html
 Hello { name | no-f-word }
 ```
@@ -132,7 +132,7 @@ IJ2TPL.setFilterMap({
 });
 ```
 
-*动词* 与 过滤器 是一样的, 但是其并不会查找字段(因为“没名字”)
+*动作* 与 过滤器 是一样的, 但是其并不会查找字段(因为“没名字”)
 ```html
 {- 简单的例子 -}
 {| report}
@@ -140,12 +140,12 @@ IJ2TPL.setFilterMap({
 
 或者：
 ```html
-{do | refresh}
+{| refresh}
 ```
 
-**`Function type`与`Action names`的不同点**
+**`Function type`与`Actions`的不同点**
 
-`Function type`每次都会查找字段(name), 但是`Action name`不会。
+`Function type`每次都会查找字段(name), 但是`Action`不会。
 
 **复杂的Section(嵌套)**
 ```html

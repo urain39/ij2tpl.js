@@ -210,7 +210,9 @@ var Renderer = /** @class */ (function () {
         this.treeRoot = treeRoot;
     }
     Renderer.prototype.renderTree = function (treeRoot, context, partialMap) {
-        var value, valueLength, section, buffer = '', isArray_ = false;
+        var value
+        // See https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-7.html#definite-assignment-assertions
+        , valueLength, section, buffer = '', isArray_ = false;
         for (var i = 0, l = treeRoot.length, token = void 0; i < l;) {
             token = treeRoot[i++];
             switch (token[0 /* TYPE */]) {
@@ -221,8 +223,6 @@ var Renderer = /** @class */ (function () {
                     // We can only know true or false after we sure it is array or not
                     if (isArray_ ? valueLength = value.length : value) {
                         if (isArray_)
-                            // XXX: It's dangerous!
-                            // @ts-ignore
                             for (var i_1 = 0, l_1 = valueLength, value_ = void 0; i_1 < l_1;) {
                                 value_ = value[i_1++];
                                 buffer += this.renderTree(section[2 /* BLOCK */], new Context(value_, context), partialMap);
@@ -245,8 +245,6 @@ var Renderer = /** @class */ (function () {
                     isArray_ = isArray(value);
                     if (isArray_ ? valueLength = value.length : value) {
                         if (isArray_)
-                            // XXX: It's dangerous!
-                            // @ts-ignore
                             for (var i_2 = 0, l_2 = valueLength, value_ = void 0; i_2 < l_2;) {
                                 value_ = value[i_2++];
                                 buffer += this.renderTree(section[2 /* BLOCK */], new Context(value_, context), partialMap);
@@ -304,8 +302,6 @@ var TokenTypeReverseMap = (_b = {},
     _b[2 /* ELSE */] = "*" /* ELSE */,
     _b[3 /* END */] = "/" /* END */,
     _b);
-// Action name means we just want run filters :)
-var actionNames = { '': true, 'do': true };
 var processToken = function (token_) {
     var name, names, filters, isAction, token;
     names = null;
@@ -317,8 +313,7 @@ var processToken = function (token_) {
         filters = name.split('|');
         name = filters[0];
         filters = filters.slice(1);
-        // Action name is a variant of name + filters
-        if (actionNames[name])
+        if (!name)
             isAction = true;
     }
     // One '.' means current data

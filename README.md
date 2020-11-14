@@ -119,7 +119,7 @@ let renderer = IJ2TPL.parse(source),
 renderer.render(data, partialMap);
 ```
 
-**Filters and Action names(v0.1.0 added)**
+**Filters and Actions(v0.1.0 added)**
 ```html
 Hello { name | no-f-word }
 ```
@@ -132,20 +132,15 @@ IJ2TPL.setFilterMap({
 });
 ```
 
-*Action name* same as filters, but it has no name to look up!
+*Actions* same as filters, but it has no name to look up!
 ```html
 {- Simply -}
 {| report}
 ```
 
-Or:
-```html
-{do | refresh}
-```
+**Differences between `Function type` and `Actions`**
 
-**Differences between `Function type` and `Action names`**
-
-The `Function type` will always cache look up results, but `Action name` not.
+The `Function type` will always cache look up results, but `Action` not.
 
 **Complex Section(Nested)**
 ```html
