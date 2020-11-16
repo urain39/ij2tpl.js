@@ -347,7 +347,8 @@ export class Renderer {
 
   public renderTree(treeRoot: Token[], context: Context, partialMap?: IMap<Renderer>): string {
     let value: any
-      , valueLength: number
+      // See https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-7.html#definite-assignment-assertions
+      , valueLength!: number
       , section: Section
       , buffer: string = ''
       , isArray_: boolean = false;
@@ -364,8 +365,6 @@ export class Renderer {
         // We can only know true or false after we sure it is array or not
         if (isArray_ ? valueLength = value.length : value) {
           if (isArray_)
-            // XXX: It's dangerous!
-            // @ts-ignore
             for (let i = 0, l = valueLength, value_; i < l;) {
               value_ = value[i++];
 
@@ -403,8 +402,6 @@ export class Renderer {
 
         if (isArray_ ? valueLength = value.length : value) {
           if (isArray_)
-            // XXX: It's dangerous!
-            // @ts-ignore
             for (let i = 0, l = valueLength, value_; i < l;) {
               value_ = value[i++];
 
@@ -483,9 +480,6 @@ const TokenTypeReverseMap: IMap<TokenString> = {
   , [TokenType.END]:	TokenString.END
 };
 
-// Action name means we just want run filters :)
-let actionNames: IMap<boolean> = {'': true, 'do': true};
-
 const processToken = (token_: _Token): Section | Formatter => {
   let name: string
     , names: string[] | null
@@ -506,8 +500,7 @@ const processToken = (token_: _Token): Section | Formatter => {
     name = filters[0];
     filters = filters.slice(1);
 
-    // Action name is a variant of name + filters
-    if (actionNames[name])
+    if (!name)
       isAction = true;
   }
 
