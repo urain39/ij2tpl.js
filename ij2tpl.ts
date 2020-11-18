@@ -236,7 +236,12 @@ const hasOwnProperty = {}.hasOwnProperty
     htmlSpecialRe, (special: string): string => htmlSpecialEntityMap[special]
   );
 
-export let escape = escapeHTML; // Escape for HTML by default
+export let escape = escapeHTML // Escape for HTML by default
+  , escapeOptimize = true; // Flag to enable/disable escape number optimization
+
+export function setEscapeFunction(escape_: (value: any) => string): void {
+  escape = escape_;
+}
 
 export class Context {
   public data: IMap<any>;
@@ -362,7 +367,7 @@ export class Renderer {
         value = context.resolve(section[TokenMember.VALUE]);
         isArray_ = isArray(value);
 
-        // We can only know true or false after we sure it is array or not
+        // NOTE: Empty array is falsely
         if (isArray_ ? valueLength = value.length : value) {
           if (isArray_)
             for (let i = 0, l = valueLength, value_; i < l;) {
@@ -445,10 +450,10 @@ export class Renderer {
         value = context.resolve(token[TokenMember.VALUE]);
 
         if (value != null)
-          buffer += typeof value === 'number' ?
+          buffer += escapeOptimize && typeof value === 'number' ?
             value // Numbers are absolutely safe
             :
-            escapeHTML(value)
+            escape(value)
           ;
         break;
       case TokenType.PARTIAL:

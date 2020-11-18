@@ -128,7 +128,11 @@ var hasOwnProperty = {}.hasOwnProperty
     '>': '&gt;',
     '`': '&#x60;'
 }, escapeHTML = function (value) { return String(value).replace(htmlSpecialRe, function (special) { return htmlSpecialEntityMap[special]; }); };
-export var escape = escapeHTML; // Escape for HTML by default
+export var escape = escapeHTML // Escape for HTML by default
+, escapeOptimize = true; // Flag to enable/disable escape number optimization
+export function setEscapeFunction(escape_) {
+    escape = escape_;
+}
 var Context = /** @class */ (function () {
     function Context(data, parent) {
         this.data = data;
@@ -220,7 +224,7 @@ var Renderer = /** @class */ (function () {
                     section = token;
                     value = context.resolve(section[1 /* VALUE */]);
                     isArray_ = isArray(value);
-                    // We can only know true or false after we sure it is array or not
+                    // NOTE: Empty array is falsely
                     if (isArray_ ? valueLength = value.length : value) {
                         if (isArray_)
                             for (var i_1 = 0, l_1 = valueLength, value_ = void 0; i_1 < l_1;) {
@@ -273,10 +277,10 @@ var Renderer = /** @class */ (function () {
                     token = token;
                     value = context.resolve(token[1 /* VALUE */]);
                     if (value != null)
-                        buffer += typeof value === 'number' ?
+                        buffer += escapeOptimize && typeof value === 'number' ?
                             value // Numbers are absolutely safe
                             :
-                                escapeHTML(value);
+                                escape(value);
                     break;
                 case 8 /* PARTIAL */:
                     token = token;
