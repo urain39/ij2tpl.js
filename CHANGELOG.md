@@ -5,6 +5,13 @@
 CHANGELOG
 ==========
 
+### v0.1.2(2020-11-21)
+- **Removed** `IJ2TPL.escape`
+- Fixed cannot override escape(via `IJ2TPL.setEscapeFunction`)
+- Added `IJ2TPL.setOptimize`
+
+status: **TESTING**
+
 ### v0.1.1(2020-07-26)
 - Fixed README.md
 - Optimized for-loops for ES3/ES5

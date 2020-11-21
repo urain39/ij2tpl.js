@@ -7,7 +7,7 @@
 
 /* eslint-disable prefer-const */
 
-export const version: string = '0.1.1';
+export const version: string = '0.1.2';
 
 /* eslint-disable no-unused-vars */
 // FIXME: ^^^ It seems that is a bug of ESLint
@@ -356,7 +356,6 @@ export class Renderer {
 
   public renderTree(treeRoot: Token[], context: Context, partialMap?: IMap<Renderer>): string {
     let value: any
-      // See https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-7.html#definite-assignment-assertions
       , valueLength!: number
       , section: Section
       , buffer: string = ''
@@ -455,7 +454,7 @@ export class Renderer {
 
         if (value != null)
           buffer += optimize && typeof value === 'number' ?
-            value // Numbers are absolutely safe
+            value // Numbers are absolutely safe(sometimes)
             :
             escape(value)
           ;

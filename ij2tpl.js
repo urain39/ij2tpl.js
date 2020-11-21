@@ -6,7 +6,7 @@
  */
 var _a, _b;
 /* eslint-disable prefer-const */
-export var version = '0.1.1';
+export var version = '0.1.2';
 var filterMap = {};
 export function setFilterMap(filterMap_) {
     filterMap = filterMap_;
@@ -217,9 +217,7 @@ var Renderer = /** @class */ (function () {
         this.treeRoot = treeRoot;
     }
     Renderer.prototype.renderTree = function (treeRoot, context, partialMap) {
-        var value
-        // See https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-7.html#definite-assignment-assertions
-        , valueLength, section, buffer = '', isArray_ = false;
+        var value, valueLength, section, buffer = '', isArray_ = false;
         for (var i = 0, l = treeRoot.length, token = void 0; i < l;) {
             token = treeRoot[i++];
             switch (token[0 /* TYPE */]) {
@@ -281,7 +279,7 @@ var Renderer = /** @class */ (function () {
                     value = context.resolve(token[1 /* VALUE */]);
                     if (value != null)
                         buffer += optimize && typeof value === 'number' ?
-                            value // Numbers are absolutely safe
+                            value // Numbers are absolutely safe(sometimes)
                             :
                                 escape(value);
                     break;
