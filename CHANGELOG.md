@@ -7,7 +7,6 @@ CHANGELOG
 
 ### v0.1.2(2020-11-21)
 - Fixed cannot override escape(via `IJ2TPL.setEscapeFunction`)
-- Added `IJ2TPL.setOptimize`
 
 status: **TESTING**
 

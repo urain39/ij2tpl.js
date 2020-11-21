@@ -128,16 +128,12 @@ var hasOwnProperty = {}.hasOwnProperty
     '>': '&gt;',
     '`': '&#x60;'
 }, escapeHTML = function (value) { return String(value).replace(htmlSpecialRe, function (special) { return htmlSpecialEntityMap[special]; }); };
-var optimize = true // Flag to enable / disable optimization
-, escapeFunction = escapeHTML; // Escape for HTML by default
+var escapeFunction = escapeHTML; // Escape for HTML by default
 export function escape(value) {
     return escapeFunction(value);
 }
 export function setEscapeFunction(escapeFunction_) {
     escapeFunction = escapeFunction_;
-}
-export function setOptimize(optimize_) {
-    optimize = optimize_;
 }
 var Context = /** @class */ (function () {
     function Context(data, parent) {
@@ -281,7 +277,7 @@ var Renderer = /** @class */ (function () {
                     token = token;
                     value = context.resolve(token[1 /* VALUE */]);
                     if (value != null)
-                        buffer += optimize && typeof value === 'number' ?
+                        buffer += escapeFunction === escapeHTML && typeof value === 'number' ?
                             value // Numbers are absolutely safe(sometimes)
                             :
                                 escapeFunction(value);
