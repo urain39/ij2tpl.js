@@ -236,7 +236,16 @@ const hasOwnProperty = {}.hasOwnProperty
     htmlSpecialRe, (special: string): string => htmlSpecialEntityMap[special]
   );
 
-export let escape = escapeHTML; // Escape for HTML by default
+let escape = escapeHTML // Escape for HTML by default
+  , optimize = true; // Flag to enable / disable optimization
+
+export function setEscapeFunction(escapeFunction: (value: any) => string): void {
+  escape = escapeFunction;
+}
+
+export function setOptimize(optimize_: boolean): void {
+  optimize = optimize_;
+}
 
 export class Context {
   public data: IMap<any>;
@@ -445,10 +454,10 @@ export class Renderer {
         value = context.resolve(token[TokenMember.VALUE]);
 
         if (value != null)
-          buffer += typeof value === 'number' ?
+          buffer += optimize && typeof value === 'number' ?
             value // Numbers are absolutely safe
             :
-            escapeHTML(value)
+            escape(value)
           ;
         break;
       case TokenType.PARTIAL:
