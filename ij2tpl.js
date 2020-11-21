@@ -128,10 +128,13 @@ var hasOwnProperty = {}.hasOwnProperty
     '>': '&gt;',
     '`': '&#x60;'
 }, escapeHTML = function (value) { return String(value).replace(htmlSpecialRe, function (special) { return htmlSpecialEntityMap[special]; }); };
-var escape = escapeHTML // Escape for HTML by default
-, optimize = true; // Flag to enable / disable optimization
-export function setEscapeFunction(escapeFunction) {
-    escape = escapeFunction;
+var optimize = true // Flag to enable / disable optimization
+, escapeFunction = escapeHTML; // Escape for HTML by default
+export function escape(value) {
+    return escapeFunction(value);
+}
+export function setEscapeFunction(escapeFunction_) {
+    escapeFunction = escapeFunction_;
 }
 export function setOptimize(optimize_) {
     optimize = optimize_;
@@ -281,7 +284,7 @@ var Renderer = /** @class */ (function () {
                         buffer += optimize && typeof value === 'number' ?
                             value // Numbers are absolutely safe(sometimes)
                             :
-                                escape(value);
+                                escapeFunction(value);
                     break;
                 case 8 /* PARTIAL */:
                     token = token;

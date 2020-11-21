@@ -236,11 +236,15 @@ const hasOwnProperty = {}.hasOwnProperty
     htmlSpecialRe, (special: string): string => htmlSpecialEntityMap[special]
   );
 
-let escape = escapeHTML // Escape for HTML by default
-  , optimize = true; // Flag to enable / disable optimization
+let optimize = true // Flag to enable / disable optimization
+  , escapeFunction = escapeHTML; // Escape for HTML by default
 
-export function setEscapeFunction(escapeFunction: (value: any) => string): void {
-  escape = escapeFunction;
+export function escape(value: any): string {
+  return escapeFunction(value);
+}
+
+export function setEscapeFunction(escapeFunction_: (value: any) => string): void {
+  escapeFunction = escapeFunction_;
 }
 
 export function setOptimize(optimize_: boolean): void {
@@ -456,7 +460,7 @@ export class Renderer {
           buffer += optimize && typeof value === 'number' ?
             value // Numbers are absolutely safe(sometimes)
             :
-            escape(value)
+            escapeFunction(value)
           ;
         break;
       case TokenType.PARTIAL:
