@@ -7,7 +7,7 @@
 
 /* eslint-disable prefer-const */
 
-export const version: string = '0.1.1';
+export const version: string = '0.1.2';
 
 /* eslint-disable no-unused-vars */
 // FIXME: ^^^ It seems that is a bug of ESLint
@@ -236,7 +236,16 @@ const hasOwnProperty = {}.hasOwnProperty
     htmlSpecialRe, (special: string): string => htmlSpecialEntityMap[special]
   );
 
-export let escape = escapeHTML; // Escape for HTML by default
+let escape = escapeHTML // Escape for HTML by default
+  , optimize = true; // Flag to enable / disable optimization
+
+export function setEscapeFunction(escapeFunction: (value: any) => string): void {
+  escape = escapeFunction;
+}
+
+export function setOptimize(optimize_: boolean): void {
+  optimize = optimize_;
+}
 
 export class Context {
   public data: IMap<any>;
@@ -347,7 +356,6 @@ export class Renderer {
 
   public renderTree(treeRoot: Token[], context: Context, partialMap?: IMap<Renderer>): string {
     let value: any
-      // See https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-7.html#definite-assignment-assertions
       , valueLength!: number
       , section: Section
       , buffer: string = ''
@@ -445,10 +453,10 @@ export class Renderer {
         value = context.resolve(token[TokenMember.VALUE]);
 
         if (value != null)
-          buffer += typeof value === 'number' ?
-            value // Numbers are absolutely safe
+          buffer += optimize && typeof value === 'number' ?
+            value // Numbers are absolutely safe(sometimes)
             :
-            escapeHTML(value)
+            escape(value)
           ;
         break;
       case TokenType.PARTIAL:

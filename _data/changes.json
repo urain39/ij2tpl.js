@@ -1,5 +1,16 @@
 [
 	{
+		"date": "2020-11-21",
+		"version": "v0.1.2",
+		"status": "TESTING",
+		"changes": [
+			"**Removed** `IJ2TPL.escape`",
+			"Fixed cannot override escape(via `IJ2TPL.setEscapeFunction`)",
+			"Added `IJ2TPL.setOptimize`"
+
+		]
+	},
+	{
 		"date": "2020-07-26",
 		"version": "v0.1.1",
 		"status": "RELEASED",
