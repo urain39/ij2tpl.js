@@ -4,10 +4,7 @@
 		"version": "v0.1.2",
 		"status": "TESTING",
 		"changes": [
-			"**Removed** `IJ2TPL.escape`",
-			"Fixed cannot override escape(via `IJ2TPL.setEscapeFunction`)",
-			"Added `IJ2TPL.setOptimize`"
-
+			"Fixed cannot override escape(via `IJ2TPL.setEscapeFunction`)"
 		]
 	},
 	{

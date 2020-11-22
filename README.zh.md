@@ -138,11 +138,6 @@ IJ2TPL.setFilterMap({
 {| report}
 ```
 
-或者：
-```html
-{| refresh}
-```
-
 **`Function type`与`Actions`的不同点**
 
 `Function type`每次都会查找字段(name), 但是`Action`不会。

@@ -236,15 +236,14 @@ const hasOwnProperty = {}.hasOwnProperty
     htmlSpecialRe, (special: string): string => htmlSpecialEntityMap[special]
   );
 
-let escape = escapeHTML // Escape for HTML by default
-  , optimize = true; // Flag to enable / disable optimization
+let escapeFunction = escapeHTML; // Escape for HTML by default
 
-export function setEscapeFunction(escapeFunction: (value: any) => string): void {
-  escape = escapeFunction;
+export function escape(value: any): string {
+  return escapeFunction(value);
 }
 
-export function setOptimize(optimize_: boolean): void {
-  optimize = optimize_;
+export function setEscapeFunction(escapeFunction_: (value: any) => string): void {
+  escapeFunction = escapeFunction_;
 }
 
 export class Context {
@@ -453,10 +452,10 @@ export class Renderer {
         value = context.resolve(token[TokenMember.VALUE]);
 
         if (value != null)
-          buffer += optimize && typeof value === 'number' ?
-            value // Numbers are absolutely safe(sometimes)
+          buffer += escapeFunction === escapeHTML && typeof value === 'number' ?
+            value // Numbers are absolutely safe for HTML
             :
-            escape(value)
+            escapeFunction(value)
           ;
         break;
       case TokenType.PARTIAL:
