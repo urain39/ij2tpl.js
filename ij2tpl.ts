@@ -453,7 +453,7 @@ export class Renderer {
 
         if (value != null)
           buffer += escapeFunction === escapeHTML && typeof value === 'number' ?
-            value // Numbers are absolutely safe(sometimes)
+            value // Numbers are absolutely safe for HTML
             :
             escapeFunction(value)
           ;
