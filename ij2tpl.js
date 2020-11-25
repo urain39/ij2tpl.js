@@ -1,6 +1,6 @@
 /**
  * @file IJ2TPL.js - A Lightweight Template Engine.
- * @version v0.1.1
+ * @version v0.1.2
  * @author urain39 <urain39@qq.com>
  * @copyright (c) 2018-2020 IJ2TPL.js / IJ2TPL.ts Authors.
  */
@@ -20,11 +20,9 @@ var TokenTypeMap = (_a = {},
     _a["#" /* RAW */] = 5 /* RAW */,
     _a["@" /* PARTIAL */] = 8 /* PARTIAL */,
     _a);
-// We strip all white spaces to make check section easy(for `buildTree`)
-var WhiteSpaceRe = /[\s\xA0\uFEFF]+/g, stripWhiteSpace = function (string_) { return string_.replace(WhiteSpaceRe, ''); }
 // NOTE: If we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
 //     will always generate a new string. So we need test it before replace it ;)
-, IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/, IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/, stripIndentation = function (token, tokens) {
+var IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/, IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/, stripIndentation = function (token, tokens) {
     var value;
     // Remove token's indentation if exists
     if (token[0 /* TYPE */] === 4 /* TEXT */) {
@@ -37,7 +35,9 @@ var WhiteSpaceRe = /[\s\xA0\uFEFF]+/g, stripWhiteSpace = function (string_) { re
         else
             tokens.pop(); // Don't save text that has become empty
     }
-};
+}
+// We strip all white spaces to make check section easy(for `buildTree`)
+, WhiteSpaceRe = /[\s\xA0\uFEFF]+/g, stripWhiteSpace = function (string_) { return string_.replace(WhiteSpaceRe, ''); };
 export function tokenize(source, prefix, suffix) {
     var type_, value, token = [7 /* COMMENT */, ''] // Initialized for first backward check
     , tokens = [];
@@ -312,7 +312,7 @@ var processToken = function (token_) {
     filters = null;
     isAction = false;
     name = token_[1 /* VALUE */];
-    // Name can be empty, see `actionNames`
+    // NOTE: Name can be empty
     if (name.indexOf('|') !== -1) {
         filters = name.split('|');
         name = filters[0];

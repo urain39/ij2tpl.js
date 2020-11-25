@@ -1,6 +1,6 @@
 /**
  * @file IJ2TPL.js - A Lightweight Template Engine.
- * @version v0.1.1
+ * @version v0.1.2
  * @author urain39 <urain39@qq.com>
  * @copyright (c) 2018-2020 IJ2TPL.js / IJ2TPL.ts Authors.
  */
@@ -94,12 +94,9 @@ const TokenTypeMap: IMap<TokenType> = {
   , [TokenString.PARTIAL]:	TokenType.PARTIAL
 };
 
-// We strip all white spaces to make check section easy(for `buildTree`)
-const WhiteSpaceRe = /[\s\xA0\uFEFF]+/g
-  , stripWhiteSpace = (string_: string): string => string_.replace(WhiteSpaceRe, '')
-  // NOTE: If we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
-  //     will always generate a new string. So we need test it before replace it ;)
-  , IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/
+// NOTE: If we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
+//     will always generate a new string. So we need test it before replace it ;)
+const IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/
   , IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/
   , stripIndentation = (token: _Token, tokens: _Token[]): void => {
     let value: string;
@@ -117,7 +114,10 @@ const WhiteSpaceRe = /[\s\xA0\uFEFF]+/g
       else
         tokens.pop(); // Don't save text that has become empty
     }
-  };
+  }
+  // We strip all white spaces to make check section easy(for `buildTree`)
+  , WhiteSpaceRe = /[\s\xA0\uFEFF]+/g
+  , stripWhiteSpace = (string_: string): string => string_.replace(WhiteSpaceRe, '');
 
 export function tokenize(source: string, prefix: string, suffix: string): _Token[] {
   let type_: string
@@ -500,7 +500,7 @@ const processToken = (token_: _Token): Section | Formatter => {
 
   name = token_[TokenMember.VALUE];
 
-  // Name can be empty, see `actionNames`
+  // NOTE: Name can be empty
   if (name.indexOf('|') !== -1) {
     filters = name.split('|');
 
