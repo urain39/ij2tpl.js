@@ -6,7 +6,7 @@ A Mustache-like Template Engine written in TypeScript(<= 4kB after uglifying).
 English | [中文](./README.zh.md)
 
 **Supported**
-- ES3(>=IE6)
+- ES5(>=IE8)
 
 **Usage**
 ```js
