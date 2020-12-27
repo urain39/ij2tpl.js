@@ -207,6 +207,7 @@ export { Context };
 var isArray = Array.isArray;
 if (!isArray) {
     var toString_1 = {}.toString;
+    // XXX: Fix a possible issue
     isArray = function (value) {
         return toString_1.call(value) === '[object Array]';
     };
