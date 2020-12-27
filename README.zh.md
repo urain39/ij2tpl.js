@@ -6,7 +6,7 @@ TypeScript 编写的类 Mustache 模板引擎(uglify后 <= 4kB)。
 [English](./README.md) | 中文
 
 **已支持**
-- ES3(>=IE6)
+- ES5(>=IE8)
 
 **使用方法:**
 ```js

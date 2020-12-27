@@ -341,7 +341,8 @@ let isArray = Array.isArray;
 if (!isArray) {
   const toString = {}.toString;
 
-  isArray = function(value: any): value is any[] {
+  // XXX: Fix a possible issue
+  isArray = <typeof isArray>function(value: any): value is any[] {
     return toString.call(value) === '[object Array]';
   };
 }
