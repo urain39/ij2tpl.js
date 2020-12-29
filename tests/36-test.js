@@ -16,7 +16,7 @@ let source2 = `\
     {/b}
 {/a}`;
 
-expected(JSON.stringify(IJ2TPL.parse(source2)), '{"treeRoot":[[2,["a",null,null,false],[[0,["f",null,null,false],[[2,["g",null,null,false],[],[[6,["h",null,null,false]],[4,"\\n"]]]],null]],[[2,["b",null,null,false],[[6,["c",null,null,false]],[4,"\\n"]],[[0,["d",null,null,false],[[6,["e",null,null,false]],[4,"\\n"]],null]]]]]]}');
+expected(JSON.stringify(IJ2TPL.parse(source2)), '{"recursionDepth":0,"treeRoot":[[2,["a",null,null,false],[[0,["f",null,null,false],[[2,["g",null,null,false],[],[[6,["h",null,null,false]],[4,"\\n"]]]],null]],[[2,["b",null,null,false],[[6,["c",null,null,false]],[4,"\\n"]],[[0,["d",null,null,false],[[6,["e",null,null,false]],[4,"\\n"]],null]]]]]]}');
 
 // treeRoot[0] -> if-section(a)
 // if-section(a)[2] -> if-block(a)
