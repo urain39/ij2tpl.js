@@ -349,12 +349,16 @@ if (!isArray) {
 
 export class Renderer {
   public treeRoot: Token[];
+  public recursionDepth: number = 0;
 
   public constructor(treeRoot: Token[]) {
     this.treeRoot = treeRoot;
   }
 
-  public renderTree(treeRoot: Token[], context: Context, partialMap?: IMap<Renderer>): string {
+  /**
+   * Do NOT invoke it directly, you should just call `render`
+   */
+  private renderTree(treeRoot: Token[], context: Context, partialMap?: IMap<Renderer>): string {
     let value: any
       , valueLength!: number
       , section: Section
@@ -463,7 +467,13 @@ export class Renderer {
         token = token as Partial;
         value = token[TokenMember.VALUE];
 
-        if (partialMap && hasOwnProperty.call(partialMap, value))
+        if (value === '&') { // Recursive render with parents
+          this.recursionDepth += 1;
+          buffer += this.renderTree(this.treeRoot, context, partialMap);
+        } else if (value === '^') { // Recursive render without parents
+          this.recursionDepth += 1;
+          buffer += this.renderTree(this.treeRoot, new Context(context.data, null), partialMap);
+        } else if (partialMap && hasOwnProperty.call(partialMap, value))
           buffer += this.renderTree(partialMap[value].treeRoot, context, partialMap);
         else
           throw new Error(`Cannot resolve partial '${value}'`);
@@ -475,6 +485,8 @@ export class Renderer {
   }
 
   public render(data: IMap<any>, partialMap?: IMap<Renderer>): string {
+    this.recursionDepth = 0; // reset
+
     return this.renderTree(
       this.treeRoot, new Context(data, null), partialMap
     );

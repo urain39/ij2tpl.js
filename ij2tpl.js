@@ -214,8 +214,12 @@ if (!isArray) {
 }
 var Renderer = /** @class */ (function () {
     function Renderer(treeRoot) {
+        this.recursionDepth = 0;
         this.treeRoot = treeRoot;
     }
+    /**
+     * Do NOT invoke it directly, you should just call `render`
+     */
     Renderer.prototype.renderTree = function (treeRoot, context, partialMap) {
         var value, valueLength, section, buffer = '', isArray_ = false;
         for (var i = 0, l = treeRoot.length, token = void 0; i < l;) {
@@ -286,7 +290,15 @@ var Renderer = /** @class */ (function () {
                 case 8 /* PARTIAL */:
                     token = token;
                     value = token[1 /* VALUE */];
-                    if (partialMap && hasOwnProperty.call(partialMap, value))
+                    if (value === '&') { // Recursive render with parents
+                        this.recursionDepth += 1;
+                        buffer += this.renderTree(this.treeRoot, context, partialMap);
+                    }
+                    else if (value === '^') { // Recursive render without parents
+                        this.recursionDepth += 1;
+                        buffer += this.renderTree(this.treeRoot, new Context(context.data, null), partialMap);
+                    }
+                    else if (partialMap && hasOwnProperty.call(partialMap, value))
                         buffer += this.renderTree(partialMap[value].treeRoot, context, partialMap);
                     else
                         throw new Error("Cannot resolve partial '" + value + "'");
@@ -296,6 +308,7 @@ var Renderer = /** @class */ (function () {
         return buffer;
     };
     Renderer.prototype.render = function (data, partialMap) {
+        this.recursionDepth = 0; // reset
         return this.renderTree(this.treeRoot, new Context(data, null), partialMap);
     };
     return Renderer;
