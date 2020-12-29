@@ -18,6 +18,7 @@ fs.readdirSync(TESTDIR).forEach(function(filename) {
 				.readFileSync(filename),
 			{
 				IJ2TPL,
+				console,
 				expected: assert.deepStrictEqual,
 				expectedError: function(callback, message) {
 					try {
