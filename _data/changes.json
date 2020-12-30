@@ -1,8 +1,16 @@
 [
 	{
+		"date": "2021-01-22",
+		"version": "v0.1.3",
+		"status": "TESTING",
+		"changes": [
+			"Supported recursive rendering"
+		]
+	},
+	{
 		"date": "2020-11-21",
 		"version": "v0.1.2",
-		"status": "TESTING",
+		"status": "RELEASED",
 		"changes": [
 			"Fixed cannot override escape(via `IJ2TPL.setEscapeFunction`)"
 		]

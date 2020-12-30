@@ -214,7 +214,6 @@ if (!isArray) {
 }
 var Renderer = /** @class */ (function () {
     function Renderer(treeRoot) {
-        this.recursionDepth = 0;
         this.treeRoot = treeRoot;
     }
     /**
@@ -291,11 +290,9 @@ var Renderer = /** @class */ (function () {
                     token = token;
                     value = token[1 /* VALUE */];
                     if (value === '&') { // Recursive render with parents
-                        this.recursionDepth += 1;
                         buffer += this.renderTree(this.treeRoot, context, partialMap);
                     }
                     else if (value === '^') { // Recursive render without parents
-                        this.recursionDepth += 1;
                         buffer += this.renderTree(this.treeRoot, new Context(context.data, null), partialMap);
                     }
                     else if (partialMap && hasOwnProperty.call(partialMap, value))
@@ -308,7 +305,6 @@ var Renderer = /** @class */ (function () {
         return buffer;
     };
     Renderer.prototype.render = function (data, partialMap) {
-        this.recursionDepth = 0; // reset
         return this.renderTree(this.treeRoot, new Context(data, null), partialMap);
     };
     return Renderer;

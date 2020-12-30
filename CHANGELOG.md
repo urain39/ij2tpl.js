@@ -5,10 +5,15 @@
 CHANGELOG
 ==========
 
+### v0.1.3(2021-01-22)
+- Supported recursive rendering
+
+status: **TESTING**
+
 ### v0.1.2(2020-11-21)
 - Fixed cannot override escape(via `IJ2TPL.setEscapeFunction`)
 
-status: **TESTING**
+status: **RELEASED**
 
 ### v0.1.1(2020-07-26)
 - Fixed README.md

@@ -342,14 +342,13 @@ if (!isArray) {
   const toString = {}.toString;
 
   // XXX: Fix a possible issue
-  isArray = <typeof isArray>function(value: any): value is any[] {
+  isArray = <typeof isArray>function<T>(value: T[]): value is T[] {
     return toString.call(value) === '[object Array]';
   };
 }
 
 export class Renderer {
   public treeRoot: Token[];
-  public recursionDepth: number = 0;
 
   public constructor(treeRoot: Token[]) {
     this.treeRoot = treeRoot;
@@ -468,10 +467,8 @@ export class Renderer {
         value = token[TokenMember.VALUE];
 
         if (value === '&') { // Recursive render with parents
-          this.recursionDepth += 1;
           buffer += this.renderTree(this.treeRoot, context, partialMap);
         } else if (value === '^') { // Recursive render without parents
-          this.recursionDepth += 1;
           buffer += this.renderTree(this.treeRoot, new Context(context.data, null), partialMap);
         } else if (partialMap && hasOwnProperty.call(partialMap, value))
           buffer += this.renderTree(partialMap[value].treeRoot, context, partialMap);
@@ -485,8 +482,6 @@ export class Renderer {
   }
 
   public render(data: IMap<any>, partialMap?: IMap<Renderer>): string {
-    this.recursionDepth = 0; // reset
-
     return this.renderTree(
       this.treeRoot, new Context(data, null), partialMap
     );
