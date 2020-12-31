@@ -38,6 +38,7 @@ const enum TokenMember {
   TYPE = 0
   , VALUE
   , BLOCK
+  , INDENTATION = 2
   , ELSE_BLOCK
 }
 
@@ -50,7 +51,8 @@ const enum NameMember {
 /* eslint-enable no-unused-vars */
 
 // Compatible tokenized tokens
-type _Token = [TokenType, string];
+type _Token = [TokenType, string, string?];
+//                                ^^^ INDENTATION
 
 //                  NAME    NAMES            FILTERS          IS_ACTION
 export type Name = [string, string[] | null, string[] | null, boolean];
@@ -66,7 +68,7 @@ export type Text = _Token; // Text token same as tokenized token
 
 export type Formatter = [TokenType, Name];
 
-export type Partial = _Token; // Partial token same as tokenized token
+export type Partial = [TokenType, string, string];
 
 // Token literally compatible all tokens
 export type Token = _Token | Section | Text | Formatter | Partial;
@@ -98,15 +100,19 @@ const TokenTypeMap: IMap<TokenType> = {
 //     will always generate a new string. So we need test it before replace it ;)
 const IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/
   , IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/
-  , stripIndentation = (token: _Token, tokens: _Token[]): void => {
-    let value: string;
+  , stripIndentation = (token: _Token, tokens: _Token[]): string => {
+    let value: string
+      , result: ReturnType<typeof String.prototype.match>
+      , indentation: string = '';
 
     // Remove token's indentation if exists
     if (token[TokenMember.TYPE] === TokenType.TEXT) {
       token = token as Text;
       value = token[TokenMember.VALUE];
 
-      if (IndentedTestRe.test(value))
+      // eslint-disable-next-line no-cond-assign
+      if (result = value.match(IndentedTestRe))
+        indentation = result[0],
         value = value.replace(IndentedWhiteSpaceRe, '');
 
       if(value)
@@ -114,6 +120,8 @@ const IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/
       else
         tokens.pop(); // Don't save text that has become empty
     }
+
+    return indentation;
   }
   // We strip all white spaces to make check section easy(for `buildTree`)
   , WhiteSpaceRe = /[\s\xA0\uFEFF]+/g
@@ -122,6 +130,7 @@ const IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/
 export function tokenize(source: string, prefix: string, suffix: string): _Token[] {
   let type_: string
     , value: string
+    , indentation: string
     , token: Token = [TokenType.COMMENT, ''] // Initialized for first backward check
     , tokens: _Token[] = [];
 
@@ -184,7 +193,7 @@ export function tokenize(source: string, prefix: string, suffix: string): _Token
     case TokenString.ELSE:
     case TokenString.END:
     case TokenString.PARTIAL:
-      stripIndentation(token, tokens);
+      indentation = stripIndentation(token, tokens);
 
       // Skip section's newline if exists
       if (i < l) {
@@ -206,12 +215,17 @@ export function tokenize(source: string, prefix: string, suffix: string): _Token
           break;
         }
       }
-    // eslint-disable-line no-fallthrough
+
+      token = [TokenTypeMap[type_], value.slice(1), indentation],
+      tokens.push(token);
+      break;
     case TokenString.RAW:
-      token = [TokenTypeMap[type_], value.slice(1)], tokens.push(token);
+      token = [TokenTypeMap[type_], value.slice(1)],
+      tokens.push(token);
       break;
     default:
-      token = [TokenType.FORMAT, value], tokens.push(token);
+      token = [TokenType.FORMAT, value],
+      tokens.push(token);
       break;
     }
   }
@@ -342,7 +356,7 @@ if (!isArray) {
   const toString = {}.toString;
 
   // XXX: Fix a possible issue
-  isArray = <typeof isArray>function<T>(value: T[]): value is T[] {
+  isArray = <typeof Array.isArray>function<T>(value: T[]): value is T[] {
     return toString.call(value) === '[object Array]';
   };
 }
@@ -358,9 +372,12 @@ export class Renderer {
    * Do NOT invoke it directly, you should just call `render`
    */
   private renderTree(treeRoot: Token[], context: Context, partialMap?: IMap<Renderer>): string {
+    const BEGINNING_RE = /^/gm;
+
     let value: any
       , valueLength!: number
       , section: Section
+      , indentation: string
       , buffer: string = ''
       , isArray_: boolean = false;
 
@@ -465,13 +482,18 @@ export class Renderer {
       case TokenType.PARTIAL:
         token = token as Partial;
         value = token[TokenMember.VALUE];
+        indentation = token[TokenMember.INDENTATION];
 
+        // TODO: Simpify it
         if (value === '&') { // Recursive render with parents
-          buffer += this.renderTree(this.treeRoot, context, partialMap);
+          buffer += this.renderTree(this.treeRoot, context, partialMap)
+            .replace(BEGINNING_RE, indentation);
         } else if (value === '^') { // Recursive render without parents
-          buffer += this.renderTree(this.treeRoot, new Context(context.data, null), partialMap);
+          buffer += this.renderTree(this.treeRoot, new Context(context.data, null), partialMap)
+            .replace(BEGINNING_RE, indentation);
         } else if (partialMap && hasOwnProperty.call(partialMap, value))
-          buffer += this.renderTree(partialMap[value].treeRoot, context, partialMap);
+          buffer += this.renderTree(partialMap[value].treeRoot, context, partialMap)
+            .replace(BEGINNING_RE, indentation);
         else
           throw new Error(`Cannot resolve partial '${value}'`);
         break;
