@@ -160,7 +160,7 @@ export function tokenize(source: string, prefix: string, suffix: string): _Token
       throw new Error(`No matching prefix '${prefix}'`);
 
     // We don't want to call `source.slice` for comments
-    if (source[j] === TokenString.COMMENT) {
+    if (source.charAt(j) === TokenString.COMMENT) {
       stripIndentation(token, tokens);
       i += sl; // Skip the '}' for comments
 
@@ -176,7 +176,7 @@ export function tokenize(source: string, prefix: string, suffix: string): _Token
     if (!value)
       continue; // Skip the empty token, such as '{}'
 
-    type_ = value[0];
+    type_ = value.charAt(0);
 
     switch (type_) {
     case TokenString.IF:
@@ -188,7 +188,7 @@ export function tokenize(source: string, prefix: string, suffix: string): _Token
 
       // Skip section's newline if exists
       if (i < l) {
-        switch (source[i]) {
+        switch (source.charAt(i)) {
         case '\n':
           i += 1; // LF
           break;
@@ -196,7 +196,7 @@ export function tokenize(source: string, prefix: string, suffix: string): _Token
           // Have next character?
           i += (j = i + 1) < l ?
             // Yes, next character is LF?
-            source[j] === '\n' ?
+            source.charAt(j) === '\n' ?
               2 // Yes, then newline is CRLF
               :
               1 // No, then newline is CR
