@@ -1,12 +1,12 @@
 /**
  * @file IJ2TPL.js - A Lightweight Template Engine.
- * @version v0.1.2
+ * @version v0.1.3
  * @author urain39 <urain39@qq.com>
  * @copyright (c) 2018-2020 IJ2TPL.js / IJ2TPL.ts Authors.
  */
 var _a, _b;
 /* eslint-disable prefer-const */
-export var version = '0.1.2';
+export var version = '0.1.3';
 var filterMap = {};
 export function setFilterMap(filterMap_) {
     filterMap = filterMap_;
@@ -22,7 +22,9 @@ var TokenTypeMap = (_a = {},
     _a);
 // NOTE: If we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
 //     will always generate a new string. So we need test it before replace it ;)
-var IndentedTestRe = /(^|[\n\r])([\t \xA0\uFEFF]+)$/, IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/, stripIndentation = function (token, tokens) {
+var IndentedTestRe = /(^|[\n\r])([\t \xA0\uFEFF]+)$/
+//                      ^^^ To support IE6, we cannot use empty groups
+, IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/, stripIndentation = function (token, tokens) {
     var value, result, indentation = '';
     // Remove token's indentation if exists
     if (token[0 /* TYPE */] === 4 /* TEXT */) {
@@ -227,6 +229,7 @@ var Renderer = /** @class */ (function () {
      * Do NOT invoke it directly, you should just call `render`
      */
     Renderer.prototype.renderTree = function (treeRoot, context, partialMap) {
+        // We don't want to indent empty lines
         var BEGINNING_RE = /^(.+)$/gm;
         var value, valueLength, section, indentation, buffer = '', isArray_ = false;
         for (var i = 0, l = treeRoot.length, token = void 0; i < l;) {
@@ -298,7 +301,6 @@ var Renderer = /** @class */ (function () {
                     token = token;
                     value = token[1 /* VALUE */];
                     indentation = token[2 /* INDENTATION */];
-                    // TODO: Simpify it
                     if (value === '&') { // Recursive render with parents
                         buffer += this.renderTree(this.treeRoot, context, partialMap)
                             .replace(BEGINNING_RE, indentation + "$&");

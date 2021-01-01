@@ -1,13 +1,13 @@
 /**
  * @file IJ2TPL.js - A Lightweight Template Engine.
- * @version v0.1.2
+ * @version v0.1.3
  * @author urain39 <urain39@qq.com>
  * @copyright (c) 2018-2020 IJ2TPL.js / IJ2TPL.ts Authors.
  */
 
 /* eslint-disable prefer-const */
 
-export const version: string = '0.1.2';
+export const version: string = '0.1.3';
 
 /* eslint-disable no-unused-vars */
 // FIXME: ^^^ It seems that is a bug of ESLint
@@ -99,6 +99,7 @@ const TokenTypeMap: IMap<TokenType> = {
 // NOTE: If we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
 //     will always generate a new string. So we need test it before replace it ;)
 const IndentedTestRe = /(^|[\n\r])([\t \xA0\uFEFF]+)$/
+//                      ^^^ To support IE6, we cannot use empty groups
   , IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/
   , stripIndentation = (token: _Token, tokens: _Token[]): string => {
     let value: string
@@ -372,6 +373,7 @@ export class Renderer {
    * Do NOT invoke it directly, you should just call `render`
    */
   private renderTree(treeRoot: Token[], context: Context, partialMap?: IMap<Renderer>): string {
+    // We don't want to indent empty lines
     const BEGINNING_RE = /^(.+)$/gm;
 
     let value: any
@@ -484,7 +486,6 @@ export class Renderer {
         value = token[TokenMember.VALUE];
         indentation = token[TokenMember.INDENTATION];
 
-        // TODO: Simpify it
         if (value === '&') { // Recursive render with parents
           buffer += this.renderTree(this.treeRoot, context, partialMap)
             .replace(BEGINNING_RE, `${indentation}$&`);
