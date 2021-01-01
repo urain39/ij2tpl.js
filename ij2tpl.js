@@ -229,8 +229,7 @@ var Renderer = /** @class */ (function () {
      * Do NOT invoke it directly, you should just call `render`
      */
     Renderer.prototype.renderTree = function (treeRoot, context, partialMap) {
-        // We don't want to indent empty lines
-        var BEGINNING_RE = /^(.+)$/gm;
+        var BEGINNING_RE = /^(.+)$/gm; // We don't want to indent empty lines
         var value, valueLength, section, indentation, buffer = '', isArray_ = false;
         for (var i = 0, l = treeRoot.length, token = void 0; i < l;) {
             token = treeRoot[i++];

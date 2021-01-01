@@ -373,8 +373,7 @@ export class Renderer {
    * Do NOT invoke it directly, you should just call `render`
    */
   private renderTree(treeRoot: Token[], context: Context, partialMap?: IMap<Renderer>): string {
-    // We don't want to indent empty lines
-    const BEGINNING_RE = /^(.+)$/gm;
+    const BEGINNING_RE = /^(.+)$/gm; // We don't want to indent empty lines
 
     let value: any
       , valueLength!: number
