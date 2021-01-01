@@ -98,7 +98,7 @@ const TokenTypeMap: IMap<TokenType> = {
 
 // NOTE: If we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
 //     will always generate a new string. So we need test it before replace it ;)
-const IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/
+const IndentedTestRe = /(^|[\n\r])([\t \xA0\uFEFF]+)$/
   , IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/
   , stripIndentation = (token: _Token, tokens: _Token[]): string => {
     let value: string
@@ -112,7 +112,7 @@ const IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/
 
       // eslint-disable-next-line no-cond-assign
       if (result = value.match(IndentedTestRe))
-        indentation = result[0],
+        indentation = result[2],
         value = value.replace(IndentedWhiteSpaceRe, '');
 
       if(value)
@@ -372,7 +372,7 @@ export class Renderer {
    * Do NOT invoke it directly, you should just call `render`
    */
   private renderTree(treeRoot: Token[], context: Context, partialMap?: IMap<Renderer>): string {
-    const BEGINNING_RE = /^/gm;
+    const BEGINNING_RE = /^(.+)$/gm;
 
     let value: any
       , valueLength!: number
@@ -487,13 +487,13 @@ export class Renderer {
         // TODO: Simpify it
         if (value === '&') { // Recursive render with parents
           buffer += this.renderTree(this.treeRoot, context, partialMap)
-            .replace(BEGINNING_RE, indentation);
+            .replace(BEGINNING_RE, `${indentation}$&`);
         } else if (value === '^') { // Recursive render without parents
           buffer += this.renderTree(this.treeRoot, new Context(context.data, null), partialMap)
-            .replace(BEGINNING_RE, indentation);
+            .replace(BEGINNING_RE, `${indentation}$&`);
         } else if (partialMap && hasOwnProperty.call(partialMap, value))
           buffer += this.renderTree(partialMap[value].treeRoot, context, partialMap)
-            .replace(BEGINNING_RE, indentation);
+            .replace(BEGINNING_RE, `${indentation}$&`);
         else
           throw new Error(`Cannot resolve partial '${value}'`);
         break;

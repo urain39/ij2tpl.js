@@ -22,7 +22,7 @@ var TokenTypeMap = (_a = {},
     _a);
 // NOTE: If we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
 //     will always generate a new string. So we need test it before replace it ;)
-var IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/, IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/, stripIndentation = function (token, tokens) {
+var IndentedTestRe = /(^|[\n\r])([\t \xA0\uFEFF]+)$/, IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/, stripIndentation = function (token, tokens) {
     var value, result, indentation = '';
     // Remove token's indentation if exists
     if (token[0 /* TYPE */] === 4 /* TEXT */) {
@@ -30,7 +30,7 @@ var IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/, IndentedWhiteSpaceRe = /[\
         value = token[1 /* VALUE */];
         // eslint-disable-next-line no-cond-assign
         if (result = value.match(IndentedTestRe))
-            indentation = result[0],
+            indentation = result[2],
                 value = value.replace(IndentedWhiteSpaceRe, '');
         if (value)
             token[1 /* VALUE */] = value;
@@ -227,7 +227,7 @@ var Renderer = /** @class */ (function () {
      * Do NOT invoke it directly, you should just call `render`
      */
     Renderer.prototype.renderTree = function (treeRoot, context, partialMap) {
-        var BEGINNING_RE = /^/gm;
+        var BEGINNING_RE = /^(.+)$/gm;
         var value, valueLength, section, indentation, buffer = '', isArray_ = false;
         for (var i = 0, l = treeRoot.length, token = void 0; i < l;) {
             token = treeRoot[i++];
@@ -301,15 +301,15 @@ var Renderer = /** @class */ (function () {
                     // TODO: Simpify it
                     if (value === '&') { // Recursive render with parents
                         buffer += this.renderTree(this.treeRoot, context, partialMap)
-                            .replace(BEGINNING_RE, indentation);
+                            .replace(BEGINNING_RE, indentation + "$&");
                     }
                     else if (value === '^') { // Recursive render without parents
                         buffer += this.renderTree(this.treeRoot, new Context(context.data, null), partialMap)
-                            .replace(BEGINNING_RE, indentation);
+                            .replace(BEGINNING_RE, indentation + "$&");
                     }
                     else if (partialMap && hasOwnProperty.call(partialMap, value))
                         buffer += this.renderTree(partialMap[value].treeRoot, context, partialMap)
-                            .replace(BEGINNING_RE, indentation);
+                            .replace(BEGINNING_RE, indentation + "$&");
                     else
                         throw new Error("Cannot resolve partial '" + value + "'");
                     break;
