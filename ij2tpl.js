@@ -1,12 +1,12 @@
 /**
  * @file IJ2TPL.js - A Lightweight Template Engine.
- * @version v0.1.2
+ * @version v0.1.3
  * @author urain39 <urain39@qq.com>
  * @copyright (c) 2018-2020 IJ2TPL.js / IJ2TPL.ts Authors.
  */
 var _a, _b;
 /* eslint-disable prefer-const */
-export var version = '0.1.2';
+export var version = '0.1.3';
 var filterMap = {};
 export function setFilterMap(filterMap_) {
     filterMap = filterMap_;
@@ -22,24 +22,29 @@ var TokenTypeMap = (_a = {},
     _a);
 // NOTE: If we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
 //     will always generate a new string. So we need test it before replace it ;)
-var IndentedTestRe = /(?:^|[\n\r])[\t \xA0\uFEFF]+$/, IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/, stripIndentation = function (token, tokens) {
-    var value;
+var IndentedTestRe = /(^|[\n\r])([\t \xA0\uFEFF]+)$/
+//                      ^^^ To support IE6, we cannot use empty groups
+, IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/, stripIndentation = function (token, tokens) {
+    var value, result, indentation = '';
     // Remove token's indentation if exists
     if (token[0 /* TYPE */] === 4 /* TEXT */) {
         token = token;
         value = token[1 /* VALUE */];
-        if (IndentedTestRe.test(value))
-            value = value.replace(IndentedWhiteSpaceRe, '');
+        // eslint-disable-next-line no-cond-assign
+        if (result = value.match(IndentedTestRe))
+            indentation = result[2],
+                value = value.replace(IndentedWhiteSpaceRe, '');
         if (value)
             token[1 /* VALUE */] = value;
         else
             tokens.pop(); // Don't save text that has become empty
     }
+    return indentation;
 }
 // We strip all white spaces to make check section easy(for `buildTree`)
 , WhiteSpaceRe = /[\s\xA0\uFEFF]+/g, stripWhiteSpace = function (string_) { return string_.replace(WhiteSpaceRe, ''); };
 export function tokenize(source, prefix, suffix) {
-    var type_, value, token = [7 /* COMMENT */, ''] // Initialized for first backward check
+    var type_, value, indentation, token = [7 /* COMMENT */, ''] // Initialized for first backward check
     , tokens = [];
     for (var i = 0, j = 0, l = source.length, pl = prefix.length, sl = suffix.length; i < l;) {
         // Match '{'
@@ -82,7 +87,7 @@ export function tokenize(source, prefix, suffix) {
             case "*" /* ELSE */:
             case "/" /* END */:
             case "@" /* PARTIAL */:
-                stripIndentation(token, tokens);
+                indentation = stripIndentation(token, tokens);
                 // Skip section's newline if exists
                 if (i < l) {
                     switch (source.charAt(i)) {
@@ -103,12 +108,16 @@ export function tokenize(source, prefix, suffix) {
                             break;
                     }
                 }
-            // eslint-disable-line no-fallthrough
+                token = [TokenTypeMap[type_], value.slice(1), indentation],
+                    tokens.push(token);
+                break;
             case "#" /* RAW */:
-                token = [TokenTypeMap[type_], value.slice(1)], tokens.push(token);
+                token = [TokenTypeMap[type_], value.slice(1)],
+                    tokens.push(token);
                 break;
             default:
-                token = [6 /* FORMAT */, value], tokens.push(token);
+                token = [6 /* FORMAT */, value],
+                    tokens.push(token);
                 break;
         }
     }
@@ -220,7 +229,9 @@ var Renderer = /** @class */ (function () {
      * Do NOT invoke it directly, you should just call `render`
      */
     Renderer.prototype.renderTree = function (treeRoot, context, partialMap) {
-        var value, valueLength, section, buffer = '', isArray_ = false;
+        // We don't want to indent empty lines
+        var BEGINNING_RE = /^(.+)$/gm;
+        var value, valueLength, section, indentation, buffer = '', isArray_ = false;
         for (var i = 0, l = treeRoot.length, token = void 0; i < l;) {
             token = treeRoot[i++];
             switch (token[0 /* TYPE */]) {
@@ -289,14 +300,18 @@ var Renderer = /** @class */ (function () {
                 case 8 /* PARTIAL */:
                     token = token;
                     value = token[1 /* VALUE */];
+                    indentation = token[2 /* INDENTATION */];
                     if (value === '&') { // Recursive render with parents
-                        buffer += this.renderTree(this.treeRoot, context, partialMap);
+                        buffer += this.renderTree(this.treeRoot, context, partialMap)
+                            .replace(BEGINNING_RE, indentation + "$&");
                     }
                     else if (value === '^') { // Recursive render without parents
-                        buffer += this.renderTree(this.treeRoot, new Context(context.data, null), partialMap);
+                        buffer += this.renderTree(this.treeRoot, new Context(context.data, null), partialMap)
+                            .replace(BEGINNING_RE, indentation + "$&");
                     }
                     else if (partialMap && hasOwnProperty.call(partialMap, value))
-                        buffer += this.renderTree(partialMap[value].treeRoot, context, partialMap);
+                        buffer += this.renderTree(partialMap[value].treeRoot, context, partialMap)
+                            .replace(BEGINNING_RE, indentation + "$&");
                     else
                         throw new Error("Cannot resolve partial '" + value + "'");
                     break;
