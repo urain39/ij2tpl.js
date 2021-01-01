@@ -2,7 +2,7 @@ let template = IJ2TPL.parse(`\
 {?contents}
     {- _.recursionDepth | toIndentation}类型：{type}
     {- _.recursionDepth | toIndentation}名称：{name}
-    {-}{@^}
+    {-}{@&}
 {/contents}
 `);
 
@@ -10,7 +10,8 @@ let data = {
 	"contents": [
 		{
 			"type": "file",
-			"name": "file1"
+            "name": "file1",
+            "contents": null
 		},
 		{
 			"type": "directory",
@@ -18,7 +19,8 @@ let data = {
 			"contents": [
 				{
 					"type": "file",
-					"name": "file2"
+                    "name": "file2",
+                    "contents": null
 				}
 			]
 		}

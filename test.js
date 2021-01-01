@@ -18,6 +18,7 @@ fs.readdirSync(TESTDIR).forEach(function(filename) {
 				.readFileSync(filename),
 			{
 				IJ2TPL,
+				console,
 				expected: assert.deepStrictEqual,
 				expectedError: function(callback, message) {
 					try {
@@ -29,7 +30,7 @@ fs.readdirSync(TESTDIR).forEach(function(filename) {
 			});
 		} catch (error) {
 			console.log(filename + ': Error!');
-			console.error(error);
+			//console.error(error);
 			throw error // re-throw
 		}
 	}

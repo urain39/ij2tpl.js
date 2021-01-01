@@ -1,8 +1,8 @@
 let template = IJ2TPL.parse(`\
 {?contents}
-    {- _.recursionDepth | toIndentation}类型：{type}
-    {- _.recursionDepth | toIndentation}名称：{name}
-    {-}{@^}
+    类型：{type}
+    名称：{name}
+    {@^}
 {/contents}
 `);
 
@@ -26,10 +26,10 @@ let data = {
 };
 
 expected(template.render(data), `\
-类型：file
-名称：file1
-类型：directory
-名称：directory1
-类型：file
-名称：file2
+    类型：file
+    名称：file1
+    类型：directory
+    名称：directory1
+        类型：file
+        名称：file2
 `);
