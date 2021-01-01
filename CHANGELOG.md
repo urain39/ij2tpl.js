@@ -7,6 +7,7 @@ CHANGELOG
 
 ### v0.1.3(2021-01-22)
 - Supported recursive rendering
+- Fixed partial indentation issue
 
 status: **TESTING**
 
@@ -20,7 +21,7 @@ status: **RELEASED**
 - Optimized for-loops for ES3/ES5
 - Improved ES3 Support
 
-status: **RELEASED**
+status: **OUTDATED**
 
 ### v0.1.0(2020-07-01)
 - Re-Supported If-Else Section
