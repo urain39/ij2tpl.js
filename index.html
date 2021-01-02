@@ -28,13 +28,8 @@
 		<script>
 			(function () {
 				window.onload = function(event) {
-					function QSA(selector, element) {
-						return (element instanceof HTMLElement ? element : document)
-							.querySelectorAll(selector);
-					}
-
-					var el = QSA('#content')[0],
-						tpl = QSA('#content-tpl')[0];
+					var el = document.getElementById('content'),
+						tpl = document.getElementById('content-tpl');
 
 					try {
 						tpl = IJ2TPL.parse(tpl.innerHTML);
