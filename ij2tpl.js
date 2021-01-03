@@ -72,7 +72,7 @@ export function tokenize(source, prefix, suffix) {
         if (source.charAt(j) === "-" /* COMMENT */) {
             stripIndentation(token, tokens);
             i += sl; // Skip the '}' for comments
-            token = [7 /* COMMENT */, '']; // Don't forget to update `token`!
+            token = [7 /* COMMENT */, '']; // Don't forget to update `token`
             continue; // Tokenize next one
         }
         // Eat the text between the '{' and '}'
