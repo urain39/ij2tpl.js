@@ -173,6 +173,7 @@ export function tokenize(source: string, prefix: string, suffix: string): _Token
     if (source.charAt(j) === TokenString.COMMENT) {
       stripIndentation(token, tokens);
       i += sl; // Skip the '}' for comments
+      token = [TokenType.COMMENT, '']; // Don't forget to update `token`!
 
       continue; // Tokenize next one
     }
