@@ -8,6 +8,7 @@ CHANGELOG
 ### v0.1.3(2021-01-22)
 - Supported recursive rendering
 - Fixed partial indentation issue
+- Fixed #267 (`tokenize` bug)
 
 status: **TESTING**
 
