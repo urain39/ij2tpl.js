@@ -5,7 +5,8 @@
 		"status": "TESTING",
 		"changes": [
 			"Supported recursive rendering",
-			"Fixed partial indentation issue"
+			"Fixed partial indentation issue",
+			"Fixed #267 (`tokenize` bug)"
 		]
 	},
 	{

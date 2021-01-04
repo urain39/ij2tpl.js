@@ -3,3 +3,5 @@ dist/*.js
 !dist/*.min.js
 lib/*.js
 node_modules/
+gh-page/*.js
+!gh-page/*.umd.js
