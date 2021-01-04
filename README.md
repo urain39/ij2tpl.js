@@ -530,6 +530,21 @@ expected(template.render(data), `\
 你可以看见，这里我们其实是将`context`的数据重新包装了一次，然后将其`parent`设置为`null`。
 这样设计我们就不会将上层作用域的变量与当前作用域的变量搞混了。
 
+**实战：递归树形结构渲染**
+```ij2
+{{?contents.length}} {{- ul标签只需要插入一次 }}
+<ul>
+    {{?contents}} {{- 判断是否有子节点 }}
+        {{-}}<li><a class="icon {{type | toClass}}">{{name}}</a></li>
+        {{-}}{{@^}}
+    {{/contents}}
+</ul>
+{{/contents.length}}
+```
+
+`{{?contents.length}}`这样的用法是为了保证最外层的`ul`标签只插入一次。
+还记得我们上面学过的吗？数组始终是会被遍历的，那样的话就不是我们想要的结果了。
+
 ## 关于调试
 
 抱歉，我没有考虑到这一点。 为了改进令牌化(tokenizing)速度，我将位置信息移除了。
