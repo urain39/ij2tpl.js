@@ -27,7 +27,9 @@
     "url": "https://github.com/urain39/ij2tpl.js/issues"
   },
   "homepage": "https://github.com/urain39/ij2tpl.js#readme",
-  "dependencies": {},
+  "dependencies": {
+    "rollup-pluginutils": "^2.8.2"
+  },
   "devDependencies": {
     "@types/node": "^14.14.19",
     "@typescript-eslint/eslint-plugin": "^3.10.1",
