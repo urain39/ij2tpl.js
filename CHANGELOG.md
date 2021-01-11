@@ -9,6 +9,7 @@ CHANGELOG
 - Supported recursive rendering
 - Fixed partial indentation issue
 - Fixed #267 (`tokenize` bug)
+- Make the filter accessible to the `context`
 
 status: **TESTING**
 

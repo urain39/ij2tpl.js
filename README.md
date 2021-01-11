@@ -331,6 +331,9 @@ IJ2TPL.setFilterMap({
 不过需要注意一点，IJ2TPL.js 中的过滤器是闭包保存的，一旦加载后
 则是多个引用共享一个变量。我不保证所谓的安全克隆后的对象的安全性。
 
+新版的过滤器增加了一个可选的参数项`context`，使用方法和上面的函数
+类型是一样的，这里也就不赘述了。
+
 *动作*与过滤器基本是一样的, 但是其并不会查找字段(因为“没名字”)
 ```html
 {- 简单的例子 -}
@@ -339,10 +342,19 @@ IJ2TPL.setFilterMap({
 
 ```js
 IJ2TPL.setFilterMap({
-	report: function() {
-		// ...		
-		return ''; // 不添加任何内容
-	}
+    report: function(_, context) {
+        let debugEnabled = context.resolve(['debugEnabled', null]);
+
+        if (debugEnabled) {
+            console.log('debugEnabled = true');
+        }
+
+        return '';
+    }
+});
+
+IJ2TPL.parse('{|report}').render({
+    debugEnabled: true
 });
 ```
 
@@ -350,9 +362,8 @@ IJ2TPL.setFilterMap({
 
 只不过它并不会缓存结果，适合对数据实时性要求比较高的场合使用。
 
-**关于参数**
-> 没有名字的过滤器组合当然也就没有参数。这或许是一个问题，
-> 但我们目前并不考虑解决这个问题。
+但是需要注意`context`的实现上仍然是缓存结果的，也就说本质上缓存
+结果这个功能是由`context`来完成的，详情可以参考`Context`的源码。
 
 ### 函数类型 与 动作类型 的不同点
 
@@ -410,6 +421,9 @@ template.render({
 
 如果你真的运行了上面的代码，那么你会发现上面的渲染结果并非
 你想的那样，这是为什么呢？
+```js
+template.render(data) // -> 'urain39123'
+```
 
 其实这是因为我们的`tokenize`函数会将段落标签的换行符和缩进都
 忽略掉造成的。所以上面的模板应该改成：
@@ -424,6 +438,10 @@ template.render({
 		{/password}
 	{/account}
 {/settings}
+```
+
+```js
+template.render(data) // -> '\t\t\turain39\n\t\t\t123\n'
 ```
 
 ### 自递归模板（v0.1.3+）
