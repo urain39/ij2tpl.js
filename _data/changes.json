@@ -6,7 +6,8 @@
 		"changes": [
 			"Supported recursive rendering",
 			"Fixed partial indentation issue",
-			"Fixed #267 (`tokenize` bug)"
+			"Fixed #267 (`tokenize` bug)",
+			"Make the filter accessible to the `context`"
 		]
 	},
 	{

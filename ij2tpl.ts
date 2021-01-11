@@ -78,7 +78,7 @@ interface IMap< /* K, */ V> { [key: string]: V; [index: number]: V; }
 
 // FIXME: It's also a bug of ESLint
 // eslint-disable-next-line no-unused-vars
-export type Filter = (value: any) => any;
+export type Filter = (value: any, context?: Context | null) => any;
 
 let filterMap: IMap<Filter> = {};
 
@@ -343,7 +343,7 @@ export class Context {
         filterName = filters[i++];
 
         if (hasOwnProperty.call(filterMap, filterName))
-          value = filterMap[filterName](value);
+          value = filterMap[filterName](value, context);
         else
           throw new Error(`Cannot resolve filter '${filterName}'`);
       }

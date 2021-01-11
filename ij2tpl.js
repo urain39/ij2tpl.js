@@ -204,7 +204,7 @@ var Context = /** @class */ (function () {
             for (var i = 0, l = filters.length, filterName = void 0; i < l;) {
                 filterName = filters[i++];
                 if (hasOwnProperty.call(filterMap, filterName))
-                    value = filterMap[filterName](value);
+                    value = filterMap[filterName](value, context);
                 else
                     throw new Error("Cannot resolve filter '" + filterName + "'");
             }
