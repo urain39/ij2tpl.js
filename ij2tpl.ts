@@ -99,7 +99,7 @@ const TokenTypeMap: IMap<TokenType> = {
 // NOTE: If we use `IndentedTestRe` with capture-group directly, the `<string>.replace` method
 //     will always generate a new string. So we need test it before replace it ;)
 const IndentedTestRe = /(^|[\n\r])([\t \xA0\uFEFF]+)$/
-  //                    ^^^ To support IE6, we cannot use empty groups
+  //                    ^^^ To support IE6, we cannot use non-capturing groups
   , IndentedWhiteSpaceRe = /[\t \xA0\uFEFF]+$/
   , stripIndentation = (token: _Token, tokens: _Token[]): string => {
     let value: string
