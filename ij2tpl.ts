@@ -359,7 +359,7 @@ if (!isArray) {
   const toString = {}.toString;
 
   // XXX: Fix a possible issue
-  isArray = <typeof Array.isArray>function<T>(value: T[]): value is T[] {
+  isArray = <typeof Array.isArray>function<T> (value: T[]): value is T[] {
     return toString.call(value) === '[object Array]';
   };
 }

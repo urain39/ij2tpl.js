@@ -1,5 +1,8 @@
 # Tests
 tests/*
 
+# Package Lock
+package-lock.json
+
 # Gh Page
 gh-page/
