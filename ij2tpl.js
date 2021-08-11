@@ -43,7 +43,13 @@ var IndentedTestRe = /(^|[\n\r])([\t \xA0\uFEFF]+)$/
 }
 // We strip all white spaces to make check section easy(for `buildTree`)
 , WhiteSpaceRe = /[\s\xA0\uFEFF]+/g, stripWhiteSpace = function (string_) { return string_.replace(WhiteSpaceRe, ''); };
+// See https://stackoverflow.com/questions/3446170/escape-string-for-use-in-javascript-regex
+var RegExpSpecialsRe = /[-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g // eslint-disable-line no-useless-escape
+, escapeRegExp = function (string_) { return string_.replace(RegExpSpecialsRe, '\\$&'); };
 export function tokenize(source, prefix, suffix) {
+    var EmptyTokenRe = new RegExp(escapeRegExp(prefix) + "[\t ]*" + escapeRegExp(suffix), 'g');
+    // Fix https://github.com/urain39/ij2tpl.js/issues/294
+    source = source.replace(EmptyTokenRe, '');
     var type_, value, indentation, token = [7 /* COMMENT */, ''] // Initialized for first backward check
     , tokens = [];
     for (var i = 0, j = 0, l = source.length, pl = prefix.length, sl = suffix.length; i < l;) {
@@ -79,8 +85,6 @@ export function tokenize(source, prefix, suffix) {
         value = source.slice(j, i);
         i += sl; // Skip the '}' for tokens
         value = stripWhiteSpace(value);
-        if (!value)
-            continue; // Skip the empty token, such as '{}'
         type_ = value.charAt(0);
         switch (type_) {
             case "?" /* IF */:

@@ -128,7 +128,16 @@ const IndentedTestRe = /(^|[\n\r])([\t \xA0\uFEFF]+)$/
   , WhiteSpaceRe = /[\s\xA0\uFEFF]+/g
   , stripWhiteSpace = (string_: string): string => string_.replace(WhiteSpaceRe, '');
 
+// See https://stackoverflow.com/questions/3446170/escape-string-for-use-in-javascript-regex
+const RegExpSpecialsRe = /[-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g // eslint-disable-line no-useless-escape
+  , escapeRegExp = (string_: string): string => string_.replace(RegExpSpecialsRe, '\\$&');
+
 export function tokenize(source: string, prefix: string, suffix: string): _Token[] {
+  const EmptyTokenRe = new RegExp(`${escapeRegExp(prefix)}[\t ]*${escapeRegExp(suffix)}`, 'g');
+
+  // Fix https://github.com/urain39/ij2tpl.js/issues/294
+  source = source.replace(EmptyTokenRe, '');
+
   let type_: string
     , value: string
     , indentation: string
@@ -184,10 +193,6 @@ export function tokenize(source: string, prefix: string, suffix: string): _Token
     i += sl; // Skip the '}' for tokens
 
     value = stripWhiteSpace(value);
-
-    if (!value)
-      continue; // Skip the empty token, such as '{}'
-
     type_ = value.charAt(0);
 
     switch (type_) {
