@@ -1,7 +1,31 @@
-*.bak
-dist/*.js
-!dist/*.min.js
-lib/*.js
+```
+# Dependencies
 node_modules/
-gh-page/*.js
-!gh-page/*.umd.js
+
+# Build artifacts
+dist/
+*.min.js
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.local
+*.env.*
+
+# Editor/IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.tmp
+
+# Test
+coverage/
+.nyc_output/
+.jest-cache/
+
+# TypeScript
+*.tsbuildinfo
+```
